@@ -1,0 +1,393 @@
+@import url("https://fonts.googleapis.com/css2?family=Gabarito&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
+@import url("/assets/notyf.min.css");
+
+body {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    background-color: #141414;
+}
+
+* {
+    font-family: "Gabarito", sans-serif;
+    color: rgb(216, 216, 216);
+}
+
+a {
+    color: lightblue;
+}
+
+.editable #in {
+    z-index: 999;
+    opacity: 1;
+}
+
+.editable #notes {
+    z-index: 998;
+    opacity: 0;
+}
+
+.uneditable #in {
+    z-index: 998;
+    opacity: 0;
+}
+
+.uneditable #notes {
+    z-index: 999;
+    opacity: 1;
+}
+
+/* Dynamically loaded content that is never viewed directly by the user, basically used to pass data into javascript variable with EJS file */
+#discord_webhook, #bookSave {
+    font-size: 0px;
+    opacity: 0;
+    user-select: none;
+    z-index: -200000;
+    height: 0px;
+    width: 0px;
+}
+
+#in {
+    top: 0%;
+    left: 0%;
+    position: absolute;
+    resize: none;
+    width: 50vw;
+    height: 30vh;
+    background-color: #141414;
+    outline: none;
+    border-style: none;
+    padding-left: 25vw;
+    padding-right: 25vw;
+    padding-top: 10vh;
+    padding-bottom: 60vh;
+    font-size: 17px;
+    z-index: 999;
+    overscroll-behavior-y: contain;
+    overflow-x: hidden;
+    opacity: 0;
+}
+
+#notes {
+    top: 0%;
+    left: 0%;
+    position: absolute;
+    width: 50vw;
+    height: 50vh;
+    background-color: #141414;
+    padding-left: 25vw;
+    padding-right: 25vw;
+    padding-top: 10vh;
+    padding-bottom: 40vh;
+    font-size: 17px;
+    z-index: 998;
+    overscroll-behavior-y: contain;
+    overflow: auto;
+    overflow-x: hidden;
+    opacity: 0;
+}
+
+#notes h1,
+#notes h2,
+#notes h3 {
+    margin-bottom: -0.25em;
+    color: whitesmoke;
+}
+
+#sync {
+    margin-top: 3px;
+
+}
+
+/* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
+#brain {
+    width: 400px;
+    height: auto;
+    text-align: left;
+    font-size: 1rem
+}
+
+#nav {
+    top: 0%;
+    left: 50%;
+    position: fixed;
+    z-index: 1000;
+    user-select: none;
+    font-size: 1.4rem;
+    height: auto;
+    width: auto;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-bottom: 3px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: rgba(138, 138, 138, 0.2);
+    backdrop-filter: blur(5px);
+    display: flex;
+    gap: .25em;
+    transform: translate(-50%, -0%);
+}
+
+.homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #sync  {
+    pointer-events: none;
+    opacity: .35;
+}
+
+#nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6, #icon7 {
+    cursor: pointer;
+}
+
+.tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
+    margin-bottom: -1em;
+}
+
+/* page number and drop down of page numbers */
+#pageNumber {
+    z-index: 1000;
+    top: 0%;
+    left: 0%;
+    position: fixed;
+    padding-top: 5px;
+    padding-left: 5px;
+    user-select: none;
+    cursor: pointer;
+    font-size: 1.3em;
+}
+
+.whereTo {
+    border-left-style: solid;
+    border-width: 2px;
+}
+
+.whereTo:hover {
+    background: whitesmoke;
+    color: #000;
+}
+
+/* Sidebar */
+#list {
+    top: 0%;
+    left: 0%;
+    position: fixed;
+    height: 100vh;
+    width: 200px;
+    background-color: rgb(39, 38, 36);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right-style: solid;
+    border-width: 1px;
+    border-color: rgb(138, 138, 138);
+    user-select: none;
+    z-index: 1000;
+    display: none;
+}
+
+.item {
+    width: auto;
+    height: 40px;
+    background-color: rgb(34, 34, 34);
+    color: #141414;
+    position: relative;
+    cursor: pointer;
+    padding: 3px;
+    border-bottom-style: solid;
+    border-width: 1px;
+    overflow: hidden;
+    line-height: 0;
+    font-size: 16px;
+    transition: 0.15s ease-out;
+    color: silver;
+    padding-left: 5px;
+}
+
+.item h2 {
+	color: whitesmoke;
+}
+
+.item a {
+    transition: 0.5s;
+    display: hidden;
+    text-decoration: none;
+    opacity: 0%;
+}
+
+.item a:hover{
+    color: whitesmoke;
+}
+
+.item:hover {
+    background-color: #4e4e4e;
+}
+
+.itemWithLinks a {
+    transition: 0s;
+    visibility: visible;
+    opacity: 100%;
+}
+
+#tab {
+    height: 200px;
+    width: 10px;
+    background-color: white;
+    position: fixed;
+    top: 50%;
+    left: 0%;
+    z-index: 1000;
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+    background-color: whitesmoke;
+    color: black;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#tab:hover {
+    opacity: 1;
+}
+
+/* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
+.spoiler {
+    background-color: silver;
+    color: silver;
+    padding-left: 3px;
+    padding-right: 3px;
+    cursor: default;
+}
+
+.spoiler:hover {
+    color: black;
+}
+
+.unorder, .order {
+    margin-left: 4em;
+}
+
+.order::marker {
+    color: rgba(0,0,0,0);
+}
+
+.unorder::marker {
+    color: #898989;
+}
+
+.marked {
+    user-select: none;
+    cursor: default;
+    margin-left: -1em;
+    color: #898989;
+}
+
+mark {
+    color: #000;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.red {
+    color: #ff3838;
+}
+
+.userImage {
+    user-select: none;
+    width: 700px;
+    height: auto;
+}
+
+.codeBlock {
+    width: 100%;
+    height: auto;
+    background: #000000;
+    border-radius: 10px;
+    padding: 1em;
+    padding-top: 0px;
+    margin-bottom: -1em;
+    color: #2ddd2d;
+    overflow-x: auto;
+    font-family: monospace;
+}
+
+.userHtml {
+    width: 100%;
+    height: auto;
+    background: #000000;
+    border-radius: 10px;
+    padding: 1em;
+    margin-bottom: -1em;
+    color: #2ddd2d;
+    overflow-x: auto;
+    font-family: monospace;
+}
+
+/* https://stackoverflow.com/a/69970674 */
+#moneyAnimation {
+    visibility: hidden;
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    font-size: 1.2em;
+}
+
+.moneyAnimation {
+    animation: moneyAnimation 1s forwards;
+    position: absolute;
+    visibility: visible;
+}
+
+
+@keyframes moneyAnimation {
+    0% {
+        opacity: 1;
+        top: 0;
+    }
+
+    100% {
+        opacity: 0;
+        top: -50px;
+    }
+}
+
+/* https://codepen.io/oltika/pen/WGLZyb */
+@keyframes saved {
+    30% {
+        transform: scale(1.2);
+    }
+
+    40%,
+    60% {
+        transform: rotate(-20deg) scale(1.2);
+    }
+
+    50% {
+        transform: rotate(20deg) scale(1.2);
+    }
+
+    70% {
+        transform: rotate(0deg) scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsiveness for iPhone 13 */
+@media screen and (max-width: 1170px) {
+    #notes, #in {
+        width: 80vw;
+        padding-left: 10vw;
+        padding-right: 10vw;
+    }
+    #notes {
+        height: 70vh;
+        padding-bottom: 20vh;
+    }
+    .codeBlock, .userHtml {
+        width: 90%;
+    }
+    .newImage {
+        width: 90vw;
+    }
+    .unorder, .order {
+        margin-left: 1em;
+    }
+}
