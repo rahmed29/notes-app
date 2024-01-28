@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <link rel="stylesheet" href="/assets/style.css">
-    <link rel="manifest" href="/assets/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <!--Import JS-->
     <script src="/libraries/notyf.min.js"></script>
     <script src="/libraries/dropzone-min.js"></script>
@@ -19,6 +19,7 @@
 </head>
 <body onload="leftOff(true); inputVisible(); createList()">
     <span id="pageNumber" data-pos="up" onclick="showInd(this);"></span>
+    <div id = "mobileSync"></div>
     <div id = "navContainer">
         <div id = "mobileMenu" onclick = "showList()">...</div>
         <div id="nav" onclick = "hideInd();">
@@ -26,7 +27,7 @@
             <span id="icon2" onclick="newP();">📖</span>
             <span id="icon3" onclick="del();">🗑️</span>
             <span id="icon4">
-                <label for="getFile1">🖼️</label>
+                <label for="getFile1" id = "labelForImage">🖼️</label>
                 <form id="myForm">
                     <input type="file" name="avatar" id="getFile1" style='display:none' onchange="insertImage();">
                 </form>

@@ -1,5 +1,16 @@
 let mediaScreen = window.matchMedia("(max-width: 1170px)")
 
+if(mediaScreen.matches) {
+    document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save'></i>"
+    document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open'></i>"
+    document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash'></i>"
+    document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image'></i>"
+    document.getElementById("icon5").innerHTML = "<i class = 'fa fa-eye'></i>"
+    document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left'></i>"
+    document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right'></i>"
+
+}
+
 async function createList() {
     const response = await fetch("/api/get/everything")
     const json = await response.json();
@@ -26,7 +37,12 @@ let cantab;
 let allowWiki = true;
 let currLine = "";
 let temp;
-let notyf = new Notyf();
+const notyf = new Notyf({
+    position: {
+        y: 'top'
+    },
+    dismissible: true
+});
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
@@ -122,8 +138,11 @@ async function leftOff(goAgain) {
     }
 }
 
-function forceUpdate() {
+async function forceUpdate() {
     if(confirm("Are you sure?")) {
+        const response = await fetch("/api/get/notebooks/" + sendThis)
+        const json = await response.json();
+        document.getElementById("bookSave").innerText = json["content"];
         s = document.getElementById("bookSave").innerText;
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
@@ -451,16 +470,16 @@ function syncStatus(response) {
     }
     let rip = Math.abs(JSON.stringify(book).length - response.length)
     if (JSON.stringify(writtenPages) === response) {
-        document.getElementById("sync").innerHTML = "<i style = 'background: linear-gradient(to right, #61da20, #0ab846 );background-clip: text;-webkit-text-fill-color: transparent;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
-        document.getElementById("nav").style.background = "rgba(116, 222, 152, 0.2)"
+        document.getElementById("sync").innerHTML = "<i style = 'color: #61da20;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("mobileSync").style.background = "#61da20";
         tippy('#grnBox', {
             content: 'Notes are saved',
         });
         document.title = sendThis;
         inSynced = true;
     } else {
-        document.getElementById("sync").innerHTML = "<i style = 'opacity: .6' id = 'grnBox' class='fa fa-cloud-upload'></i>";
-        document.getElementById("nav").style.background = "rgba(138, 138, 138, 0.2)"
+        document.getElementById("sync").innerHTML = "<i style = 'color: gray;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("mobileSync").style.background = "gray";
         tippy('#grnBox', {
             content: "Notes shown differ from saved notes by " + rip + " chars",
         });

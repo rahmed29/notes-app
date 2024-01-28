@@ -5,7 +5,7 @@
 body {
     overflow-x: hidden;
     overflow-y: hidden;
-    background-color: #141414;
+    background-color: #000;
 }
 
 * {
@@ -94,17 +94,26 @@ a {
     color: whitesmoke;
 }
 
-#sync {
-    margin-top: 3px;
-
-}
-
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
 #brain {
     width: 400px;
     height: auto;
     text-align: left;
     font-size: 1rem
+}
+
+
+#navContainer {
+    transform: translate(-50%, -0%);
+    top: 0%;
+    left: 50%;
+    position: fixed;
+    z-index: 1000;
+    user-select: none;
+    display: grid;
+    grid-template-areas:
+        '. . a'
+        'b b b'
 }
 
 #nav {
@@ -126,7 +135,28 @@ a {
     grid-area: b;
 }
 
-#nav span {
+#sync {
+    margin-top: 3px;
+}
+
+#mobileSync {
+    left: 50%;
+    top: 0%;
+    transform: translate(-50%, 0%);
+    border-radius: 25px;
+    width: 25vw;
+    height: 3px;
+    position: fixed;
+    z-index: 1000;
+    transition: .5s;
+    display: none;
+}
+
+#nav .fa {
+    color: whitesmoke;
+}
+
+#nav span, #nav a{
     text-shadow: 2px 2px 2px black;
 }
 
@@ -245,6 +275,24 @@ a {
 
 #tab:hover {
     opacity: 1;
+}
+
+#mobileMenu {
+    height: 3.5em;
+    width: 3.5em;
+    border-radius: 50%;
+    z-index: 1000;
+    display: inline-block;
+    display: none;
+    line-height: 3.5em;
+    text-align: center;
+    font-size: 1em;
+    color: black;
+    transition: .5s;
+    user-select: none;
+    grid-area: a;
+    margin-bottom: .5em;
+    margin-right: -.75em;
 }
 
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
@@ -372,37 +420,6 @@ mark {
     }
 }
 
-#mobileMenu {
-    height: 3.5em;
-    width: 3.5em;
-    border-radius: 50%;
-    z-index: 1000;
-    display: inline-block;
-    display: none;
-    line-height: 3.5em;
-    text-align: center;
-    font-size: 1em;
-    color: black;
-    transition: .5s;
-    user-select: none;
-    grid-area: a;
-    margin-bottom: .5em;
-    margin-right: -.75em;
-}
-
-#navContainer {
-    transform: translate(-50%, -0%);
-    top: 0%;
-    left: 50%;
-    position: fixed;
-    z-index: 1000;
-    user-select: none;
-    display: grid;
-    grid-template-areas:
-        '. . a'
-        'b b b'
-}
-
 /* Responsiveness for iPhone 13 */
 @media screen and (max-width: 1170px) {
     .tippy-popper {
@@ -414,8 +431,11 @@ mark {
         padding-right: 10vw;
         background-color: black;
     }
+    #in {
+        padding-bottom: 51vh;
+    }
     #notes {
-        height: 70vh;
+        height: 46vh;
         padding-top: 5vh;
     }
     .codeBlock, .userHtml {
@@ -452,12 +472,18 @@ mark {
     }
     #nav span {
         font-size: 1.3em;
-        margin-top: .2em;
+        margin-top: .3em;
     }
     #icon8, #sync {
         display: none;
     }
     #mobileMenu {
         display: inherit;
+    }
+    #mobileSync {
+        display: inherit;
+    }
+    #list {
+        height: 91vh;
     }
 }
