@@ -1,8 +1,13 @@
+let mediaScreen = window.matchMedia("(max-width: 1170px)")
+
 async function createList() {
     const response = await fetch("/api/get/everything")
     const json = await response.json();
     const result = json["data"];
     let listedItems = [];
+    if(mediaScreen.matches) {
+        listedItems.push(`<div class = "item" onclick = 'forceUpdate()'><h2 style = 'color: rgba(116, 222, 152);'>Refresh Notes</h2></div>`)
+    }
     for (let i = result.length-1; i >= 0; i--) {
         let links = []
         for (let j = 0; j < result[i]["length"]; j++)
@@ -18,9 +23,14 @@ const sendThis = location.pathname.substring(1);
 const webhook = document.getElementById("discord_webhook").innerText || "";
 document.getElementById("discord_webhook").remove()
 let cantab;
+let allowWiki = true;
 let currLine = "";
 let temp;
 let notyf = new Notyf();
+const notesTextArea = document.getElementById("in");
+const notesPreviewArea = document.getElementById("notes");
+const notesAreaContainer = document.getElementById("notesArea");
+const topRightPageNumber = document.getElementById("pageNumber");
 
 if(sendThis === "home") temp = true; else temp = false;
 const atHome = temp;
@@ -55,9 +65,9 @@ let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
 function accents() {
-    document.getElementById("in").value = book[pgN];
-    document.getElementById("notes").innerHTML = format(document.getElementById("in").value);
-    document.getElementById("pageNumber").innerText = pgN + 1;
+    notesTextArea.value = book[pgN];
+    notesPreviewArea.innerHTML = format(notesTextArea.value);
+    topRightPageNumber.innerText = pgN + 1;
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateNotes()
 }
@@ -103,17 +113,29 @@ async function leftOff(goAgain) {
             if (s !== "") {
                 localStorage.setItem(sendThis, s);
             }
-            if ((document.getElementById("notes").innerHTML === "undefined" || document.getElementById("notes").innerHTML === "") && goAgain) {
+            if ((notesPreviewArea.innerHTML === "undefined" || notesPreviewArea.innerHTML === "") && goAgain) {
+                notesTextArea.readOnly = true;
                 leftOff(false);
             }
             syncStatus(s);
-            document.getElementById("in").readOnly = false;
+            notesTextArea.readOnly = false;
+    }
+}
+
+function forceUpdate() {
+    if(confirm("Are you sure?")) {
+        s = document.getElementById("bookSave").innerText;
+        localStorage.setItem(sendThis, s);
+        book = JSON.parse(localStorage.getItem(sendThis)) || [""]
+        accents()
+        syncStatus(s);
+        hideList();
     }
 }
 
 function pagey() {
     let z;
-    let content = [document.getElementById("pageNumber").innerHTML]
+    let content = [topRightPageNumber.innerHTML]
     if (book.length > 9) {
         for (z = 0; z < 9; z++) {
             content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
@@ -124,8 +146,8 @@ function pagey() {
             content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
         }
     }
-   content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>&nbsp;+&nbsp;&nbsp;</span>`);
-   document.getElementById("pageNumber").innerHTML = content.join('');
+    content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>&nbsp;+&nbsp;&nbsp;</span>`);
+    topRightPageNumber.innerHTML = content.join('');
 
     tippy('#newPage', {
         content: "New Page",
@@ -145,26 +167,37 @@ function toolTip(ele) {
     });
 }
 
-document.getElementById("in").addEventListener("input", (e) => {
+notesTextArea.addEventListener("input", e => {
     let num = 0;
-    let start = document.getElementById("in").selectionStart;
+    let start = notesTextArea.selectionStart;
     e.target.value = e.target.value.replaceAll("  ", function(){num = 1; return ' ';});
-    document.getElementById("in").selectionStart = document.getElementById("in").selectionEnd = start - num;
+    notesTextArea.selectionStart = notesTextArea.selectionEnd = start - num;
     updateNotes();
+});
+
+document.getElementById("icon8").addEventListener("contextmenu", e => {
+    e.preventDefault();
+    allowWiki = !allowWiki;
+    if(allowWiki) {
+        document.getElementById("icon8").style.filter = "inherit";
+    } else {
+        document.getElementById("icon8").style.filter = "grayscale(1)";
+    }
+    notyf.success(`allowWiki was set to ${allowWiki}`)
 });
 
 function getLinePos() {
     //substring from 0 to caret position
-    let toCaret = document.getElementById("in").value.substring(0, document.getElementById("in").selectionStart)
+    let toCaret = notesTextArea.value.substring(0, notesTextArea.selectionStart)
     //substring from caret position onwards
-    let fromCaret = document.getElementById("in").value.substring(document.getElementById("in").selectionStart)
+    let fromCaret = notesTextArea.value.substring(notesTextArea.selectionStart)
     if(toCaret.substring(toCaret.lastIndexOf("\n")) + fromCaret.substring(0, fromCaret.indexOf("\n")) !== "\n") {
         currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
     }
 }
 
 // https://stackoverflow.com/a/6637396
-document.getElementById('in').addEventListener('keydown', function (e) {
+notesTextArea.addEventListener('keydown', function (e) {
     if (e.key === 'Tab' && cantab) {
         e.preventDefault();
         let start = this.selectionStart;
@@ -195,7 +228,7 @@ function getBlocks(str) {
 }
 
 function formatNormal() {
-    let str = getBlocks(document.getElementById("in").value)
+    let str = getBlocks(notesTextArea.value)
     //Formatting code blocks and creating tooltips to delete image
     let blocks = document.getElementsByClassName("codeBlock")
     for (let i = 0, n = blocks.length; i < n; i++) {
@@ -218,7 +251,7 @@ function formatNormal() {
 }
 
 function updateNotes() {
-    book[pgN] = document.getElementById("in").value;
+    book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     formatNormal();
     syncStatus(s);
@@ -233,7 +266,7 @@ async function removeImage() {
         method: "DELETE",
     })
     if (imageDeleteStatus.ok) {
-        document.getElementById("in").value = document.getElementById("in").value.replaceAll(occ, "");
+        notesTextArea.value = notesTextArea.value.replaceAll(occ, "");
         updateNotes();
         notePost();
     } else {
@@ -259,16 +292,16 @@ function format(str) {
     str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
     str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
-    str = str.replace(new RegExp("!!(.+?)!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(.+?)\\*\\*", 'g'), "<b>$1</b>")
-    str = str.replace(new RegExp("__(.+?)__", 'g'), "<u>$1</u>")
-    str = str.replace(new RegExp("\\\\\\\\(.+?)\\\\\\\\", 'g'), "<i>$1</i>")
-    str = str.replace(new RegExp("https://(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
-    str = str.replace(new RegExp("!\\((.+?)\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
-    str = str.replace(new RegExp("==(.+?)==", 'g'), "<mark>$1</mark>")
-    //str = str.replace(new RegExp("\\|\\|(.+?)\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
-    str = str.replace(new RegExp("~~(.+?)~~", 'g'), "<s>$1</s>")
-    str = str.replace(new RegExp("\\^(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
+    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
+    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
+    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
+    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
+    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
+    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
+    //str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
+    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
+    str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(new RegExp("\\((.+?)\\)f\\((.+?)\\)", 'g'), "<sub>$1</sub><span style = 'font-size: 1.25em;'>&int;</span><sup>$2</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
     str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
@@ -290,7 +323,7 @@ async function removeNote() {
 }
 
 async function notePost() {
-    book[pgN] = document.getElementById("in").value;
+    book[pgN] = notesTextArea.value;
     let sentArr = [];
 
     for (let i = 0; i < book.length; i++) {
@@ -380,9 +413,9 @@ function showInd(ele) {
     }
 }
 function hideInd() {
-    if (document.getElementById("pageNumber").getAttribute("data-pos") === "down") {
-        document.getElementById("pageNumber").innerHTML = pgN + 1;
-        document.getElementById("pageNumber").setAttribute("data-pos", "up")
+    if (topRightPageNumber.getAttribute("data-pos") === "down") {
+        topRightPageNumber.innerHTML = pgN + 1;
+        topRightPageNumber.setAttribute("data-pos", "up")
     }
 }
 
@@ -399,16 +432,17 @@ if (!sendThis.includes("/")) {
 }
 
 if (atHome) {
-    document.getElementById("pageNumber").style.display = "none";
+    topRightPageNumber.style.display = "none";
     document.getElementById("nav").classList.add("homeNav");
     let content = ["# Recent Notes\n"];
     for (let i = 0; i < recentB.length; i++) {
         content.push(`\n${i+1}. ${recentB[i]}`);
     }
-    document.getElementById("in").value = content.join('');
+    notesTextArea.value = content.join('');
 }
 
 function syncStatus(response) {
+    let isSynced = false;
     let writtenPages = []
     for (let i = 0; i < book.length; i++) {
         if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
@@ -418,17 +452,21 @@ function syncStatus(response) {
     let rip = Math.abs(JSON.stringify(book).length - response.length)
     if (JSON.stringify(writtenPages) === response) {
         document.getElementById("sync").innerHTML = "<i style = 'background: linear-gradient(to right, #61da20, #0ab846 );background-clip: text;-webkit-text-fill-color: transparent;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("nav").style.background = "rgba(116, 222, 152, 0.2)"
         tippy('#grnBox', {
             content: 'Notes are saved',
         });
         document.title = sendThis;
+        inSynced = true;
     } else {
         document.getElementById("sync").innerHTML = "<i style = 'opacity: .6' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("nav").style.background = "rgba(138, 138, 138, 0.2)"
         tippy('#grnBox', {
             content: "Notes shown differ from saved notes by " + rip + " chars",
         });
         document.title = sendThis + " *"
     }
+    return isSynced;
 }
 
 if (!atHome) {
@@ -442,7 +480,7 @@ if (!atHome) {
         },
         success: function (file, response) {
             file.previewElement.innerHTML = "";
-            document.getElementById('in').value += "\n\n!(" + response + ")"
+            notesTextArea.value += "\n\n!(" + response + ")"
             updateNotes()
             notePost()
         }
@@ -457,7 +495,7 @@ async function insertImage() {
     })
     if (imageUploadStatus.ok) {
         const response = await imageUploadStatus.text()
-        document.getElementById('in').value += "\n\n!(" + response + ")"
+        notesTextArea.value += "\n\n!(" + response + ")"
         updateNotes()
         notePost()
     } else {
@@ -467,7 +505,7 @@ async function insertImage() {
 
 async function wikiSearch(event) {
     let selection = window.getSelection() + "";
-    if (!(selection.includes("\n") || selection.length === 0)) {
+    if (!(selection.includes("\n") || selection.length === 0) && allowWiki === true) {
         let wiki = selection.trim().replace(/ /g, '_').toLowerCase()
         document.body.style.cursor = "wait";
         const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wiki + "?redirect=true", {
@@ -512,6 +550,8 @@ function showList() {
         document.getElementById("list").style.display = "inherit"
         document.getElementById("tab").style.left = "200px"
         listShown = true
+        document.getElementById("mobileMenu").style.height = "4em";
+        document.getElementById("mobileMenu").style.width = "4em";
     }
 }
 
@@ -519,6 +559,8 @@ function hideList() {
     document.getElementById("list").style.display = "none"
     document.getElementById("tab").style.left = "0px"
     listShown = false
+    document.getElementById("mobileMenu").style.height = "3.5em";
+    document.getElementById("mobileMenu").style.width = "3.5em";
 }
 
 function dropDown(ele) {
@@ -547,20 +589,22 @@ function inputVisible() {
 
 function editable() {
     cantab = true;
-    if(!atHome) document.getElementById("in").readOnly = false;
-    document.getElementById("notesArea").classList.add("editable");
-    document.getElementById("notesArea").classList.remove("uneditable");
+    if(!atHome) notesTextArea.readOnly = false;
+    notesAreaContainer.classList.add("editable");
+    notesAreaContainer.classList.remove("uneditable");
     document.getElementById("tab").style.backgroundColor = "silver"
+    document.getElementById("mobileMenu").style.backgroundColor = "silver"
     localStorage.setItem("viewPref", "visible")
 }
 
 function notEditable() {
-    document.getElementById("notes").innerHTML = format(document.getElementById("in").value);
+    notesPreviewArea.innerHTML = format(notesTextArea.value);
     formatNormal();
     cantab = false;
-    document.getElementById("in").readOnly = true;
-    document.getElementById("notesArea").classList.add("uneditable");
-    document.getElementById("notesArea").classList.remove("editable");
-    document.getElementById("tab").style.backgroundColor = "violet"
+    notesTextArea.readOnly = true;
+    notesAreaContainer.classList.add("uneditable");
+    notesAreaContainer.classList.remove("editable");
+    document.getElementById("tab").style.backgroundColor = "rgb(116, 222, 152)"
+    document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }
