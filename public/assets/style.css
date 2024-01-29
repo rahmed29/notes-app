@@ -152,10 +152,6 @@ a {
     display: none;
 }
 
-#nav .fa {
-    color: whitesmoke;
-}
-
 #nav span, #nav a{
     text-shadow: 2px 2px 2px black;
 }
@@ -163,10 +159,15 @@ a {
 .homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #sync  {
     pointer-events: none;
     opacity: .35;
+    filter: grayscale(1);
 }
 
 #nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6, #icon7 {
     cursor: pointer;
+}
+
+.tippy-popper {
+    text-shadow: none;
 }
 
 .tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {

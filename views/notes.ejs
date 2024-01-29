@@ -16,37 +16,39 @@
     <script src="/libraries/purify.min.js"></script>
     <script src="/libraries/syncscroll.min.js"></script>
     <script defer src="/assets/index.js"></script>
+    <script defer src="/assets/listeners.js"></script>
 </head>
-<body onload="leftOff(true); inputVisible(); createList()">
-    <span id="pageNumber" data-pos="up" onclick="showInd(this);"></span>
+<body>
+    <span id="pageNumber" data-pos="up"></span>
     <div id = "mobileSync"></div>
     <div id = "navContainer">
-        <div id = "mobileMenu" onclick = "showList()">...</div>
-        <div id="nav" onclick = "hideInd();">
-            <span id="icon1" onclick="notePost();">💾</span>
-            <span id="icon2" onclick="newP();">📖</span>
-            <span id="icon3" onclick="del();">🗑️</span>
+        <div id = "mobileMenu">
+            ...
+        </div>
+        <div id="nav">
+            <span id="icon1">💾</span>
+            <span id="icon2">📖</span>
+            <span id="icon3">🗑️</span>
             <span id="icon4">
                 <label for="getFile1" id = "labelForImage">🖼️</label>
                 <form id="myForm">
-                    <input type="file" name="avatar" id="getFile1" style='display:none' onchange="insertImage();">
+                    <input type="file" name="avatar" id="getFile1" style='display:none'>
                 </form>
             </span>
-            <span id="icon5" onclick="toggle();">👁️</span>
-            <span id="icon6" onclick="addPage(true, 1); updateNotes();">◀️</span>
-            <span id="icon7" onclick="addPage(false,1); updateNotes();">▶️</span>
+            <span id="icon5">👁️</span>
+            <span id="icon6">◀️</span>
+            <span id="icon7">▶️</span>
             <span id="icon8"><span id="wikipedia">🧠</span></span>
             <a id="sync" tabindex="-1" href = "/home"></a>
         </div>
     </div>
-    <div id="tab" onclick="showList()"></div>
+    <div id="tab"></div>
     <div id="list"></div>
-    <div id = "notesArea" onclick = "hideList(); hideInd();">
-        <div id="notes" class="syncscroll" name="myElements" onclick="hideInd(); hideList(); wikiSearch(event);"></div>
-        <textarea readonly id="in" tabindex="0" class="syncscroll" name="myElements" spellcheck="true" onclick="hideInd(); hideList();" placeholder="Type your notes here"></textarea>
+    <div id = "notesArea">
+        <div id="notes" class="syncscroll" name="myElements"></div>
+        <textarea readonly id="in" tabindex="0" class="syncscroll" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>
     </div>
     <div id="moneyAnimation"></div>
-    <!-- Discord webhook loaded dynamically -->
     <span id="discord_webhook"><%= data.hook %></span>
     <span id = "bookSave"><%= data.book %></span>
 </body>

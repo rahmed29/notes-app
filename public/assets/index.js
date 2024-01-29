@@ -1,33 +1,14 @@
 let mediaScreen = window.matchMedia("(max-width: 1170px)")
 
 if(mediaScreen.matches) {
-    document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save'></i>"
-    document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open'></i>"
-    document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash'></i>"
-    document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image'></i>"
-    document.getElementById("icon5").innerHTML = "<i class = 'fa fa-eye'></i>"
-    document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left'></i>"
-    document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right'></i>"
+    document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
+    document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open' style = 'color: tan'></i>"
+    document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash' style = 'color: silver;'></i>"
+    document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image' style = 'color: orange;'></i>"
+    document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
+    document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
+    document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
 
-}
-
-async function createList() {
-    const response = await fetch("/api/get/everything")
-    const json = await response.json();
-    const result = json["data"];
-    let listedItems = [];
-    if(mediaScreen.matches) {
-        listedItems.push(`<div class = "item" onclick = 'forceUpdate()'><h2 style = 'color: rgba(116, 222, 152);'>Refresh Notes</h2></div>`)
-    }
-    for (let i = result.length-1; i >= 0; i--) {
-        let links = []
-        for (let j = 0; j < result[i]["length"]; j++)
-        {
-            links.push(`<h3><a href = '/${result[i]["name"]}?${(j+1)}'>Page ${(j+1)}</a></h3>`)
-        }
-        listedItems.push(`<div class = "item" data-pos="up" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
-    }
-    document.getElementById("list").innerHTML = listedItems.join('');
 }
 
 const sendThis = location.pathname.substring(1);
@@ -46,7 +27,7 @@ const notyf = new Notyf({
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
-const topRightPageNumber = document.getElementById("pageNumber");
+const topLeftPageNumber = document.getElementById("pageNumber");
 
 if(sendThis === "home") temp = true; else temp = false;
 const atHome = temp;
@@ -80,10 +61,29 @@ tippy('#icon7', {
 let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
+async function createList() {
+    const response = await fetch("/api/get/everything")
+    const json = await response.json();
+    const result = json["data"];
+    let listedItems = [];
+    if(mediaScreen.matches) {
+        listedItems.push(`<div class = "item" onclick = 'forceUpdate()'><h2 style = 'color: rgb(116, 222, 152);'>Refresh Notes</h2></div>`)
+    }
+    for (let i = result.length-1; i >= 0; i--) {
+        let links = []
+        for (let j = 0; j < result[i]["length"]; j++)
+        {
+            links.push(`<h3><a href = '/${result[i]["name"]}?${(j+1)}'>Page ${(j+1)}</a></h3>`)
+        }
+        listedItems.push(`<div class = "item" data-pos="up" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
+    }
+    document.getElementById("list").innerHTML = listedItems.join('');
+}
+
 function accents() {
     notesTextArea.value = book[pgN];
     notesPreviewArea.innerHTML = format(notesTextArea.value);
-    topRightPageNumber.innerText = pgN + 1;
+    topLeftPageNumber.innerText = pgN + 1;
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateNotes()
 }
@@ -101,8 +101,6 @@ function addPage(goBack, amount) {
         notyf.error('You should make sure you have no blank pages before creating a new one')
     }
 }
-
-let lastPage;
 
 function jumpTo(desired) {
     let writtenPages = []
@@ -140,7 +138,7 @@ async function leftOff(goAgain) {
 
 async function forceUpdate() {
     if(confirm("Are you sure?")) {
-        const response = await fetch("/api/get/notebooks/" + sendThis)
+        const response = await fetch(`/api/get/notebooks/${sendThis}`)
         const json = await response.json();
         document.getElementById("bookSave").innerText = json["content"];
         s = document.getElementById("bookSave").innerText;
@@ -154,7 +152,7 @@ async function forceUpdate() {
 
 function pagey() {
     let z;
-    let content = [topRightPageNumber.innerHTML]
+    let content = [topLeftPageNumber.innerHTML]
     if (book.length > 9) {
         for (z = 0; z < 9; z++) {
             content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
@@ -166,75 +164,34 @@ function pagey() {
         }
     }
     content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>&nbsp;+&nbsp;&nbsp;</span>`);
-    topRightPageNumber.innerHTML = content.join('');
+    topLeftPageNumber.innerHTML = content.join('');
 
     tippy('#newPage', {
         content: "New Page",
         placement: 'right-start',
     });
     tippy('#morePages', {
-        content: (book.length - 9) + " more pages are hidden",
+        content: `${(book.length - 9)} more pages are hidden`,
         placement: 'right-start',
     });
 }
 
 function toolTip(ele) {
     let bry = ele.innerText.trim() - 1;
-    tippy('#whereTo' + bry, {
+    tippy(`#whereTo${bry}`, {
         content: format(book[bry].substring(0, 95)) + "...",
         placement: 'right-start',
     });
 }
-
-notesTextArea.addEventListener("input", e => {
-    let num = 0;
-    let start = notesTextArea.selectionStart;
-    e.target.value = e.target.value.replaceAll("  ", function(){num = 1; return ' ';});
-    notesTextArea.selectionStart = notesTextArea.selectionEnd = start - num;
-    updateNotes();
-});
-
-document.getElementById("icon8").addEventListener("contextmenu", e => {
-    e.preventDefault();
-    allowWiki = !allowWiki;
-    if(allowWiki) {
-        document.getElementById("icon8").style.filter = "inherit";
-    } else {
-        document.getElementById("icon8").style.filter = "grayscale(1)";
-    }
-    notyf.success(`allowWiki was set to ${allowWiki}`)
-});
 
 function getLinePos() {
     //substring from 0 to caret position
     let toCaret = notesTextArea.value.substring(0, notesTextArea.selectionStart)
     //substring from caret position onwards
     let fromCaret = notesTextArea.value.substring(notesTextArea.selectionStart)
-    if(toCaret.substring(toCaret.lastIndexOf("\n")) + fromCaret.substring(0, fromCaret.indexOf("\n")) !== "\n") {
-        currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
-    }
+    currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
+    console.log(currLine);
 }
-
-// https://stackoverflow.com/a/6637396
-notesTextArea.addEventListener('keydown', function (e) {
-    if (e.key === 'Tab' && cantab) {
-        e.preventDefault();
-        let start = this.selectionStart;
-        let end = this.selectionEnd;
-        this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 1;
-    }
-});
-
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey && e.key === 's') && !atHome) {
-        e.preventDefault();
-        notePost();
-    } else if ((e.ctrlKey && e.key === 'e')) {
-        e.preventDefault();
-        toggle();
-    }
-});
 
 function getBlocks(str) {
     let matches = []
@@ -280,7 +237,7 @@ let image;
 
 async function removeImage() {
     let imageTo = image + "";
-    let occ = "!(" + imageTo.substring(imageTo.indexOf("/uploads/")) + ")";
+    let occ = `!(${imageTo.substring(imageTo.indexOf("/uploads/"))})`;
     const imageDeleteStatus = await fetch("/api/delete/images/" + imageTo.substring(imageTo.indexOf("/uploads/") + 9), {
         method: "DELETE",
     })
@@ -328,7 +285,7 @@ function format(str) {
 }
 
 async function removeNote() {
-    const noteDeleteStatus = await fetch("/api/delete/notebooks/" + sendThis, {
+    const noteDeleteStatus = await fetch(`/api/delete/notebooks/${sendThis}`, {
         method: "DELETE",
     })
     if (noteDeleteStatus.ok) {
@@ -432,9 +389,9 @@ function showInd(ele) {
     }
 }
 function hideInd() {
-    if (topRightPageNumber.getAttribute("data-pos") === "down") {
-        topRightPageNumber.innerHTML = pgN + 1;
-        topRightPageNumber.setAttribute("data-pos", "up")
+    if (topLeftPageNumber.getAttribute("data-pos") === "down") {
+        topLeftPageNumber.innerHTML = pgN + 1;
+        topLeftPageNumber.setAttribute("data-pos", "up")
     }
 }
 
@@ -451,7 +408,7 @@ if (!sendThis.includes("/")) {
 }
 
 if (atHome) {
-    topRightPageNumber.style.display = "none";
+    topLeftPageNumber.style.display = "none";
     document.getElementById("nav").classList.add("homeNav");
     let content = ["# Recent Notes\n"];
     for (let i = 0; i < recentB.length; i++) {
@@ -468,7 +425,6 @@ function syncStatus(response) {
             writtenPages.push(book[i]);
         }
     }
-    let rip = Math.abs(JSON.stringify(book).length - response.length)
     if (JSON.stringify(writtenPages) === response) {
         document.getElementById("sync").innerHTML = "<i style = 'color: #61da20;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
         document.getElementById("mobileSync").style.background = "#61da20";
@@ -476,12 +432,12 @@ function syncStatus(response) {
             content: 'Notes are saved',
         });
         document.title = sendThis;
-        inSynced = true;
+        isSynced = true;
     } else {
         document.getElementById("sync").innerHTML = "<i style = 'color: gray;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
         document.getElementById("mobileSync").style.background = "gray";
         tippy('#grnBox', {
-            content: "Notes shown differ from saved notes by " + rip + " chars",
+            content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars`,
         });
         document.title = sendThis + " *"
     }
@@ -499,7 +455,7 @@ if (!atHome) {
         },
         success: function (file, response) {
             file.previewElement.innerHTML = "";
-            notesTextArea.value += "\n\n!(" + response + ")"
+            notesTextArea.value += `\n\n!(${response})`;
             updateNotes()
             notePost()
         }
@@ -514,7 +470,7 @@ async function insertImage() {
     })
     if (imageUploadStatus.ok) {
         const response = await imageUploadStatus.text()
-        notesTextArea.value += "\n\n!(" + response + ")"
+        notesTextArea.value += `\n\n!(${response})`;
         updateNotes()
         notePost()
     } else {
@@ -527,7 +483,7 @@ async function wikiSearch(event) {
     if (!(selection.includes("\n") || selection.length === 0) && allowWiki === true) {
         let wiki = selection.trim().replace(/ /g, '_').toLowerCase()
         document.body.style.cursor = "wait";
-        const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wiki + "?redirect=true", {
+        const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}?redirect=true`, {
             method: "GET",
             cache: "default"
         })
@@ -536,7 +492,7 @@ async function wikiSearch(event) {
             let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a> <i class = 'fa fa-external-link'></i>`
             document.getElementById("icon8").innerHTML = '<span id = "wikipedia">🧠</span>'
             tippy('#wikipedia', {
-                content: "<div id = 'brain'>" + summary + "</div>",
+                content: `<div id = 'brain'>${summary}</div>`,
                 interactive: true,
                 maxWidth: '500px',
             })
@@ -627,3 +583,7 @@ function notEditable() {
     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }
+
+leftOff(true);
+inputVisible();
+createList()
