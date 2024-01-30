@@ -5,7 +5,7 @@
 body {
     overflow-x: hidden;
     overflow-y: hidden;
-    background-color: #000;
+    background-color: #141414;
 }
 
 * {
@@ -423,6 +423,9 @@ mark {
 
 /* Responsiveness for iPhone 13 */
 @media screen and (max-width: 1170px) {
+    body {
+        background: #000;
+    }
     .tippy-popper {
         visibility: hidden !important;
     }

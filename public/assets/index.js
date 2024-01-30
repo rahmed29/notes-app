@@ -12,8 +12,6 @@ if(mediaScreen.matches) {
 }
 
 const sendThis = location.pathname.substring(1);
-const webhook = document.getElementById("discord_webhook").innerText || "";
-document.getElementById("discord_webhook").remove()
 let cantab;
 let allowWiki = true;
 let currLine = "";
@@ -339,31 +337,6 @@ async function notePost() {
         notyf.success(`Notebook saved successfully (${saveStatus.status})`)
     } else {
         notyf.error(`${saveStatus} Error`)
-    }
-
-    //Backup notebook to discord, if notebook is too long split it into multiple messages
-    if (webhook !== false && webhook !== "") {
-        let times = Math.ceil(localStorage.getItem(sendThis).length / 1994)
-        backup(times)
-        async function backup(times) {
-            for (let i = 0; i < times * 1994; i += 1994) {
-                let discordMsg = {
-                    content: "```" + localStorage.getItem(sendThis).substring(i, i + 1994) + "```",
-                    username: sendThis,
-                    avatar_url: "https://cdn-icons-png.flaticon.com/512/1046/1046452.png",
-                }
-                const backupStatus = await fetch(webhook, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(discordMsg)
-                })
-                if (!backupStatus.ok) {
-                    notyf.error(`${backupStatus.status} Error`)
-                }
-            }
-        }
     }
 }
 
