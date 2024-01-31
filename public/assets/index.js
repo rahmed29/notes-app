@@ -63,19 +63,35 @@ async function createList() {
     const response = await fetch("/api/get/everything")
     const json = await response.json();
     const result = json["data"];
-    let listedItems = [];
+    let listedItems = [`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`];
     if(mediaScreen.matches) {
         listedItems.push(`<div class = "item" onclick = 'forceUpdate()'><h2 style = 'color: rgb(116, 222, 152);'>Refresh Notes</h2></div>`)
     }
     for (let i = result.length-1; i >= 0; i--) {
         let links = []
-        for (let j = 0; j < result[i]["length"]; j++)
+        for (let j = 0, n =  result[i]["length"]; j < n; j++)
         {
             links.push(`<h3><a href = '/${result[i]["name"]}?${(j+1)}'>Page ${(j+1)}</a></h3>`)
         }
-        listedItems.push(`<div class = "item" data-pos="up" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
+        listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
     }
     document.getElementById("list").innerHTML = listedItems.join('');
+}
+
+function search(term) {
+    let items = document.getElementsByClassName("item");
+    if(term === "") {
+        for(let i = 0, n = items.length; i < n; i++) {
+            items[i].style.display = "inherit";
+        }
+    } else {
+        for(let i = 0; i < items.length; i++) {
+            items[i].style.display = "inherit";
+            if(!items[i].getAttribute("data-bn").includes(term)) {
+                items[i].style.display = "none";
+            }
+        }
+    }
 }
 
 function accents() {
@@ -102,7 +118,7 @@ function addPage(goBack, amount) {
 
 function jumpTo(desired) {
     let writtenPages = []
-    for (let i = 0; i < book.length; i++) {
+    for (let i = 0, n = book.length; i < n; i++) {
         if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
             writtenPages.push(book[i]);
         }
@@ -129,7 +145,7 @@ async function leftOff(goAgain) {
                 notesTextArea.readOnly = true;
                 leftOff(false);
             }
-            syncStatus(s);
+            //syncStatus(s);
             notesTextArea.readOnly = false;
     }
 }
@@ -143,8 +159,10 @@ async function forceUpdate() {
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
-        syncStatus(s);
+        //syncStatus(s);
         hideList();
+        hideDiff();
+        notyf.success("Notes were pulled from database");
     }
 }
 
@@ -152,7 +170,7 @@ function pagey() {
     let z;
     let content = [topLeftPageNumber.innerHTML]
     if (book.length > 9) {
-        for (z = 0; z < 9; z++) {
+        for (z = 0, n = 9; z < n; z++) {
             content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
         }
         content.push(`<br><span class = 'whereTo' id = 'morePages' onclick = 'jumpTo(${book.length - 1});'>&nbsp;...&nbsp;&nbsp;</span>`);
@@ -188,7 +206,6 @@ function getLinePos() {
     //substring from caret position onwards
     let fromCaret = notesTextArea.value.substring(notesTextArea.selectionStart)
     currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
-    console.log(currLine);
 }
 
 function getBlocks(str) {
@@ -300,7 +317,7 @@ async function notePost() {
     book[pgN] = notesTextArea.value;
     let sentArr = [];
 
-    for (let i = 0; i < book.length; i++) {
+    for (let i = 0, n = book.length; i < n; i++) {
         if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
             sentArr.push(book[i]);
         }
@@ -332,7 +349,7 @@ async function notePost() {
         } else {
             jumpTo(pgN);
         }
-        syncStatus(s);
+        //syncStatus(s);
         createList();
         notyf.success(`Notebook saved successfully (${saveStatus.status})`)
     } else {
@@ -362,10 +379,8 @@ function showInd(ele) {
     }
 }
 function hideInd() {
-    if (topLeftPageNumber.getAttribute("data-pos") === "down") {
-        topLeftPageNumber.innerHTML = pgN + 1;
-        topLeftPageNumber.setAttribute("data-pos", "up")
-    }
+    topLeftPageNumber.innerHTML = pgN + 1;
+    topLeftPageNumber.setAttribute("data-pos", "up")
 }
 
 if (!sendThis.includes("/")) {
@@ -384,16 +399,15 @@ if (atHome) {
     topLeftPageNumber.style.display = "none";
     document.getElementById("nav").classList.add("homeNav");
     let content = ["# Recent Notes\n"];
-    for (let i = 0; i < recentB.length; i++) {
+    for (let i = 0, n = recentB.length; i < n; i++) {
         content.push(`\n${i+1}. ${recentB[i]}`);
     }
     notesTextArea.value = content.join('');
 }
 
 function syncStatus(response) {
-    let isSynced = false;
     let writtenPages = []
-    for (let i = 0; i < book.length; i++) {
+    for (let i = 0, n = book.length; i < n; i++) {
         if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
             writtenPages.push(book[i]);
         }
@@ -403,18 +417,56 @@ function syncStatus(response) {
         document.getElementById("mobileSync").style.background = "#61da20";
         tippy('#grnBox', {
             content: 'Notes are saved',
+            interactive: true,
         });
         document.title = sendThis;
-        isSynced = true;
     } else {
         document.getElementById("sync").innerHTML = "<i style = 'color: gray;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
         document.getElementById("mobileSync").style.background = "gray";
         tippy('#grnBox', {
-            content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars`,
+            content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
+            <br><br>
+            <span onclick = 'diff()' style = 'color: lightblue; cursor: pointer; text-decoration: underline;'>More details</span>&nbsp;&nbsp;&nbsp;
+            <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
+            interactive: true,
         });
         document.title = sendThis + " *"
     }
-    return isSynced;
+}
+
+function diff() {
+    document.getElementById("currDiff").innerHTML = "";
+    notyf.success("Comparing your notes vs saved notes");
+    const one = JSON.parse(s) + "";
+    const other = book + "";
+    
+    let span = null;
+
+    const diff = Diff.diffChars(one, other),
+        display = document.getElementById('currDiff'),
+        fragment = document.createDocumentFragment();
+
+    diff.forEach((part) => {
+        // green for additions, red for deletions
+        // grey for common parts
+        const color = part.added ? 'lightgreen' :
+        part.removed ? 'red' : 'white';
+        span = document.createElement('span');
+        span.style.color = color;
+        span.appendChild(document
+            .createTextNode(part.value));
+        fragment.appendChild(span);
+    });
+
+    display.appendChild(fragment);
+    document.getElementById("currDiff").style.opacity = "1";
+    document.getElementById("currDiff").style.visibility = "visible";
+}
+
+function hideDiff() {
+    document.getElementById("currDiff").innerHTML = "";
+    document.getElementById("currDiff").style.opacity = "0";
+    document.getElementById("currDiff").style.visibility = "hidden"; 
 }
 
 if (!atHome) {

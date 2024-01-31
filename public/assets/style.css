@@ -38,7 +38,7 @@ a {
 }
 
 /* Dynamically loaded content that is never viewed directly by the user, basically used to pass data into javascript variable with EJS file */
-#discord_webhook, #bookSave {
+#bookSave {
     font-size: 0px;
     opacity: 0;
     user-select: none;
@@ -152,10 +152,6 @@ a {
     display: none;
 }
 
-#nav span, #nav a{
-    text-shadow: 2px 2px 2px black;
-}
-
 .homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #sync  {
     pointer-events: none;
     opacity: .35;
@@ -164,10 +160,6 @@ a {
 
 #nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6, #icon7 {
     cursor: pointer;
-}
-
-.tippy-popper {
-    text-shadow: none;
 }
 
 .tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
@@ -197,7 +189,52 @@ a {
     color: #000;
 }
 
+#currDiff {
+    visibility: hidden;
+    z-index: 1000;
+    height: 80%;
+    width: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background: rgba(39, 39, 39, 0.75);
+    position: fixed;
+    overflow: auto;
+    text-align: left;
+    border-radius: 30px;
+    padding: 2%;
+    opacity: 0;
+    transition: .25s;
+    cursor: default;
+}
+
 /* Sidebar */
+.searchItem {
+    width: auto;
+    height: auto;
+    background-color: rgb(34, 34, 34);
+    color: #141414;
+    position: relative;
+    border-bottom-style: solid;
+    border-width: 1px;
+    overflow: hidden;
+    line-height: 0;
+    font-size: 16px;
+    transition: 0.15s ease-out;
+    color: silver;
+}
+
+#searchBar {
+    height: 20px;
+    width: 100%;
+    background:rgb(138, 138, 138);
+    outline: none;
+    border-style: none;
+    color: #fff;
+}
+
 #list {
     top: 0%;
     left: 0%;
@@ -261,7 +298,7 @@ a {
 #tab {
     height: 15em;
     width: 10px;
-    background-color: white;
+    background-color: #fff;
     position: fixed;
     top: 50%;
     left: 0%;
@@ -269,7 +306,7 @@ a {
     border-top-right-radius: 30px;
     border-bottom-right-radius: 30px;
     background-color: whitesmoke;
-    color: black;
+    color: #000;
     cursor: pointer;
     opacity: 0.7;
 }
@@ -288,7 +325,7 @@ a {
     line-height: 3.5em;
     text-align: center;
     font-size: 1em;
-    color: black;
+    color: #000;
     transition: .5s;
     user-select: none;
     grid-area: a;
@@ -306,7 +343,7 @@ a {
 }
 
 .spoiler:hover {
-    color: black;
+    color: #000;
 }
 
 .unorder, .order {
@@ -347,7 +384,7 @@ mark {
 .codeBlock {
     width: 100%;
     height: auto;
-    background: #000000;
+    background: #000;
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
@@ -360,7 +397,7 @@ mark {
 .userHtml {
     width: 100%;
     height: auto;
-    background: #000000;
+    background: #000;
     border-radius: 10px;
     padding: 1em;
     margin-bottom: -1em;
@@ -433,7 +470,7 @@ mark {
         width: 80vw;
         padding-left: 10vw;
         padding-right: 10vw;
-        background-color: black;
+        background-color: #000;
     }
     #in {
         padding-bottom: 51vh;
@@ -453,7 +490,7 @@ mark {
         margin-left: 1em;
     }
     #list, .item {
-        background-color: black;
+        background-color: #000;
     }
     .item:hover {
         background-color: inherit;

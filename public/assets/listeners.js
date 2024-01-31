@@ -131,10 +131,12 @@ document.getElementById("tab").addEventListener('click', function(e) {
 notesAreaContainer.addEventListener('click', function(e) {
     hideInd();
     hideList();
+    hideDiff();
 });
 
 notesPreviewArea.addEventListener('click', function(e) {
     hideInd();
     hideList();
+    hideDiff();
     wikiSearch(e);
 });
