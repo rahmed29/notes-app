@@ -47,6 +47,7 @@ notesTextArea.addEventListener('keydown', function (e) {
 });
 
 notesTextArea.addEventListener("input", function (e) {
+    hideDiff();
     let num = 0;
     let start = this.selectionStart;
     e.target.value = e.target.value.replaceAll("  ", function(){num = 1; return ' ';});

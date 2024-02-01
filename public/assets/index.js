@@ -15,7 +15,6 @@ const sendThis = location.pathname.substring(1);
 let cantab;
 let allowWiki = true;
 let currLine = "";
-let temp;
 const notyf = new Notyf({
     position: {
         y: 'top'
@@ -27,8 +26,7 @@ const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
 const topLeftPageNumber = document.getElementById("pageNumber");
 
-if(sendThis === "home") temp = true; else temp = false;
-const atHome = temp;
+const atHome = sendThis ==="home" ? true : false
 
 if (sendThis.includes("/")) {
     location.href = "/" + sendThis.substring(0, sendThis.length - 1);
@@ -80,16 +78,10 @@ async function createList() {
 
 function search(term) {
     let items = document.getElementsByClassName("item");
-    if(term === "") {
-        for(let i = 0, n = items.length; i < n; i++) {
-            items[i].style.display = "inherit";
-        }
-    } else {
-        for(let i = 0; i < items.length; i++) {
-            items[i].style.display = "inherit";
-            if(!items[i].getAttribute("data-bn").includes(term)) {
-                items[i].style.display = "none";
-            }
+    for(let i = 0; i < items.length; i++) {
+        items[i].style.display = "inherit";
+        if(!items[i].getAttribute("data-bn").includes(term)) {
+            items[i].style.display = "none";
         }
     }
 }
@@ -426,7 +418,8 @@ function syncStatus(response) {
         tippy('#grnBox', {
             content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
             <br><br>
-            <span onclick = 'diff()' style = 'color: lightblue; cursor: pointer; text-decoration: underline;'>More details</span>&nbsp;&nbsp;&nbsp;
+            <span onclick = 'diff()' style = 'color: lightblue; cursor: pointer; text-decoration: underline;'>More details</span>
+            <br><br>
             <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
             interactive: true,
         });
@@ -434,17 +427,11 @@ function syncStatus(response) {
     }
 }
 
-function diff() {
-    document.getElementById("currDiff").innerHTML = "";
-    notyf.success("Comparing your notes vs saved notes");
-    const one = JSON.parse(s) + "";
-    const other = book + "";
-    
+function getDiff(one, other) {
     let span = null;
 
-    const diff = Diff.diffChars(one, other),
-        display = document.getElementById('currDiff'),
-        fragment = document.createDocumentFragment();
+    const diff = Diff.diffChars(one, other);
+    const fragment = document.createDocumentFragment();
 
     diff.forEach((part) => {
         // green for additions, red for deletions
@@ -453,14 +440,34 @@ function diff() {
         part.removed ? 'red' : 'white';
         span = document.createElement('span');
         span.style.color = color;
-        span.appendChild(document
-            .createTextNode(part.value));
+        span.appendChild(document.createTextNode(part.value));
         fragment.appendChild(span);
     });
+    return fragment;
+}
 
-    display.appendChild(fragment);
+function diff() {
     document.getElementById("currDiff").style.opacity = "1";
     document.getElementById("currDiff").style.visibility = "visible";
+    const currDiff = document.getElementById("currDiff");
+    let content = [];
+    for(let i = 0, n = book.length; i < n; i++) {
+        content.push(`<h3>Page ${i+1}</h3><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
+    }
+    currDiff.innerHTML = content.join("");
+    for(let i = 0, n = book.length; i < n; i++) {
+        try {
+            document.getElementById(`pageDiff${i}`).appendChild(getDiff(JSON.parse(s)[i], book[i]))
+        } catch(err) {
+            const fragment = document.createDocumentFragment();
+            span = document.createElement('span');
+            span.style.background = "blue";
+            span.appendChild(document.createTextNode(book[i]));
+            fragment.appendChild(span);
+            document.getElementById(`pageDiff${i}`).appendChild(fragment);
+        }
+    }
+    notyf.success("Comparing your notes vs saved notes");
 }
 
 function hideDiff() {
@@ -604,7 +611,7 @@ function notEditable() {
     notesTextArea.readOnly = true;
     notesAreaContainer.classList.add("uneditable");
     notesAreaContainer.classList.remove("editable");
-    document.getElementById("tab").style.backgroundColor = "rgb(116, 222, 152)"
+    document.getElementById("tab").style.backgroundColor = "orange"
     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }
