@@ -141,3 +141,7 @@ notesPreviewArea.addEventListener('click', function(e) {
     hideDiff();
     wikiSearch(e);
 });
+
+document.getElementById("mobileSyncContainer").addEventListener('click', function(e) {
+    forceUpdate();
+});

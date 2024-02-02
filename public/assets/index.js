@@ -1,4 +1,4 @@
-let mediaScreen = window.matchMedia("(max-width: 1170px)")
+let mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
 
 if(mediaScreen.matches) {
     document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
@@ -8,7 +8,6 @@ if(mediaScreen.matches) {
     document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
     document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
     document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
-
 }
 
 const sendThis = location.pathname.substring(1);
@@ -62,9 +61,6 @@ async function createList() {
     const json = await response.json();
     const result = json["data"];
     let listedItems = [`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`];
-    if(mediaScreen.matches) {
-        listedItems.push(`<div class = "item" onclick = 'forceUpdate()'><h2 style = 'color: rgb(116, 222, 152);'>Refresh Notes</h2></div>`)
-    }
     for (let i = result.length-1; i >= 0; i--) {
         let links = []
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
@@ -80,7 +76,7 @@ function search(term) {
     let items = document.getElementsByClassName("item");
     for(let i = 0; i < items.length; i++) {
         items[i].style.display = "inherit";
-        if(!items[i].getAttribute("data-bn").includes(term)) {
+        if(!items[i].getAttribute("data-bn").includes(term.toLowerCase())) {
             items[i].style.display = "none";
         }
     }
@@ -133,7 +129,7 @@ async function leftOff(goAgain) {
             if (s !== "") {
                 localStorage.setItem(sendThis, s);
             }
-            if ((notesPreviewArea.innerHTML === "undefined" || notesPreviewArea.innerHTML === "") && goAgain) {
+            if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
                 notesTextArea.readOnly = true;
                 leftOff(false);
             }
@@ -404,6 +400,9 @@ function syncStatus(response) {
             writtenPages.push(book[i]);
         }
     }
+    if(writtenPages.length === 0) {
+        writtenPages.push("");
+    }
     if (JSON.stringify(writtenPages) === response) {
         document.getElementById("sync").innerHTML = "<i style = 'color: #61da20;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
         document.getElementById("mobileSync").style.background = "#61da20";
@@ -436,10 +435,10 @@ function getDiff(one, other) {
     diff.forEach((part) => {
         // green for additions, red for deletions
         // grey for common parts
-        const color = part.added ? 'lightgreen' :
-        part.removed ? 'red' : 'white';
+        const color = part.added ? 'green' :
+        part.removed ? 'red' : 'rgba(0,0,0,0)';
         span = document.createElement('span');
-        span.style.color = color;
+        span.style.background = color;
         span.appendChild(document.createTextNode(part.value));
         fragment.appendChild(span);
     });
@@ -522,13 +521,13 @@ async function wikiSearch(event) {
         if (response.ok) {
             const result = await response.json()
             let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a> <i class = 'fa fa-external-link'></i>`
-            document.getElementById("icon8").innerHTML = '<span id = "wikipedia">🧠</span>'
+            document.getElementById("icon8").innerHTML = '<span id = "wikipedia">&#129504;</span>'
             tippy('#wikipedia', {
                 content: `<div id = 'brain'>${summary}</div>`,
                 interactive: true,
                 maxWidth: '500px',
             })
-            moneyAnimation(event, "🧠");
+            moneyAnimation(event, "&#129504;");
         }
         document.body.style.cursor = "inherit"
     }
@@ -539,7 +538,7 @@ function moneyAnimation(mouseCoords, symbol) {
     document.getElementById("moneyAnimation").style.left = mouseCoords.clientX + "px"
     // https://stackoverflow.com/a/69970674
     var moneyAnimation = document.createElement("p");
-    moneyAnimation.innerText = symbol;
+    moneyAnimation.innerHTML = symbol;
     document.getElementById("moneyAnimation").appendChild(moneyAnimation);
     moneyAnimation.classList.add("moneyAnimation"); // Add the class that animates
     setTimeout(() => {
@@ -556,18 +555,18 @@ function showList() {
     } else {
         document.getElementById("list").style.display = "inherit"
         document.getElementById("tab").style.left = "200px"
-        listShown = true
         document.getElementById("mobileMenu").style.height = "4em";
         document.getElementById("mobileMenu").style.width = "4em";
+        listShown = true
     }
 }
 
 function hideList() {
     document.getElementById("list").style.display = "none"
     document.getElementById("tab").style.left = "0px"
-    listShown = false
     document.getElementById("mobileMenu").style.height = "3.5em";
     document.getElementById("mobileMenu").style.width = "3.5em";
+    listShown = false
 }
 
 function dropDown(ele) {
