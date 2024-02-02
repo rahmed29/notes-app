@@ -70,15 +70,26 @@ async function createList() {
         listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
     }
     document.getElementById("list").innerHTML = listedItems.join('');
+    tippy('#collapse', {
+        content: 'Collapse All',
+    });
 }
 
 function search(term) {
     let items = document.getElementsByClassName("item");
     for(let i = 0; i < items.length; i++) {
         items[i].style.display = "inherit";
-        if(!items[i].getAttribute("data-bn").includes(term.toLowerCase())) {
+        if(!items[i].getAttribute("data-bn").toLowerCase().includes(term.toLowerCase())) {
             items[i].style.display = "none";
         }
+    }
+}
+
+function collapseAll(e) {
+    let items = document.getElementsByClassName("item");
+    for(let i = 0; i < items.length; i++) {
+        items[i].setAttribute("data-pos", "up");
+        items[i].style.height = "40px";
     }
 }
 
@@ -610,7 +621,7 @@ function notEditable() {
     notesTextArea.readOnly = true;
     notesAreaContainer.classList.add("uneditable");
     notesAreaContainer.classList.remove("editable");
-    document.getElementById("tab").style.backgroundColor = "orange"
+    document.getElementById("tab").style.backgroundColor = "rgb(116, 222, 152)"
     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }

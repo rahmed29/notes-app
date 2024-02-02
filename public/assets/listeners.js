@@ -1,50 +1,50 @@
-const emptyOlist = /^[0-9]+\.\s$/i;
-const olist = /^[0-9]+\.\s.+/i;
-const ulist = /^-\s.+/i;
+// const emptyOlist = /^[0-9]+\.\s$/i;
+// const olist = /^[0-9]+\.\s.+/i;
+// const ulist = /^-\s.+/i;
 
-// https://stackoverflow.com/a/6637396
-notesTextArea.addEventListener('keydown', function (e) {
-    if (e.key === 'Tab' && cantab) {
-        e.preventDefault();
-        let start = this.selectionStart;
-        let end = this.selectionEnd;
-        this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 1;
-    } else if (e.key === "Enter" && !e.shiftKey) {
-        if(currLine === "- ") {
-            e.preventDefault()
-            let start = this.selectionStart;
-            let end = this.selectionEnd;
-            this.value = this.value.substring(0, start-2) + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start - 2;
-        } else if (emptyOlist.test(currLine)) {
-            e.preventDefault()
-            let back = currLine.substring(0, currLine.indexOf(". ")).length + 2;
-            let start = this.selectionStart;
-            let end = this.selectionEnd;
-            this.value = this.value.substring(0, start-back) + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start - back;
-        }
-        else if(olist.test(currLine)) {
-            // Add item to ordered list
-            e.preventDefault()
-            let num = parseInt(currLine.substring(0,currLine.indexOf("."))) + 1;
-            let start = this.selectionStart;
-            let end = this.selectionEnd;
-            this.value = this.value.substring(0, start) + "\n" + num + ". " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + (num + "").length + 3;
-        } else if (ulist.test(currLine)) {
-            // Add item to unordered list
-            e.preventDefault()
-            let start = this.selectionStart;
-            let end = this.selectionEnd;
-            this.value = this.value.substring(0, start) + "\n- " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + 3;
-        }
-        updateNotes();
-        syncStatus(s);
-    }
-});
+// // https://stackoverflow.com/a/6637396
+// notesTextArea.addEventListener('keydown', function (e) {
+//     if (e.key === 'Tab' && cantab) {
+//         e.preventDefault();
+//         let start = this.selectionStart;
+//         let end = this.selectionEnd;
+//         this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+//         this.selectionStart = this.selectionEnd = start + 1;
+//     } else if (e.key === "Enter" && !e.shiftKey && !mediaScreen.matches) {
+//         if(currLine === "- ") {
+//             e.preventDefault()
+//             let start = this.selectionStart;
+//             let end = this.selectionEnd;
+//             this.value = this.value.substring(0, start-2) + this.value.substring(end);
+//             this.selectionStart = this.selectionEnd = start - 2;
+//         } else if (emptyOlist.test(currLine)) {
+//             e.preventDefault()
+//             let back = currLine.substring(0, currLine.indexOf(". ")).length + 2;
+//             let start = this.selectionStart;
+//             let end = this.selectionEnd;
+//             this.value = this.value.substring(0, start-back) + this.value.substring(end);
+//             this.selectionStart = this.selectionEnd = start - back;
+//         }
+//         else if(olist.test(currLine)) {
+//             // Add item to ordered list
+//             e.preventDefault()
+//             let num = parseInt(currLine.substring(0,currLine.indexOf("."))) + 1;
+//             let start = this.selectionStart;
+//             let end = this.selectionEnd;
+//             this.value = this.value.substring(0, start) + "\n" + num + ". " + this.value.substring(end);
+//             this.selectionStart = this.selectionEnd = start + (num + "").length + 3;
+//         } else if (ulist.test(currLine)) {
+//             // Add item to unordered list
+//             e.preventDefault()
+//             let start = this.selectionStart;
+//             let end = this.selectionEnd;
+//             this.value = this.value.substring(0, start) + "\n- " + this.value.substring(end);
+//             this.selectionStart = this.selectionEnd = start + 3;
+//         }
+//         updateNotes();
+//         syncStatus(s);
+//     }
+// });
 
 notesTextArea.addEventListener("input", function (e) {
     hideDiff();
