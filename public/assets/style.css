@@ -574,4 +574,7 @@ mark {
         height: 70vh;
         width: 80vw;
     }
+    .spoiler {
+        filter: invert();
+    }
 }
