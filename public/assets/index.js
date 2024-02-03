@@ -1,14 +1,14 @@
 let mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
 
-if(mediaScreen.matches) {
-    document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
-    document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open' style = 'color: tan'></i>"
-    document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash' style = 'color: silver;'></i>"
-    document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image' style = 'color: orange;'></i>"
-    document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
-    document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
-    document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
-}
+// if(mediaScreen.matches) {
+//     document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
+//     document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open' style = 'color: tan'></i>"
+//     document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash' style = 'color: silver;'></i>"
+//     document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image' style = 'color: orange;'></i>"
+//     document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
+//     document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
+//     document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
+// }
 
 const sendThis = location.pathname.substring(1);
 let cantab;
@@ -32,24 +32,31 @@ if (sendThis.includes("/")) {
 }
 
 tippy('#icon1', {
+    theme: 'light',
     content: 'Save (Ctrl + S)',
 });
 tippy('#icon2', {
+    theme: 'light',
     content: 'Open',
 });
 tippy('#icon3', {
+    theme: 'light',
     content: 'Delete',
 });
 tippy('#icon4', {
+    theme: 'light',
     content: 'Insert Image',
 });
 tippy('#icon5', {
+    theme: 'light',
     content: 'Toggle Preview (Ctrl + E)',
 });
 tippy('#icon6', {
+    theme: 'light',
     content: 'Prev Page',
 });
 tippy('#icon7', {
+    theme: 'light',
     content: 'Next Page',
 });
 
@@ -65,14 +72,11 @@ async function createList() {
         let links = []
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
         {
-            links.push(`<h3><a href = '/${result[i]["name"]}?${(j+1)}'>Page ${(j+1)}</a></h3>`)
+            links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'>Page ${(j+1)}</div></a>`)
         }
-        listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><h2>${result[i]["name"]}</h2><br>${links.join('')}</div>`)
+        listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
     }
     document.getElementById("list").innerHTML = listedItems.join('');
-    tippy('#collapse', {
-        content: 'Collapse All',
-    });
 }
 
 function search(term) {
@@ -89,7 +93,7 @@ function collapseAll(e) {
     let items = document.getElementsByClassName("item");
     for(let i = 0; i < items.length; i++) {
         items[i].setAttribute("data-pos", "up");
-        items[i].style.height = "40px";
+        items[i].style.height = "2em";
     }
 }
 
@@ -182,10 +186,12 @@ function pagey() {
     topLeftPageNumber.innerHTML = content.join('');
 
     tippy('#newPage', {
+        theme: 'light',
         content: "New Page",
         placement: 'right-start',
     });
     tippy('#morePages', {
+        theme: 'light',
         content: `${(book.length - 9)} more pages are hidden`,
         placement: 'right-start',
     });
@@ -194,6 +200,7 @@ function pagey() {
 function toolTip(ele) {
     let bry = ele.innerText.trim() - 1;
     tippy(`#whereTo${bry}`, {
+        theme: 'light',
         content: format(book[bry].substring(0, 95)) + "...",
         placement: 'right-start',
     });
@@ -267,7 +274,8 @@ async function removeImage() {
 function imageTip(given) {
     image = given.src;
     tippy('.userImage', {
-        content: "<span onclick = 'removeImage()' style = 'color: lightblue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
+        theme: 'light',
+        content: "<span onclick = 'removeImage()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
         interactive: true,
     });
@@ -289,7 +297,7 @@ function format(str) {
     str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
     str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
     str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
-    //str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
+    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
     str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(new RegExp("\\((.+?)\\)f\\((.+?)\\)", 'g'), "<sub>$1</sub><span style = 'font-size: 1.25em;'>&int;</span><sup>$2</sup>")
@@ -415,20 +423,24 @@ function syncStatus(response) {
         writtenPages.push("");
     }
     if (JSON.stringify(writtenPages) === response) {
-        document.getElementById("sync").innerHTML = "<i style = 'color: #61da20;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("sync").innerHTML = "<i id = 'grnBox'>&#9851;&#65039;</i>";
+        fluentemoji.parse("#grnBox");
         document.getElementById("mobileSync").style.background = "#61da20";
         tippy('#grnBox', {
+            theme: 'light',
             content: 'Notes are saved',
             interactive: true,
         });
         document.title = sendThis;
     } else {
-        document.getElementById("sync").innerHTML = "<i style = 'color: gray;' id = 'grnBox' class='fa fa-cloud-upload'></i>";
+        document.getElementById("sync").innerHTML = "<i style = 'filter: grayscale(1)' id = 'grnBox'>&#9851;&#65039;</i>";
+        fluentemoji.parse("#grnBox");
         document.getElementById("mobileSync").style.background = "gray";
         tippy('#grnBox', {
+            theme: 'light',
             content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
             <br><br>
-            <span onclick = 'diff()' style = 'color: lightblue; cursor: pointer; text-decoration: underline;'>More details</span>
+            <span onclick = 'diff()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>More details</span>
             <br><br>
             <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
             interactive: true,
@@ -446,8 +458,8 @@ function getDiff(one, other) {
     diff.forEach((part) => {
         // green for additions, red for deletions
         // grey for common parts
-        const color = part.added ? 'green' :
-        part.removed ? 'red' : 'rgba(0,0,0,0)';
+        const color = part.added ? '#33ff96 ' :
+        part.removed ? '#ff5e5e' : 'rgba(0,0,0,0)';
         span = document.createElement('span');
         span.style.background = color;
         span.appendChild(document.createTextNode(part.value));
@@ -471,7 +483,7 @@ function diff() {
         } catch(err) {
             const fragment = document.createDocumentFragment();
             span = document.createElement('span');
-            span.style.background = "blue";
+            span.style.background = "#21b6f7";
             span.appendChild(document.createTextNode(book[i]));
             fragment.appendChild(span);
             document.getElementById(`pageDiff${i}`).appendChild(fragment);
@@ -531,9 +543,11 @@ async function wikiSearch(event) {
         })
         if (response.ok) {
             const result = await response.json()
-            let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a> <i class = 'fa fa-external-link'></i>`
+            let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
             document.getElementById("icon8").innerHTML = '<span id = "wikipedia">&#129504;</span>'
+            fluentemoji.parse("#wikipedia");
             tippy('#wikipedia', {
+                theme: 'light',
                 content: `<div id = 'brain'>${summary}</div>`,
                 interactive: true,
                 maxWidth: '500px',
@@ -552,6 +566,7 @@ function moneyAnimation(mouseCoords, symbol) {
     moneyAnimation.innerHTML = symbol;
     document.getElementById("moneyAnimation").appendChild(moneyAnimation);
     moneyAnimation.classList.add("moneyAnimation"); // Add the class that animates
+    fluentemoji.parse(".moneyAnimation");
     setTimeout(() => {
         moneyAnimation.remove()
         moneyAnimation.classList.remove("moneyAnimation"); // Add the class that animates
@@ -586,7 +601,7 @@ function dropDown(ele) {
         ele.setAttribute("data-pos", "down")
         ele.classList.add('itemWithLinks');
     } else {
-        ele.style.height = "40px"
+        ele.style.height = "2em"
         ele.setAttribute("data-pos", "up")
         ele.classList.remove('itemWithLinks');
     }
@@ -621,7 +636,7 @@ function notEditable() {
     notesTextArea.readOnly = true;
     notesAreaContainer.classList.add("uneditable");
     notesAreaContainer.classList.remove("editable");
-    document.getElementById("tab").style.backgroundColor = "rgb(116, 222, 152)"
+    document.getElementById("tab").style.backgroundColor = "blue"
     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }
@@ -629,3 +644,4 @@ function notEditable() {
 leftOff(true);
 inputVisible();
 createList()
+fluentemoji.parse("#nav");

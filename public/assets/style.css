@@ -1,20 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Gabarito&display=swap");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 @import url("/assets/notyf.min.css");
+@import url("https://unpkg.com/tippy.js@5/themes/light.css");
 
 body {
     overflow-x: hidden;
     overflow-y: hidden;
-    background-color: #141414;
+    background: #fff;
 }
 
 * {
-    font-family: "Gabarito", sans-serif;
-    color: rgb(216, 216, 216);
+    /* font-family: "Gabarito", sans-serif; */
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+    color: #000;
+}
+@supports (font-variation-settings: normal) {
+  :root { font-family: InterVariable, sans-serif; }
 }
 
 a {
-    color: lightblue;
+    color: darkcyan;
 }
 
 .editable #in {
@@ -39,12 +43,7 @@ a {
 
 /* Dynamically loaded content that is never viewed directly by the user, basically used to pass data into javascript variable with EJS file */
 #bookSave {
-    font-size: 0px;
-    opacity: 0;
-    user-select: none;
-    z-index: -200000;
-    height: 0px;
-    width: 0px;
+    display: none;
 }
 
 #in {
@@ -54,7 +53,7 @@ a {
     resize: none;
     width: 50vw;
     height: 30vh;
-    background-color: #141414;
+    background: #fff;
     outline: none;
     border-style: none;
     padding-left: 25vw;
@@ -64,7 +63,6 @@ a {
     font-size: 17px;
     z-index: 999;
     overscroll-behavior-y: contain;
-    overflow-x: hidden;
     opacity: 0;
 }
 
@@ -74,7 +72,7 @@ a {
     position: absolute;
     width: 50vw;
     height: 50vh;
-    background-color: #141414;
+    background: #fff;
     padding-left: 25vw;
     padding-right: 25vw;
     padding-top: 10vh;
@@ -83,7 +81,6 @@ a {
     z-index: 998;
     overscroll-behavior-y: contain;
     overflow: auto;
-    overflow-x: hidden;
     opacity: 0;
 }
 
@@ -91,7 +88,6 @@ a {
 #notes h2,
 #notes h3 {
     margin-bottom: -0.25em;
-    color: whitesmoke;
 }
 
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
@@ -101,6 +97,11 @@ a {
     text-align: left;
 }
 
+.emoji {
+    margin-top: 6px;
+    height: 1.15em;
+    width: 1.15em;
+}
 
 #navContainer {
     transform: translate(-50%, -0%);
@@ -115,27 +116,26 @@ a {
         'b b b'
 }
 
+#icon6:active, #icon7:active {
+    scale: .9;
+}
+
 #nav {
     font-size: 1.4rem;
     height: auto;
     width: auto;
-    padding-left: 6px;
-    padding-right: 6px;
-    padding-bottom: 3px;
+    padding-left: 9px;
+    padding-right: 9px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
-    background-color: rgba(138, 138, 138, 0.2);
+    background: rgba(31, 31, 31, 0.7);
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     gap: .25em;
     transition: .5s;
     grid-area: b;
-}
-
-#sync {
-    margin-top: 3px;
+    padding-bottom: 3px;
 }
 
 #mobileSyncContainer {
@@ -168,6 +168,10 @@ a {
     cursor: pointer;
 }
 
+.tippy-popper .codeBlock, .tippy-popper .userHtml {
+    width: 90%;
+}
+
 .tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
     margin-bottom: -1em;
 }
@@ -191,8 +195,8 @@ a {
 }
 
 .whereTo:hover {
-    background: whitesmoke;
-    color: #000;
+    background: #000;
+    color: #fff;
 }
 
 #currDiff {
@@ -211,122 +215,142 @@ a {
     border-radius: 20px;
     transition: .25s;
     cursor: default;
-    background-color: #000;
+    background: #000;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    background: rgba(39, 39, 39, 0.9);
+    background: rgba(211, 211, 211, 0.9);
 }
 
 .pageDiff {
-    border-top-style: solid;
-    border-color: #fff;
     width: 100%;
     padding: 2%;
     width: auto;
-    position: relative;
 }
 
 /* Sidebar */
-.searchItem {
-    width: 100%;
-    height: auto;
-    color: #141414;
-    position: relative;
-    border-bottom-style: solid;
-    border-width: 1px;
-    overflow: hidden;
-    font-size: 16px;
-    transition: 0.15s ease-out;
-    color: silver;
-}
-
-#searchBar {
-    height: auto;
-    background: rgb(34, 34, 34);
-    font-size: 20px;
-    outline: none;
-    border-style: none;
-    color: #fff;
-}
-
 #list {
     top: 0%;
     left: 0%;
     position: fixed;
     height: 100vh;
     width: 200px;
-    background-color: rgb(39, 38, 36);
+    background: rgb(39, 38, 36);
     overflow-y: auto;
     overflow-x: hidden;
-    border-right-style: solid;
-    border-width: 1px;
-    border-color: rgb(138, 138, 138);
     user-select: none;
     z-index: 1000;
     display: none;
 }
 
-.item {
+.searchItem {
+    box-sizing: border-box;
     width: auto;
-    height: 40px;
-    background-color: rgb(34, 34, 34);
+    height: 2em;
+    color: #141414;
+    overflow: hidden;
+    transition: 0.15s ease-out;
+    color: silver;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#searchBar {
+    box-sizing: border-box;
+    font-size: 17px;
+    width: 100%;
+    height: auto;
+    background: rgb(34, 34, 34);
+    outline: none;
+    border-style: none;
+    color: silver;
+    background: #000;
+    padding: .25em;
+}
+
+.item {
+    width: 100%;
+    height: 2em;
     color: #141414;
     position: relative;
     cursor: pointer;
-    padding: 3px;
-    border-bottom-style: solid;
-    border-width: 1px;
     overflow: hidden;
     line-height: 0;
     font-size: 16px;
     transition: 0.15s ease-out;
     color: silver;
-    padding-left: 5px;
+    padding-top: 3px;
+    padding-left: 15%;
 }
 
-.item h2 {
+.linkWrapper {
+    width: 100%;
+    box-sizing: border-box;
+    color: white;
+    border-color: blue;
+    transition: .15s;
+    height: 2em;
+    padding: 1em;
+    background: none;
+}
+
+.linkWrapper:hover {
+    background: #4e4e4e;
+    border-color: blue;
+    border-left-style: solid;
+}
+
+.item h3 {
+    font-family: Arial, Helvetica, sans-serif;
 	color: whitesmoke;
 }
 
 .item a {
+    font-family: Arial, Helvetica, sans-serif;
     transition: 0.5s;
-    display: hidden;
+    visibility: hidden;
     text-decoration: none;
     opacity: 0%;
+    transition: .15s;
+    visibility: hidden;
+    margin-left: 20%;
 }
 
-.item a:hover{
-    color: whitesmoke;
+.listHeader {
+    box-sizing: border-box;
+    color: white;
+    transition: .15s;
+    width: 115%;
+    height: 2em;
+    padding: 1em;
+    padding-bottom: 0px;
+    margin-left: -15%;
 }
 
-.item:hover {
-    background-color: #4e4e4e;
+.listHeader:hover {
+    background: #4e4e4e;
 }
 
 .itemWithLinks a {
-    transition: 0s;
     visibility: visible;
     opacity: 100%;
+}
+
+.itemWithLinks .listHeader {
+    background: #4e4e4e;
 }
 
 #tab {
     height: 15em;
     width: 10px;
-    background-color: #fff;
+    background: #fff;
     position: fixed;
     top: 50%;
     left: 0%;
     z-index: 1000;
     border-top-right-radius: 30px;
     border-bottom-right-radius: 30px;
-    background-color: whitesmoke;
     color: #000;
     cursor: pointer;
     opacity: 0.7;
-}
-
-#tab:hover {
-    opacity: 1;
 }
 
 #mobileMenu {
@@ -348,15 +372,15 @@ a {
 
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
 .spoiler {
-    background-color: silver;
-    color: silver;
-    padding-left: 3px;
-    padding-right: 3px;
+    background: rgb(0, 0, 0);
+    color: rgb(0, 0, 0);
+    padding-left: .3em;
+    padding-right: .3em;
     cursor: default;
 }
 
 .spoiler:hover {
-    color: #000;
+    color: #ffffff;
 }
 
 .unorder, .order {
@@ -367,15 +391,10 @@ a {
     color: rgba(0,0,0,0);
 }
 
-.unorder::marker {
-    color: #898989;
-}
-
 .marked {
     user-select: none;
     cursor: default;
     margin-left: -1em;
-    color: #898989;
 }
 
 mark {
@@ -385,7 +404,7 @@ mark {
 }
 
 .red {
-    color: #ff3838;
+    color: red;
 }
 
 .userImage {
@@ -479,6 +498,16 @@ mark {
     body {
         background: #000;
     }
+    * {
+        color: #fff;
+    }
+    .whereTo:hover {
+        background: #fff;
+        color: #000;
+    }
+    a {
+        color: lightblue;
+    }
     .tippy-popper {
         visibility: hidden !important;
     }
@@ -486,18 +515,18 @@ mark {
         width: 80vw;
         padding-left: 10vw;
         padding-right: 10vw;
-        background-color: #000;
+        background: #000;
     }
     #in {
-        padding-bottom: 51vh;
+        padding-bottom: 50vh;
     }
     #notes {
-        height: 46vh;
+        height: 45vh;
         padding-top: 5vh;
     }
     .codeBlock, .userHtml {
         width: 90%;
-        background-color: #141414;
+        background: #141414;
     }
     .userImage {
         width: 80vw;
@@ -505,18 +534,22 @@ mark {
     .unorder, .order {
         margin-left: 1em;
     }
-    #list, .item {
-        background-color: #000;
+    #list {
+        background: #000;
+        height: 90vh;
+        border-right-style: solid;
+        border-width: 1px;
     }
-    .item:hover {
-        background-color: inherit;
+    .item {
+        margin-top: 3px;
+        background: #141414;
     }
     #tab {
         visibility: hidden;
     }
     #nav {
         gap: .75em;
-        height: auto;
+        height: 6.5vh;
         width: auto;
         border-radius: 0px;
         padding-bottom: 7%;
@@ -536,9 +569,6 @@ mark {
     }
     #mobileMenu, #mobileSync {
         display: inherit;
-    }
-    #list {
-        height: 91vh;
     }
     #currDiff {
         height: 70vh;
