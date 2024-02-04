@@ -6,10 +6,6 @@ const port = 5556;
 const path = require('path')
 const multer  = require('multer')
 const fs = require('fs');
-require('dotenv').config()
-const webhook = process.env.DISCORD_WEBHOOK
-
-console.log(webhook)
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -120,6 +116,7 @@ app.get("/api/get/everything", async (req, res) => {
 })
 
 app.get('/:name', async (req, res) => {
+  let displayed = req.header("User-Agent").includes("iPhone OS") ? "mobile.ejs" : "notes.ejs";
   const name = req.params.name;
   if(name == "null") {
     res.redirect("/home")
@@ -129,11 +126,11 @@ app.get('/:name', async (req, res) => {
   }
   const item = await Item.findOne({ name });
   if(name == "home") {
-    res.render("notes.ejs", {data: {book: ""}});
+    res.render(displayed, {data: {book: ""}});
   } else if (!item) {
-    res.render("notes.ejs", {data: {book: "", hook: webhook}});
+    res.render(displayed, {data: {book: ""}});
   } else {
-      res.render("notes.ejs", {data: {book: item.NOTEBOOKSAVEHERE, hook: webhook}});
+      res.render(displayed, {data: {book: item.NOTEBOOKSAVEHERE }});
   }
 });
 

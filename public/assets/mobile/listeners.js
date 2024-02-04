@@ -48,6 +48,10 @@
 
 notesTextArea.addEventListener("input", function (e) {
     hideDiff();
+    let num = 0;
+    let start = this.selectionStart;
+    e.target.value = e.target.value.replaceAll("  ", function(){num = 1; return ' ';});
+    this.selectionStart = this.selectionEnd = start - num;
     updateNotes();
 });
 
@@ -75,16 +79,15 @@ document.addEventListener('keydown', e => {
     if ((e.ctrlKey && e.key === 's') && !atHome) {
         e.preventDefault();
         notePost();
-    } 
-    // else if ((e.ctrlKey && (e.key === 'e' || e.key === 'E'))) {
-    //     e.preventDefault();
-    //     toggle();
-    // }
+    } else if ((e.ctrlKey && e.key === 'e')) {
+        e.preventDefault();
+        toggle();
+    }
 });
 
-// topLeftPageNumber.addEventListener('click', function(e) {
-//     showInd(this);
-// });
+topLeftPageNumber.addEventListener('click', function(e) {
+    showInd(this);
+});
 
 document.getElementById("mobileMenu").addEventListener('click', function(e) {
     showList();
@@ -110,6 +113,10 @@ document.getElementById("getFile1").addEventListener('change', function(e) {
     insertImage();
 });
 
+document.getElementById("icon5").addEventListener('click', function(e) {
+    toggle();
+});
+
 document.getElementById("icon6").addEventListener('click', function(e) {
     addPage(true, 1);
 });
@@ -123,10 +130,14 @@ document.getElementById("tab").addEventListener('click', function(e) {
 });
 
 notesAreaContainer.addEventListener('click', function(e) {
+    hideInd();
+    hideList();
     hideDiff();
 });
 
 notesPreviewArea.addEventListener('click', function(e) {
+    hideInd();
+    hideList();
     hideDiff();
     wikiSearch(e);
 });

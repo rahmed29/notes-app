@@ -1,9 +1,25 @@
-const sendThis = location.pathname.substring(1);
+let mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
 
+// if(mediaScreen.matches) {
+//     document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
+//     document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open' style = 'color: tan'></i>"
+//     document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash' style = 'color: silver;'></i>"
+//     document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image' style = 'color: orange;'></i>"
+//     document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
+//     document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
+//     document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
+// }
+
+const sendThis = location.pathname.substring(1);
 let cantab;
 let allowWiki = true;
 let currLine = "";
-const notyf = new Notyf();
+const notyf = new Notyf({
+    position: {
+        y: 'top'
+    },
+    dismissible: true
+});
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
@@ -18,38 +34,30 @@ if (sendThis.includes("/")) {
 tippy('#icon1', {
     theme: 'light',
     content: 'Save (Ctrl + S)',
-    placement: 'right'
-    
 });
 tippy('#icon2', {
     theme: 'light',
     content: 'Open',
-    placement: 'right'
 });
 tippy('#icon3', {
     theme: 'light',
     content: 'Delete',
-    placement: 'right'
 });
 tippy('#icon4', {
     theme: 'light',
     content: 'Insert Image',
-    placement: 'right'
 });
 tippy('#icon5', {
     theme: 'light',
     content: 'Toggle Preview (Ctrl + E)',
-    placement: 'right'
 });
 tippy('#icon6', {
     theme: 'light',
     content: 'Prev Page',
-    placement: 'right'
 });
 tippy('#icon7', {
     theme: 'light',
     content: 'Next Page',
-    placement: 'right'
 });
 
 let pgN = parseInt(location.search.substring(1)) - 1 || 0;
@@ -69,14 +77,6 @@ async function createList() {
         listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
     }
     document.getElementById("list").innerHTML = listedItems.join('');
-    let items = document.getElementsByClassName("item");
-    for(let i = 0; i < items.length; i++) {
-        if(items[i].getAttribute("data-bn") === sendThis) {
-            items[i].style.height = items[i].scrollHeight + "px"
-            items[i].setAttribute("data-pos", "down")
-            items[i].classList.add('itemWithLinks');
-        }
-    }
 }
 
 function search(term) {
@@ -100,6 +100,7 @@ function collapseAll(e) {
 
 function accents() {
     notesTextArea.value = book[pgN];
+    notesPreviewArea.innerHTML = format(notesTextArea.value);
     topLeftPageNumber.innerText = pgN + 1;
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateNotes()
@@ -163,20 +164,22 @@ async function forceUpdate() {
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
         //syncStatus(s);
+        hideList();
         hideDiff();
         notyf.success("Notes were pulled from database");
     }
 }
 
 function pagey() {
+    let z;
     let content = [topLeftPageNumber.innerHTML]
     if (book.length > 9) {
-        for (let z = 0, n = 9; z < n; z++) {
-            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}&nbsp;&nbsp;</span>`);
+        for (z = 0, n = 9; z < n; z++) {
+            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
         }
         content.push(`<br><span class = 'whereTo' id = 'morePages' onclick = 'jumpTo(${book.length - 1});'>&nbsp;...&nbsp;&nbsp;</span>`);
     } else {
-        for (let z = 0; z < book.length; z++) {
+        for (z = 0; z < book.length; z++) {
             content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
         }
     }
@@ -246,10 +249,9 @@ function formatNormal() {
 }
 
 function updateNotes() {
-    notesPreviewArea.innerHTML = format(notesTextArea.value);
-    formatNormal();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
+    formatNormal();
     syncStatus(s);
 }
 
@@ -410,7 +412,6 @@ if (atHome) {
         content.push(`\n${i+1}. [[${recentB[i]}]]`);
     }
     notesTextArea.value = content.join('');
-    updateNotes();
 }
 
 function syncStatus(response) {
@@ -431,7 +432,6 @@ function syncStatus(response) {
             theme: 'light',
             content: 'Notes are saved',
             interactive: true,
-            placement: 'right',
         });
         document.title = sendThis;
     } else {
@@ -446,7 +446,6 @@ function syncStatus(response) {
             <br><br>
             <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
             interactive: true,
-            placement: 'right'
         });
         document.title = sendThis + " *"
     }
@@ -461,8 +460,8 @@ function getDiff(one, other) {
     diff.forEach((part) => {
         // green for additions, red for deletions
         // grey for common parts
-        const color = part.added ? 'green ' :
-        part.removed ? 'red' : 'rgba(0,0,0,0)';
+        const color = part.added ? '#33ff96 ' :
+        part.removed ? '#ff5e5e' : 'rgba(0,0,0,0)';
         span = document.createElement('span');
         span.style.background = color;
         span.appendChild(document.createTextNode(part.value));
@@ -554,7 +553,6 @@ async function wikiSearch(event) {
                 content: `<div id = 'brain'>${summary}</div>`,
                 interactive: true,
                 maxWidth: '500px',
-                placement: 'right'
             })
             moneyAnimation(event, "&#129504;");
         }
@@ -581,6 +579,7 @@ let listShown = false
 
 function showList() {
     if (listShown) {
+        hideList()
     } else {
         collapseAll();
         document.getElementById("list").style.display = "inherit"
@@ -611,39 +610,39 @@ function dropDown(ele) {
     }
 }
 
-// //toggle visibility of textarea
-// function toggle() {
-//     if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") notEditable()
-//     else editable()
-// }
+//toggle visibility of textarea
+function toggle() {
+    if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") notEditable()
+    else editable()
+}
 
-// //check user choice about textarea and apply it.
-// function inputVisible() {
-//     if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") editable()
-//     else notEditable()
-// }
+//check user choice about textarea and apply it.
+function inputVisible() {
+    if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") editable()
+    else notEditable()
+}
 
-// function editable() {
-//     cantab = true;
-//     if(!atHome) notesTextArea.readOnly = false;
-//     notesAreaContainer.classList.add("editable");
-//     notesAreaContainer.classList.remove("uneditable");
-//     document.getElementById("mobileMenu").style.backgroundColor = "silver"
-//     localStorage.setItem("viewPref", "visible")
-// }
+function editable() {
+    cantab = true;
+    if(!atHome) notesTextArea.readOnly = false;
+    notesAreaContainer.classList.add("editable");
+    notesAreaContainer.classList.remove("uneditable");
+    document.getElementById("mobileMenu").style.backgroundColor = "silver"
+    localStorage.setItem("viewPref", "visible")
+}
 
-// function notEditable() {
-//     notesPreviewArea.innerHTML = format(notesTextArea.value);
-//     formatNormal();
-//     cantab = false;
-//     notesTextArea.readOnly = true;
-//     notesAreaContainer.classList.add("uneditable");
-//     notesAreaContainer.classList.remove("editable");
-//     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
-//     localStorage.setItem("viewPref", "invis")
-// }
+function notEditable() {
+    notesPreviewArea.innerHTML = format(notesTextArea.value);
+    formatNormal();
+    cantab = false;
+    notesTextArea.readOnly = true;
+    notesAreaContainer.classList.add("uneditable");
+    notesAreaContainer.classList.remove("editable");
+    document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
+    localStorage.setItem("viewPref", "invis")
+}
 
 leftOff(true);
-// inputVisible();
+inputVisible();
 createList()
 fluentemoji.parse("#nav");
