@@ -17,6 +17,11 @@ body {
   :root { font-family: InterVariable, sans-serif; }
 }
 
+#container {
+    height: 100vh;
+    width: 100vw;
+}
+
 a {
     color: darkcyan;
 }
@@ -103,24 +108,17 @@ a {
     width: 1.15em;
 }
 
-#navContainer {
-    transform: translate(-50%, -0%);
-    top: 0%;
-    left: 50%;
-    position: fixed;
-    z-index: 1000;
-    user-select: none;
-    display: grid;
-    grid-template-areas:
-        '. . a'
-        'b b b'
-}
-
 #icon6:active, #icon7:active {
     scale: .9;
 }
 
 #nav {
+    transform: translate(-50%, -0%);
+    top: 0%;
+    left: 50%;
+    position: fixed;
+    z-index: 1001;
+    user-select: none;
     font-size: 1.4rem;
     height: auto;
     width: auto;
@@ -233,7 +231,7 @@ a {
     left: 0%;
     position: fixed;
     height: 100vh;
-    width: 200px;
+    width: 20em;
     background: rgb(39, 38, 36);
     overflow-y: auto;
     overflow-x: hidden;
@@ -298,6 +296,22 @@ a {
     border-left-style: solid;
 }
 
+.linkWrapper:hover span {
+    background: #ffffff;
+    background: linear-gradient(to right, #ffffff 85%, #4e4e4e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.linkWrapper span {
+    transition: .5s;
+    background: #ffffff;
+    background: linear-gradient(to right, #ffffff 85%, rgb(34, 34, 34)100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-left: -20px;
+}
+
 .item h3 {
     font-family: Arial, Helvetica, sans-serif;
 	color: whitesmoke;
@@ -312,6 +326,7 @@ a {
     transition: .15s;
     visibility: hidden;
     margin-left: 20%;
+
 }
 
 .listHeader {
@@ -338,10 +353,14 @@ a {
     background: #4e4e4e;
 }
 
+.itemWithLinks .linkWrapper span {
+    margin-left: 0px;
+}
+
 #tab {
     height: 15em;
     width: 10px;
-    background: #fff;
+    background: rebeccapurple;
     position: fixed;
     top: 50%;
     left: 0%;
@@ -354,10 +373,13 @@ a {
 }
 
 #mobileMenu {
+    z-index: 1001;
     height: 3.5em;
     width: 3.5em;
     border-radius: 50%;
-    z-index: 1000;
+    right: 0%;
+    bottom: 6.5vh;
+    position: fixed;
     display: none;
     line-height: 3.5em;
     text-align: center;
@@ -365,9 +387,8 @@ a {
     color: #000;
     transition: .5s;
     user-select: none;
-    grid-area: a;
-    margin-bottom: .5em;
-    margin-right: -.75em;
+    margin-bottom: 2em;
+    margin-right: .75em;
 }
 
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
@@ -405,6 +426,11 @@ mark {
 
 .red {
     color: red;
+}
+
+.reference {
+    color: rebeccapurple;
+    text-decoration: none;
 }
 
 .userImage {
@@ -537,6 +563,7 @@ mark {
     #list {
         background: #000;
         height: 90vh;
+        width: 100vw;
         border-right-style: solid;
         border-width: 1px;
     }
@@ -548,15 +575,12 @@ mark {
         visibility: hidden;
     }
     #nav {
+        width: 100%;
         gap: .75em;
         height: 6.5vh;
-        width: auto;
+        width: 100%;
         border-radius: 0px;
         padding-bottom: 7%;
-    }
-    #navContainer {
-        height: auto;
-        width: 100%;
         top: inherit;
         bottom: 0%;
     }
@@ -576,5 +600,8 @@ mark {
     }
     .spoiler {
         filter: invert();
+    }
+    .reference {
+        color: violet;
     }
 }

@@ -106,9 +106,14 @@ app.get("/api/get/everything", async (req, res) => {
   let data = [];
   const result = await Item.find();
   for(let i = 0; i < result.length; i++) {
+    let excerpts = [];
+    for(let j = 0; j < JSON.parse(result[i]["NOTEBOOKSAVEHERE"]).length; j++) {
+      excerpts.push(JSON.parse(result[i]["NOTEBOOKSAVEHERE"])[j].substring(0,30));
+    }
     data.push({
       name: result[i]["name"],
-      length: JSON.parse(result[i]["NOTEBOOKSAVEHERE"]).length
+      length: JSON.parse(result[i]["NOTEBOOKSAVEHERE"]).length,
+      excerpt: excerpts
     })
   }
   res.status(200).json({ data });

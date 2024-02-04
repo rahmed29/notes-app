@@ -72,7 +72,7 @@ async function createList() {
         let links = []
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
         {
-            links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'>Page ${(j+1)}</div></a>`)
+            links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'><span>${result[i]["excerpt"][j]}...</span></div></a>`)
         }
         listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
     }
@@ -94,6 +94,7 @@ function collapseAll(e) {
     for(let i = 0; i < items.length; i++) {
         items[i].setAttribute("data-pos", "up");
         items[i].style.height = "2em";
+        items[i].classList.remove('itemWithLinks');
     }
 }
 
@@ -299,6 +300,7 @@ function format(str) {
     str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
     str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
+    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
     str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(new RegExp("\\((.+?)\\)f\\((.+?)\\)", 'g'), "<sub>$1</sub><span style = 'font-size: 1.25em;'>&int;</span><sup>$2</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
@@ -407,7 +409,7 @@ if (atHome) {
     document.getElementById("nav").classList.add("homeNav");
     let content = ["# Recent Notes\n"];
     for (let i = 0, n = recentB.length; i < n; i++) {
-        content.push(`\n${i+1}. ${recentB[i]}`);
+        content.push(`\n${i+1}. [[${recentB[i]}]]`);
     }
     notesTextArea.value = content.join('');
 }
@@ -579,8 +581,9 @@ function showList() {
     if (listShown) {
         hideList()
     } else {
+        collapseAll();
         document.getElementById("list").style.display = "inherit"
-        document.getElementById("tab").style.left = "200px"
+        document.getElementById("tab").style.left = "20em"
         document.getElementById("mobileMenu").style.height = "4em";
         document.getElementById("mobileMenu").style.width = "4em";
         listShown = true
@@ -624,7 +627,6 @@ function editable() {
     if(!atHome) notesTextArea.readOnly = false;
     notesAreaContainer.classList.add("editable");
     notesAreaContainer.classList.remove("uneditable");
-    document.getElementById("tab").style.backgroundColor = "silver"
     document.getElementById("mobileMenu").style.backgroundColor = "silver"
     localStorage.setItem("viewPref", "visible")
 }
@@ -636,7 +638,6 @@ function notEditable() {
     notesTextArea.readOnly = true;
     notesAreaContainer.classList.add("uneditable");
     notesAreaContainer.classList.remove("editable");
-    document.getElementById("tab").style.backgroundColor = "blue"
     document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
     localStorage.setItem("viewPref", "invis")
 }
