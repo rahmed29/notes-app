@@ -7,7 +7,7 @@ const notyf = new Notyf();
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
-const topLeftPageNumber = document.getElementById("pageNumber");
+const topLeftPageNumber = document.getElementById("pages");
 
 const atHome = sendThis ==="home" ? true : false
 
@@ -83,7 +83,7 @@ function search(term) {
     }
 }
 
-function collapseAll(e) {
+function collapseAll() {
     let items = document.getElementsByClassName("item");
     for(let i = 0, n = items.length; i < items.length; i++) {
         items[i].setAttribute("data-pos", "up");
@@ -152,7 +152,7 @@ async function forceUpdate() {
     if(confirm("Are you sure?")) {
         const response = await fetch(`/api/get/notebooks/${sendThis}`)
         const json = await response.json();
-        document.getElementById("bookSave").innerText = json["content"];
+        document.getElementById("bookSave").innerText = json["data"];
         s = document.getElementById("bookSave").innerText;
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
@@ -194,14 +194,6 @@ function toolTip(ele) {
         content: format(book[bry].substring(0, 95)) + "...",
         placement: 'right-start',
     });
-}
-
-function getLinePos() {
-    //substring from 0 to caret position
-    let toCaret = notesTextArea.value.substring(0, notesTextArea.selectionStart)
-    //substring from caret position onwards
-    let fromCaret = notesTextArea.value.substring(notesTextArea.selectionStart)
-    currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
 }
 
 function getBlocks(str) {
@@ -334,14 +326,14 @@ async function notePost() {
         },
         body: JSON.stringify({
             name: sendThis,
-            NOTEBOOKSAVEHERE: localStorage.getItem(sendThis)
+            content: localStorage.getItem(sendThis),
         })
     })
     if (saveStatus.ok) {
-        document.getElementById("sync").style.animation = "saved 1s ease";
-        setTimeout(() => {
-            document.getElementById("sync").style.animation = "none";
-        }, "1000");
+        document.getElementById("sync").classList.add("saved")
+        document.getElementById("sync").addEventListener('animationend', () => {
+            document.getElementById("sync").classList.remove("saved")
+          });
         s = JSON.stringify(book);
         if (pgN > book.length - 1) {
             jumpTo(book.length - 1);
@@ -367,19 +359,6 @@ function del() {
     } else {
         notyf.error(`Notebook has not been removed`)
     }
-}
-
-function showInd(ele) {
-    if (ele.getAttribute("data-pos") === "up") {
-        pagey()
-        ele.setAttribute("data-pos", "down")
-    } else {
-        hideInd()
-    }
-}
-function hideInd() {
-    topLeftPageNumber.innerHTML = pgN + 1;
-    topLeftPageNumber.setAttribute("data-pos", "up")
 }
 
 if (!sendThis.includes("/")) {
@@ -418,7 +397,6 @@ function syncStatus(response) {
     if (JSON.stringify(writtenPages) === response) {
         document.getElementById("sync").innerHTML = "<i id = 'grnBox'>&#9851;&#65039;</i>";
         fluentemoji.parse("#grnBox");
-        document.getElementById("mobileSync").style.background = "#61da20";
         tippy('#grnBox', {
             theme: 'light',
             content: 'Notes are saved',
@@ -428,7 +406,6 @@ function syncStatus(response) {
     } else {
         document.getElementById("sync").innerHTML = "<i style = 'filter: grayscale(1)' id = 'grnBox'>&#9851;&#65039;</i>";
         fluentemoji.parse("#grnBox");
-        document.getElementById("mobileSync").style.background = "gray";
         tippy('#grnBox', {
             theme: 'light',
             content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
@@ -566,26 +543,17 @@ function moneyAnimation(mouseCoords, symbol) {
     }, "1000");
 }
 
-let listShown = false
-
-function showList() {
-    if (listShown) {
+function toggleList() {
+    let list = document.getElementById("list");
+    if (list.getAttribute("data-pos") === "shown") {
+        notesAreaContainer.style.width = "calc(100% - 1em)";
+        list.style.display = "none"
+        list.setAttribute("data-pos", "hidden");
     } else {
-        collapseAll();
-        document.getElementById("list").style.display = "inherit"
-        document.getElementById("tab").style.left = "20em"
-        document.getElementById("mobileMenu").style.height = "4em";
-        document.getElementById("mobileMenu").style.width = "4em";
-        listShown = true
+        notesAreaContainer.style.width = "calc(100% - 1em - 15%)";
+        list.setAttribute("data-pos", "shown");
+        list.style.display = "inline"
     }
-}
-
-function hideList() {
-    document.getElementById("list").style.display = "none"
-    document.getElementById("tab").style.left = "0px"
-    document.getElementById("mobileMenu").style.height = "3.5em";
-    document.getElementById("mobileMenu").style.width = "3.5em";
-    listShown = false
 }
 
 function dropDown(ele) {
@@ -629,12 +597,16 @@ function editingWindow(choice) {
         notesPreviewArea.style.display = "inline";
         notesTextArea.style.display = "none";
         notesPreviewArea.style.width = "100%";
+        notesPreviewArea.style.paddingLeft = "20%";
+        notesPreviewArea.style.paddingRight = "20%";
         localStorage.setItem("viewPref", "read")
     } else if (choice === "write") {
         notesTextArea.readOnly = false;
         notesPreviewArea.style.display = "none";
         notesTextArea.style.display = "inline";
         notesTextArea.style.width = "100%";
+        notesTextArea.style.paddingLeft = "20%";
+        notesTextArea.style.paddingRight = "20%";
         localStorage.setItem("viewPref", "write")
     } else {
         notesTextArea.readOnly = false;
@@ -642,6 +614,10 @@ function editingWindow(choice) {
         notesTextArea.style.display = "inline";
         notesPreviewArea.style.width = "50%";
         notesTextArea.style.width = "50%";
+        notesTextArea.style.paddingLeft = "5%";
+        notesTextArea.style.paddingRight = "5%";
+        notesPreviewArea.style.paddingLeft = "5%";
+        notesPreviewArea.style.paddingRight = "5%";
         localStorage.setItem("viewPref", "split")
     }
     notesPreviewArea.scrollTop = 0;

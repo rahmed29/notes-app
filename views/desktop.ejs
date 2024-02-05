@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-    <link rel="stylesheet" href="/assets/beta/style.css">
+    <link rel="stylesheet" href="/assets/desktop/style.css">
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
@@ -20,20 +20,16 @@
     <script src="/libraries/tippy-bundle.iife.min.js"></script>
     <script src="/libraries/purify.min.js"></script>
     <script src="/libraries/syncscroll.min.js"></script>
-    <script defer src="/assets/beta/index.js"></script>
-    <script defer src="/assets/beta/listeners.js"></script>    
+    <script defer src="/assets/desktop/index.js"></script>
+    <script defer src="/assets/desktop/listeners.js"></script>    
 </head>
 <body>
     <pre id = "currDiff" class="dragscroll"></pre>
-    <div id = "mobileSyncContainer">
-        <div id = "mobileSync"></div>
-    </div>
-    <div id = "mobileMenu">
-        ...
-    </div>
-    <div id="tab"></div>
     <div id = "container">
-        <span id="pageNumber" data-pos="up"></span>
+        <div id="pageNumber" data-pos="up">
+            <span id = "pages"></span>
+            <span id = "retract">&#9679;</span>
+        </div>
         <div id="nav">
             <span id="icon1">&#128190;</span>
             <span id="icon2">&#128214;</span>
@@ -50,7 +46,7 @@
             <span id="icon8"><span id="wikipedia">&#129504;</span></span>
             <span id="sync"></span>
         </div>
-        <div id="list"></div>
+        <div id="list" data-pos="shown"></div>
         <div id = "notesArea">
             <textarea id="in" tabindex="0" class="syncscroll" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>     
             <div id="notes" class="syncscroll" name="myElements"></div>  

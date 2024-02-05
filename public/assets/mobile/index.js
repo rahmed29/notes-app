@@ -158,7 +158,7 @@ async function forceUpdate() {
     if(confirm("Are you sure?")) {
         const response = await fetch(`/api/get/notebooks/${sendThis}`)
         const json = await response.json();
-        document.getElementById("bookSave").innerText = json["content"];
+        document.getElementById("bookSave").innerText = json["data"];
         s = document.getElementById("bookSave").innerText;
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
@@ -344,7 +344,7 @@ async function notePost() {
         },
         body: JSON.stringify({
             name: sendThis,
-            NOTEBOOKSAVEHERE: localStorage.getItem(sendThis)
+            content: localStorage.getItem(sendThis)
         })
     })
     if (saveStatus.ok) {

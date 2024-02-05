@@ -39,7 +39,7 @@ app.use('./public', express.static(path.join(__dirname, './public')))
 const mongoURI = 'mongodb://localhost:27017/notes';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => console.log('Connected to MongoDB')).catch(err => console.error('MongoDB connection error:', err));
 
-const Item = mongoose.model('Item', { name: String, NOTEBOOKSAVEHERE: String});
+const Item = mongoose.model('Item', { name: String, content: String});
 
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
@@ -49,7 +49,7 @@ app.get('/api/get/notebooks/:name', async (req, res) => {
   try {
     const existingItem = await Item.findOne({ name });
     if (existingItem) {
-      res.status(200).json({ content: existingItem["NOTEBOOKSAVEHERE"] });
+      res.status(200).json({ data: existingItem["content"] });
     } else {
       res.status(404).json({ error: "Item not found with given name" });
     }
@@ -59,18 +59,18 @@ app.get('/api/get/notebooks/:name', async (req, res) => {
 });
   
   app.post('/api/save/notebooks', async (req, res) => {
-    const { name, NOTEBOOKSAVEHERE } = req.body;
-    if (!name || !NOTEBOOKSAVEHERE) {
+    const { name, content } = req.body;
+    if (!name || !content) {
       return res.status(400).json({ error: 'Both name and lastName are required for the update' });
     }
     try {
       const existingItem = await Item.findOne({ name })
       if (!existingItem) {
-        const newItem = new Item({ name, NOTEBOOKSAVEHERE });
+        const newItem = new Item({ name, content });
         await newItem.save()
         res.status(201).json({ status: "Created"});
       } else if (existingItem.name === name) {
-        existingItem.NOTEBOOKSAVEHERE = NOTEBOOKSAVEHERE;
+        existingItem.content = content;
         await existingItem.save()
         res.status(204).json({ status: "Updated"})
       }
@@ -103,12 +103,12 @@ app.get("/api/get/everything", async (req, res) => {
   const result = await Item.find();
   for(let i = 0; i < result.length; i++) {
     let excerpts = [];
-    for(let j = 0; j < JSON.parse(result[i]["NOTEBOOKSAVEHERE"]).length; j++) {
-      excerpts.push(JSON.parse(result[i]["NOTEBOOKSAVEHERE"])[j].substring(0,30));
+    for(let j = 0; j < JSON.parse(result[i]["content"]).length; j++) {
+      excerpts.push(JSON.parse(result[i]["content"])[j].substring(0,30));
     }
     data.push({
       name: result[i]["name"],
-      length: JSON.parse(result[i]["NOTEBOOKSAVEHERE"]).length,
+      length: JSON.parse(result[i]["content"]).length,
       excerpt: excerpts
     })
   }
@@ -116,7 +116,7 @@ app.get("/api/get/everything", async (req, res) => {
 })
 
 app.get('/:name', async (req, res) => {
-  let displayed = req.header("User-Agent").includes("iPhone OS") ? "index.ejs" : "beta.ejs";
+  let displayed = req.header("User-Agent").includes("iPhone OS") ? "mobile.ejs" : "desktop.ejs";
   const name = req.params.name;
   if(name == "null") {
     res.redirect("/home")
@@ -130,7 +130,7 @@ app.get('/:name', async (req, res) => {
   } else if (!item) {
     res.render(displayed, {data: {book: ""}});
   } else {
-      res.render(displayed, {data: {book: item.NOTEBOOKSAVEHERE }});
+      res.render(displayed, {data: {book: item.content }});
   }
 });
 
@@ -154,18 +154,18 @@ app.delete('/api/delete/notebooks/:name', async (req, res) => {
 });
 
 app.post('/api/save/notebooks', async (req, res) => {
-  const { name, NOTEBOOKSAVEHERE } = req.body;
-  if (!name || !NOTEBOOKSAVEHERE) {
+  const { name, content } = req.body;
+  if (!name || !content) {
     return res.status(400).json({ error: 'Both name and lastName are required for the update' });
   }
   try {
     const existingItem = await Item.findOne({ name })
     if (!existingItem) {
-      const newItem = new Item({ name, NOTEBOOKSAVEHERE });
+      const newItem = new Item({ name, content });
       await newItem.save()
       res.status(201).json({ status: "Created"});
     } else if (existingItem.name === name) {
-      existingItem.NOTEBOOKSAVEHERE = NOTEBOOKSAVEHERE;
+      existingItem.content = content;
       await existingItem.save()
       res.status(204).json({ status: "Updated"})
     }
