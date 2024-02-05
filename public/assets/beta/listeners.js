@@ -48,10 +48,6 @@
 
 notesTextArea.addEventListener("input", function (e) {
     hideDiff();
-    let num = 0;
-    let start = this.selectionStart;
-    e.target.value = e.target.value.replaceAll("  ", function(){num = 1; return ' ';});
-    this.selectionStart = this.selectionEnd = start - num;
     updateNotes();
 });
 
@@ -79,23 +75,24 @@ document.addEventListener('keydown', e => {
     if ((e.ctrlKey && e.key === 's') && !atHome) {
         e.preventDefault();
         notePost();
-    } else if ((e.ctrlKey && e.key === 'e')) {
+    } 
+    else if ((e.ctrlKey && (e.key === 'e' || e.key === 'E'))) {
         e.preventDefault();
         toggle();
     }
 });
 
-topLeftPageNumber.addEventListener('click', function(e) {
-    showInd(this);
-});
+// topLeftPageNumber.addEventListener('click', function(e) {
+//     showInd(this);
+// });
 
 document.getElementById("mobileMenu").addEventListener('click', function(e) {
     showList();
 });
 
-document.getElementById("nav").addEventListener('click', function(e) {
-    hideInd();
-});
+// document.getElementById("nav").addEventListener('click', function(e) {
+//     hideInd();
+// });
 
 document.getElementById("icon1").addEventListener('click', function(e) {
     notePost();
@@ -130,14 +127,10 @@ document.getElementById("tab").addEventListener('click', function(e) {
 });
 
 notesAreaContainer.addEventListener('click', function(e) {
-    hideInd();
-    hideList();
     hideDiff();
 });
 
 notesPreviewArea.addEventListener('click', function(e) {
-    hideInd();
-    hideList();
     hideDiff();
     wikiSearch(e);
 });

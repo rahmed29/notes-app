@@ -19,40 +19,40 @@
     <script src="/libraries/popper.min.js"></script>
     <script src="/libraries/tippy-bundle.iife.min.js"></script>
     <script src="/libraries/purify.min.js"></script>
-    <script src="/libraries/syncscroll.min.js"></script>
     <script defer src="/assets/index.js"></script>
-    <script defer src="/assets/listeners.js"></script>    
+    <script defer src="/assets/listeners.js"></script>
 </head>
 <body>
     <pre id = "currDiff" class="dragscroll"></pre>
+    <span id="pageNumber" data-pos="up"></span>
     <div id = "mobileSyncContainer">
         <div id = "mobileSync"></div>
     </div>
     <div id = "mobileMenu">
         ...
     </div>
+    <div id="nav">
+        <span id="icon1">&#128190;</span>
+        <span id="icon2">&#128214;</span>
+        <span id="icon3">&#128465;&#65039;</span>
+        <span id="icon4">
+            <label for="getFile1" id = "labelForImage">&#x1f5bc;&#xfe0f;</label>
+            <form id="myForm">
+                <input type="file" name="avatar" id="getFile1" style='display:none'>
+            </form>
+        </span>
+        <span id="icon5">&#128065;&#65039;</span>
+        <span id="icon6">&#9664;&#65039;</span>
+        <span id="icon7">&#9654;&#65039;</span>
+        <span id="icon8"><span id="wikipedia">&#129504;</span></span>
+        <span id="sync" tabindex="-1"></span>
+    </div>
     <div id="tab"></div>
     <div id = "container">
-        <div id="nav">
-            <span id="icon1">&#128190;</span>
-            <span id="icon2">&#128214;</span>
-            <span id="icon3">&#128465;&#65039;</span>
-            <span id="icon4">
-                <label for="getFile1" id = "labelForImage">&#x1f5bc;&#xfe0f;</label>
-                <form id="myForm">
-                    <input type="file" name="avatar" id="getFile1" style='display:none'>
-                </form>
-            </span>
-            <span id="icon6">&#9664;&#65039;</span>
-            <span id="icon7">&#9654;&#65039;</span>
-            <span id="icon8"><span id="wikipedia">&#129504;</span></span>
-            <span id="sync" tabindex="-1"></span>
-        </div>
         <div id="list"></div>
-        <span id="pageNumber" data-pos="up"></span>
         <div id = "notesArea">
-            <textarea id="in" tabindex="0" class="syncscroll" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>     
-            <div id="notes" class="syncscroll" name="myElements"></div>  
+            <div id="notes" name="myElements"></div>
+            <textarea readonly id="in" tabindex="0" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>       
         </div>
     </div>
     <div id="moneyAnimation"></div>

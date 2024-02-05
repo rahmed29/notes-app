@@ -116,7 +116,7 @@ app.get("/api/get/everything", async (req, res) => {
 })
 
 app.get('/:name', async (req, res) => {
-  let displayed = req.header("User-Agent").includes("iPhone OS") ? "mobile.ejs" : "notes.ejs";
+  let displayed = req.header("User-Agent").includes("iPhone OS") ? "index.ejs" : "beta.ejs";
   const name = req.params.name;
   if(name == "null") {
     res.redirect("/home")

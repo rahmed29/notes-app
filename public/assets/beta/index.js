@@ -1,25 +1,9 @@
-let mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
-
-// if(mediaScreen.matches) {
-//     document.getElementById("icon1").innerHTML = "<i class = 'fa fa-save' style = 'color: violet'></i>"
-//     document.getElementById("icon2").innerHTML = "<i class = 'fa fa-folder-open' style = 'color: tan'></i>"
-//     document.getElementById("icon3").innerHTML = "<i class = 'fa fa-trash' style = 'color: silver;'></i>"
-//     document.getElementById("labelForImage").innerHTML = "<i class = 'fa fa-image' style = 'color: orange;'></i>"
-//     document.getElementById("icon5").innerHTML = "<i class = 'fa fa-pencil' style = 'color: yellow;'></i>"
-//     document.getElementById("icon6").innerHTML = "<i class = 'fa fa-arrow-circle-left' style = 'color: rgba(116, 222, 152)'></i>"
-//     document.getElementById("icon7").innerHTML = "<i class = 'fa fa-arrow-circle-right' style = 'color: rgba(116, 222, 152)'></i>"
-// }
-
 const sendThis = location.pathname.substring(1);
+
 let cantab;
 let allowWiki = true;
 let currLine = "";
-const notyf = new Notyf({
-    position: {
-        y: 'top'
-    },
-    dismissible: true
-});
+const notyf = new Notyf();
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
@@ -49,7 +33,7 @@ tippy('#icon4', {
 });
 tippy('#icon5', {
     theme: 'light',
-    content: 'Toggle Preview (Ctrl + E)',
+    content: 'Switch View (Ctrl + E)',
 });
 tippy('#icon6', {
     theme: 'light',
@@ -77,11 +61,21 @@ async function createList() {
         listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
     }
     document.getElementById("list").innerHTML = listedItems.join('');
+    let items = document.getElementsByClassName("item");
+    for(let i = 0, n = items.length; i < n; i++) {
+        if(items[i].getAttribute("data-bn") === sendThis) {
+            items[i].style.height = items[i].scrollHeight + "px"
+            items[i].setAttribute("data-pos", "locked")
+            items[i].classList.add('itemWithLinks');
+            items[i].classList.add('lockedItem');
+            break;
+        }
+    }
 }
 
 function search(term) {
     let items = document.getElementsByClassName("item");
-    for(let i = 0; i < items.length; i++) {
+    for(let i = 0, n = items.length; i < n; i++) {
         items[i].style.display = "inherit";
         if(!items[i].getAttribute("data-bn").toLowerCase().includes(term.toLowerCase())) {
             items[i].style.display = "none";
@@ -91,7 +85,7 @@ function search(term) {
 
 function collapseAll(e) {
     let items = document.getElementsByClassName("item");
-    for(let i = 0; i < items.length; i++) {
+    for(let i = 0, n = items.length; i < items.length; i++) {
         items[i].setAttribute("data-pos", "up");
         items[i].style.height = "2em";
         items[i].classList.remove('itemWithLinks');
@@ -100,10 +94,10 @@ function collapseAll(e) {
 
 function accents() {
     notesTextArea.value = book[pgN];
-    notesPreviewArea.innerHTML = format(notesTextArea.value);
-    topLeftPageNumber.innerText = pgN + 1;
+    // topLeftPageNumber.innerText = pgN + 1;
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateNotes()
+    pagey();
 }
 
 function addPage(goBack, amount) {
@@ -164,26 +158,21 @@ async function forceUpdate() {
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
         //syncStatus(s);
-        hideList();
         hideDiff();
         notyf.success("Notes were pulled from database");
     }
 }
 
 function pagey() {
-    let z;
-    let content = [topLeftPageNumber.innerHTML]
-    if (book.length > 9) {
-        for (z = 0, n = 9; z < n; z++) {
-            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
-        }
-        content.push(`<br><span class = 'whereTo' id = 'morePages' onclick = 'jumpTo(${book.length - 1});'>&nbsp;...&nbsp;&nbsp;</span>`);
-    } else {
-        for (z = 0; z < book.length; z++) {
-            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>&nbsp;${z + 1}&nbsp;&nbsp;</span>`);
+    let content = []
+    for (let z = 0; z < book.length; z++) {
+        if(z == pgN) {
+            content.push(`<br><span style = 'background-color: rgba(116, 222, 152); color: #000;' class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);
+        } else {
+            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);
         }
     }
-    content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>&nbsp;+&nbsp;&nbsp;</span>`);
+    content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>+</span>`);
     topLeftPageNumber.innerHTML = content.join('');
 
     tippy('#newPage', {
@@ -249,9 +238,10 @@ function formatNormal() {
 }
 
 function updateNotes() {
+    notesPreviewArea.innerHTML = format(notesTextArea.value);
+    formatNormal();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
-    formatNormal();
     syncStatus(s);
 }
 
@@ -276,7 +266,7 @@ function imageTip(given) {
     image = given.src;
     tippy('.userImage', {
         theme: 'light',
-        content: "<span onclick = 'removeImage()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
+        content: "<span onclick = 'removeImage()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
         interactive: true,
     });
@@ -412,6 +402,7 @@ if (atHome) {
         content.push(`\n${i+1}. [[${recentB[i]}]]`);
     }
     notesTextArea.value = content.join('');
+    updateNotes();
 }
 
 function syncStatus(response) {
@@ -579,7 +570,6 @@ let listShown = false
 
 function showList() {
     if (listShown) {
-        hideList()
     } else {
         collapseAll();
         document.getElementById("list").style.display = "inherit"
@@ -603,7 +593,7 @@ function dropDown(ele) {
         ele.style.height = ele.scrollHeight + "px"
         ele.setAttribute("data-pos", "down")
         ele.classList.add('itemWithLinks');
-    } else {
+    } else if(ele.getAttribute("data-pos") === "down") {
         ele.style.height = "2em"
         ele.setAttribute("data-pos", "up")
         ele.classList.remove('itemWithLinks');
@@ -612,37 +602,55 @@ function dropDown(ele) {
 
 //toggle visibility of textarea
 function toggle() {
-    if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") notEditable()
-    else editable()
+    let viewPref = localStorage.getItem("viewPref");
+    if(viewPref === "split") {
+        localStorage.setItem("viewPref", "write");
+    } else if (viewPref === "write") {
+        localStorage.setItem("viewPref", "read");
+    } else if (viewPref === "read") {
+        localStorage.setItem("viewPref", "split");
+    }
+    inputVisible()
 }
 
 //check user choice about textarea and apply it.
 function inputVisible() {
-    if (localStorage.getItem("viewPref") === null || localStorage.getItem("viewPref") === "visible") editable()
-    else notEditable()
+    let viewPref = localStorage.getItem("viewPref");
+    if (viewPref === null) {
+        localStorage.setItem("viewPref", "split");
+    } else {
+        editingWindow(viewPref)
+    }
 }
 
-function editable() {
-    cantab = true;
-    if(!atHome) notesTextArea.readOnly = false;
-    notesAreaContainer.classList.add("editable");
-    notesAreaContainer.classList.remove("uneditable");
-    document.getElementById("mobileMenu").style.backgroundColor = "silver"
-    localStorage.setItem("viewPref", "visible")
-}
-
-function notEditable() {
-    notesPreviewArea.innerHTML = format(notesTextArea.value);
-    formatNormal();
-    cantab = false;
-    notesTextArea.readOnly = true;
-    notesAreaContainer.classList.add("uneditable");
-    notesAreaContainer.classList.remove("editable");
-    document.getElementById("mobileMenu").style.backgroundColor = "rgb(116, 222, 152)"
-    localStorage.setItem("viewPref", "invis")
+function editingWindow(choice) {
+    if(choice === "read") {
+        notesTextArea.readOnly = true;
+        notesPreviewArea.style.display = "inline";
+        notesTextArea.style.display = "none";
+        notesPreviewArea.style.width = "100%";
+        localStorage.setItem("viewPref", "read")
+    } else if (choice === "write") {
+        notesTextArea.readOnly = false;
+        notesPreviewArea.style.display = "none";
+        notesTextArea.style.display = "inline";
+        notesTextArea.style.width = "100%";
+        localStorage.setItem("viewPref", "write")
+    } else {
+        notesTextArea.readOnly = false;
+        notesPreviewArea.style.display = "inline";
+        notesTextArea.style.display = "inline";
+        notesPreviewArea.style.width = "50%";
+        notesTextArea.style.width = "50%";
+        localStorage.setItem("viewPref", "split")
+    }
+    notesPreviewArea.scrollTop = 0;
+    notesTextArea.scrollTop = 0;
+    notesAreaContainer.focus();
 }
 
 leftOff(true);
 inputVisible();
 createList()
+pagey();
 fluentemoji.parse("#nav");

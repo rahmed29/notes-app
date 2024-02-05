@@ -2,48 +2,24 @@
 @import url("https://unpkg.com/tippy.js@5/themes/light.css");
 
 body {
+    margin: 0px;
     overflow-x: hidden;
     overflow-y: hidden;
-    background: #fff;
+    background: #ffffff;
 }
 
 * {
     /* font-family: "Gabarito", sans-serif; */
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
-    color: #000;
+    color: black;
 }
 @supports (font-variation-settings: normal) {
   :root { font-family: InterVariable, sans-serif; }
 }
 
-#container {
-    height: 100vh;
-    width: 100vw;
-}
-
 a {
     color: darkcyan;
-}
-
-.editable #in {
-    z-index: 999;
-    opacity: 1;
-}
-
-.editable #notes {
-    z-index: 998;
-    opacity: 0;
-}
-
-.uneditable #in {
-    z-index: 998;
-    opacity: 0;
-}
-
-.uneditable #notes {
-    z-index: 999;
-    opacity: 1;
 }
 
 /* Dynamically loaded content that is never viewed directly by the user, basically used to pass data into javascript variable with EJS file */
@@ -51,42 +27,54 @@ a {
     display: none;
 }
 
-#in {
+#container {
     top: 0%;
     left: 0%;
     position: absolute;
+    background: #ffffff;
+    width: 100vw;
+    height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+#notesArea {
+    width: calc(100% - 1em - 15%);
+    position: relative;
+    display: flex;
+}
+
+#in {
+    color: black;
+    box-sizing: border-box;
     resize: none;
-    width: 50vw;
-    height: 30vh;
-    background: #fff;
+    width: 50%;
+    height: 100%;
+    background: #f1f1f1;
     outline: none;
     border-style: none;
-    padding-left: 25vw;
-    padding-right: 25vw;
     padding-top: 10vh;
     padding-bottom: 60vh;
+    padding-left: 5%;
+    padding-right: 5%;
     font-size: 17px;
-    z-index: 999;
     overscroll-behavior-y: contain;
-    opacity: 0;
 }
 
 #notes {
-    top: 0%;
-    left: 0%;
-    position: absolute;
-    width: 50vw;
-    height: 50vh;
-    background: #fff;
-    padding-left: 25vw;
-    padding-right: 25vw;
+    color: black;
+    box-sizing: border-box;
+    width: 50%;
+    height: 100%;
+    background: #f1f1f1;
     padding-top: 10vh;
     padding-bottom: 40vh;
+    padding-left: 5%;
+    padding-right: 5%;
     font-size: 17px;
-    z-index: 998;
     overscroll-behavior-y: contain;
     overflow: auto;
-    opacity: 0;
 }
 
 #notes h1,
@@ -103,13 +91,10 @@ a {
 }
 
 .emoji {
+    user-select: none;
     margin-top: 6px;
     height: 1.15em;
     width: 1.15em;
-}
-
-#icon6:active, #icon7:active {
-    scale: .9;
 }
 
 #nav {
@@ -146,6 +131,7 @@ a {
     position: fixed;
     z-index: 1000;
     transition: .5s;
+    display: none;
 }
 
 #mobileSync {
@@ -176,25 +162,31 @@ a {
 
 /* page number and drop down of page numbers */
 #pageNumber {
-    z-index: 1000;
-    top: 0%;
-    left: 0%;
-    position: fixed;
-    padding-top: 5px;
-    padding-left: 5px;
+    width: 1em;
     user-select: none;
-    cursor: pointer;
     font-size: 1.3em;
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    justify-content: start;
+    gap: 1px;
+    background: rgb(51, 50, 48);
 }
 
 .whereTo {
-    border-left-style: solid;
-    border-width: 2px;
+    transition: .25s;
+    text-align: center;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
+    background: rgb(51, 50, 48);
+    color: white;
+    font-family: monospace;
 }
 
 .whereTo:hover {
-    background: #000;
-    color: #fff;
+    background: white;
+    color: black;
 }
 
 #currDiff {
@@ -213,7 +205,7 @@ a {
     border-radius: 20px;
     transition: .25s;
     cursor: default;
-    background: #000;
+    background: black;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     background: rgba(211, 211, 211, 0.9);
@@ -227,17 +219,12 @@ a {
 
 /* Sidebar */
 #list {
-    top: 0%;
-    left: 0%;
-    position: fixed;
     height: 100vh;
-    width: 20em;
+    width: 15%;
     background: rgb(39, 38, 36);
     overflow-y: auto;
     overflow-x: hidden;
     user-select: none;
-    z-index: 1000;
-    display: none;
 }
 
 .searchItem {
@@ -260,7 +247,7 @@ a {
     outline: none;
     border-style: none;
     color: silver;
-    background: #000;
+    background: black;
     padding: .25em;
 }
 
@@ -271,12 +258,14 @@ a {
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    line-height: 0;
-    font-size: 16px;
+    font-size: 14px;
     transition: 0.15s ease-out;
     color: silver;
     padding-top: 3px;
-    padding-left: 15%;
+    padding-left: 10%;
+    overflow-x: hidden;
+    line-height: 0px;
+    white-space: nowrap;
 }
 
 .linkWrapper {
@@ -297,8 +286,8 @@ a {
 }
 
 .linkWrapper:hover span {
-    background: #ffffff;
-    background: linear-gradient(to right, #ffffff 85%, #4e4e4e 100%);
+    background: white;
+    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -306,12 +295,13 @@ a {
 
 .linkWrapper span {
     transition: .5s;
-    background: #ffffff;
-    background: linear-gradient(to right, #ffffff 85%, rgb(34, 34, 34)100%);
+    background: white;
+    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-left: -20px;
+    overflow-x: hidden;
 }
 
 .item a {
@@ -322,7 +312,7 @@ a {
     opacity: 0%;
     transition: .15s;
     visibility: hidden;
-    margin-left: 20%;
+    margin-left: 10%;
 
 }
 
@@ -334,7 +324,7 @@ a {
     height: 2em;
     padding: 1em;
     padding-bottom: 0px;
-    margin-left: -15%;
+    margin-left: -10%;
 }
 
 .listHeader:hover {
@@ -354,6 +344,10 @@ a {
     margin-left: 0px;
 }
 
+.lockedItem .listHeader {
+    filter: brightness(150%);
+}
+
 #tab {
     height: 15em;
     width: 10px;
@@ -361,10 +355,9 @@ a {
     position: fixed;
     top: 50%;
     left: 0%;
-    z-index: 1000;
     border-top-right-radius: 30px;
     border-bottom-right-radius: 30px;
-    color: #000;
+    color: black;
     cursor: pointer;
     opacity: 0.7;
 }
@@ -381,7 +374,7 @@ a {
     line-height: 3.5em;
     text-align: center;
     font-size: 1em;
-    color: #000;
+    color: black;
     transition: .5s;
     user-select: none;
     margin-bottom: 2em;
@@ -398,7 +391,7 @@ a {
 }
 
 .spoiler:hover {
-    color: #ffffff;
+    color: white;
 }
 
 .unorder, .order {
@@ -416,7 +409,7 @@ a {
 }
 
 mark {
-    color: #000;
+    color: black;
     padding-left: .3em;
     padding-right: .3em;
 }
@@ -439,7 +432,7 @@ mark {
 .codeBlock {
     width: 100%;
     height: auto;
-    background: #000;
+    background: black;
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
@@ -452,7 +445,7 @@ mark {
 .userHtml {
     width: 100%;
     height: auto;
-    background: #000;
+    background: black;
     border-radius: 10px;
     padding: 1em;
     margin-bottom: -1em;
@@ -519,14 +512,14 @@ mark {
     and (max-height: 844px) 
     and (-webkit-device-pixel-ratio: 3) {
     body {
-        background: #000;
+        background: black;
     }
     * {
-        color: #fff;
+        color: white;
     }
     .whereTo:hover {
-        background: #fff;
-        color: #000;
+        background: white;
+        color: black;
     }
     a {
         color: lightblue;
@@ -538,7 +531,7 @@ mark {
         width: 80vw;
         padding-left: 10vw;
         padding-right: 10vw;
-        background: #000;
+        background: black;
     }
     #in {
         padding-bottom: 50vh;
@@ -558,7 +551,7 @@ mark {
         margin-left: 1em;
     }
     #list {
-        background: #000;
+        background: black;
         height: 90vh;
         width: 100vw;
         border-right-style: solid;
@@ -588,7 +581,7 @@ mark {
     #icon8, #sync {
         display: none;
     }
-    #mobileMenu, #mobileSync {
+    #mobileMenu, #mobileSync, #mobileSyncContainer {
         display: inherit;
     }
     #currDiff {
@@ -597,8 +590,5 @@ mark {
     }
     .spoiler {
         filter: invert();
-    }
-    .reference {
-        color: violet;
     }
 }
