@@ -5,14 +5,13 @@ body {
     margin: 0px;
     overflow-x: hidden;
     overflow-y: hidden;
-    background: #ffffff;
+    background: #f1f1f1;
 }
 
 * {
     /* font-family: "Gabarito", sans-serif; */
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
-    color: black;
 }
 @supports (font-variation-settings: normal) {
   :root { font-family: InterVariable, sans-serif; }
@@ -31,7 +30,7 @@ a {
     top: 0%;
     left: 0%;
     position: absolute;
-    background: #ffffff;
+    background: #f1f1f1;
     width: 100vw;
     height: 100vh;
     width: 100vw;
@@ -102,7 +101,7 @@ a {
     top: 0%;
     left: 50%;
     position: fixed;
-    z-index: 1001;
+    z-index: 1000;
     user-select: none;
     font-size: 1.4rem;
     height: auto;
@@ -121,13 +120,14 @@ a {
     padding-bottom: 3px;
 }
 
-.homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #sync  {
+
+.homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #grnBox  {
     pointer-events: none;
     opacity: .35;
     filter: grayscale(1);
 }
 
-#nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6, #icon7 {
+#nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6 {
     cursor: pointer;
 }
 
@@ -152,6 +152,19 @@ a {
     background: rgb(51, 50, 48);
 }
 
+#generalInfo {
+    z-index: 1000;
+    bottom: 0%;
+    right: 0%;
+    position: fixed;
+    margin-right: 1em;
+}
+
+#page, #mode, #letterCount, #wordCount {
+    font-family: monospace;
+    color: black;
+}
+
 #pages {
     display: flex;
     flex-direction: column;
@@ -166,6 +179,12 @@ a {
     margin-bottom: auto;
     color: peru;
     width: 100%;
+}
+
+#currPage {
+    width: 100%;
+    text-align: center;
+    display: flex;
 }
 
 .whereTo {
@@ -339,7 +358,7 @@ a {
     margin-left: 0px;
 }
 
-.lockedItem .listHeader {
+#lockedItem .listHeader {
     filter: brightness(150%);
 }
 

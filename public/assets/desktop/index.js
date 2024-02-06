@@ -1,13 +1,13 @@
 const sendThis = location.pathname.substring(1);
-
-let cantab;
+let haveToUpdateList = false;
 let allowWiki = true;
-let currLine = "";
 const notyf = new Notyf();
 const notesTextArea = document.getElementById("in");
 const notesPreviewArea = document.getElementById("notes");
 const notesAreaContainer = document.getElementById("notesArea");
 const topLeftPageNumber = document.getElementById("pages");
+const grnBox = document.getElementById("grnBox");
+let list = document.getElementById("list");
 
 const atHome = sendThis ==="home" ? true : false
 
@@ -15,62 +15,71 @@ if (sendThis.includes("/")) {
     location.href = "/" + sendThis.substring(0, sendThis.length - 1);
 }
 
-tippy('#icon1', {
+const tips = ['Save (Ctrl + S)', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
+for(let i = 0; i < 6; i++) {
+    tippy(`#icon${i+1}`, {
+        theme: 'light',
+        content: tips[i],
+    }); 
+}
+
+let wikipediaTippy = tippy('#wikipedia', {
     theme: 'light',
-    content: 'Save (Ctrl + S)',
-});
-tippy('#icon2', {
+    content: `<div id = 'brain'>Highlight text in read mode to receive info about it here</div>`,
+    interactive: true,
+    maxWidth: '500px'
+})[0];
+
+let synced = tippy('#grnBox', {
     theme: 'light',
-    content: 'Open',
-});
-tippy('#icon3', {
+    content: 'Notes are saved',
+    interactive: true,
+})[0];
+
+let editingMode = tippy('#mode', {
     theme: 'light',
-    content: 'Delete',
-});
-tippy('#icon4', {
-    theme: 'light',
-    content: 'Insert Image',
-});
-tippy('#icon5', {
-    theme: 'light',
-    content: 'Switch View (Ctrl + E)',
-});
-tippy('#icon6', {
-    theme: 'light',
-    content: 'Prev Page',
-});
-tippy('#icon7', {
-    theme: 'light',
-    content: 'Next Page',
-});
+    content: localStorage.getItem("viewPref"),
+    placement: 'top',
+})[0];
 
 let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
 async function createList() {
+    let currBook;
     const response = await fetch("/api/get/everything")
     const json = await response.json();
     const result = json["data"];
-    let listedItems = [`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`];
+    let listedItems = [];
     for (let i = result.length-1; i >= 0; i--) {
         let links = []
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
         {
             links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'><span>${result[i]["excerpt"][j]}...</span></div></a>`)
         }
-        listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
-    }
-    document.getElementById("list").innerHTML = listedItems.join('');
-    let items = document.getElementsByClassName("item");
-    for(let i = 0, n = items.length; i < n; i++) {
-        if(items[i].getAttribute("data-bn") === sendThis) {
-            items[i].style.height = items[i].scrollHeight + "px"
-            items[i].setAttribute("data-pos", "locked")
-            items[i].classList.add('itemWithLinks');
-            items[i].classList.add('lockedItem');
-            break;
+        if(result[i]["name"] === sendThis) {
+            currBook = `<div class = "item" id = "lockedItem" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`
+        } else {
+            listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`);
         }
     }
+    listedItems.unshift(currBook)
+    listedItems.unshift(`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`)
+    list.innerHTML = listedItems.join('');
+    ele = document.getElementById("lockedItem")
+    ele.style.height = ele.scrollHeight + "px"
+    ele.setAttribute("data-pos", "locked")
+    ele.classList.add('itemWithLinks');
+}
+
+function updateCurrentItem() {
+    let links = []
+    for (let j = 0, n =  book.length; j < n; j++)
+    {
+        links.push(`<a href = '/sendThis?${(j+1)}'><div class = 'linkWrapper'><span>${book[j].substring(0,35)}...</span></div></a>`)
+    }
+    links.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
+    document.getElementById("lockedItem").innerHTML = links.join('');
 }
 
 function search(term) {
@@ -94,7 +103,6 @@ function collapseAll() {
 
 function accents() {
     notesTextArea.value = book[pgN];
-    // topLeftPageNumber.innerText = pgN + 1;
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateNotes()
     pagey();
@@ -106,7 +114,10 @@ function addPage(goBack, amount) {
             pgN -= amount;
             accents()
         }
-    } else if(!(book[pgN] === null || book[pgN] === "" || book[pgN] === "undefined")) {
+    } else if(!(book[pgN] == undefined || book[pgN] === "" || book[pgN] === "undefined")) {
+        if(pgN === book.length-1 || pgN + amount >= book.length) {
+            book.push("")
+        }
         pgN += amount;
         accents()
     } else {
@@ -123,9 +134,10 @@ function jumpTo(desired) {
     }
     if(desired > writtenPages.length) {
         notyf.error('You should make sure you have no blank pages before creating a new one')
-    } else {
-        pgN = desired;
-        accents()
+    } else  if (desired < pgN) {
+        addPage(true, pgN-desired)
+    } else if (desired > pgN) {
+        addPage(false, desired-pgN)
     }
 }
 
@@ -133,18 +145,17 @@ let s = "";
 
 async function leftOff(goAgain) {
     if(!atHome) {
-            s = document.getElementById("bookSave").innerText;
-            book = JSON.parse(localStorage.getItem(sendThis)) || [""]
-            accents()
-            if (s !== "") {
-                localStorage.setItem(sendThis, s);
-            }
-            if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
-                notesTextArea.readOnly = true;
-                leftOff(false);
-            }
-            //syncStatus(s);
-            notesTextArea.readOnly = false;
+        s = document.getElementById("bookSave").innerText;
+        book = JSON.parse(localStorage.getItem(sendThis)) || [""]
+        accents()
+        if (s !== "") {
+            localStorage.setItem(sendThis, s);
+        }
+        if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
+            notesTextArea.readOnly = true;
+            leftOff(false);
+        }
+        notesTextArea.readOnly = false;
     }
 }
 
@@ -164,31 +175,39 @@ async function forceUpdate() {
 }
 
 function pagey() {
+    document.getElementById("page").innerText = pgN+1;
     let content = []
-    for (let z = 0; z < book.length; z++) {
-        if(z == pgN) {
-            content.push(`<br><span style = 'background-color: rgba(116, 222, 152); color: #000;' class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);
-        } else {
-            content.push(`<br><span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);
+    if (book.length > 9) {
+        for (let z = 0; z < 9; z++) {
+                content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);      
+        }
+        content.push(`<span class = 'whereTo' id = 'morePages' onclick = 'jumpTo(${book.length-1});'>.</span>`);
+    } else {
+        for (let z = 0; z < book.length; z++) {
+            content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);     
         }
     }
-    content.push(`<br><span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>+</span>`);
+    content.push(`<span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>+</span>`);
     topLeftPageNumber.innerHTML = content.join('');
-
+    const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
+    currPage.style.backgroundColor = "rgb(116, 222, 152)";
+    currPage.style.color = "black";
+    
     tippy('#newPage', {
         theme: 'light',
         content: "New Page",
         placement: 'right-start',
-    });
+    })[0];
+
     tippy('#morePages', {
         theme: 'light',
-        content: `${(book.length - 9)} more pages are hidden`,
+        content: `${(book.length - 9)} more pages are hidden, you are on page ${pgN+1}`,
         placement: 'right-start',
     });
 }
 
 function toolTip(ele) {
-    let bry = ele.innerText.trim() - 1;
+    const bry = ele.innerText.trim() - 1;
     tippy(`#whereTo${bry}`, {
         theme: 'light',
         content: format(book[bry].substring(0, 95)) + "...",
@@ -229,8 +248,20 @@ function formatNormal() {
     }
 }
 
+function pad(str) {
+    str = str + ""
+    if (str.length > 5) {
+        str = "9999+";
+    } else if(str.length !== 5) {
+        str = "0".repeat(5-str.length) + str;
+    }
+    return str;
+}
+
 function updateNotes() {
     notesPreviewArea.innerHTML = format(notesTextArea.value);
+    document.getElementById("letterCount").innerText = pad(notesTextArea.value.length);
+    document.getElementById("wordCount").innerText = pad(notesTextArea.value.split(" ").length);
     formatNormal();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
@@ -330,27 +361,32 @@ async function notePost() {
         })
     })
     if (saveStatus.ok) {
-        document.getElementById("sync").classList.add("saved")
-        document.getElementById("sync").addEventListener('animationend', () => {
-            document.getElementById("sync").classList.remove("saved")
-          });
+        grnBox.classList.add("saved")
+        grnBox.addEventListener('animationend', () => {
+            grnBox.classList.remove("saved")
+        });
         s = JSON.stringify(book);
         if (pgN > book.length - 1) {
             jumpTo(book.length - 1);
         } else {
             jumpTo(pgN);
         }
-        //syncStatus(s);
+        syncStatus(s);
         createList();
         notyf.success(`Notebook saved successfully (${saveStatus.status})`)
     } else {
         notyf.error(`${saveStatus} Error`)
     }
+    if (list.getAttribute("data-pos") === "hidden") {
+        haveToUpdateList = true;
+    }
 }
 
 function newP() {
     let newBookN = prompt("Enter a notebook name", sendThis)
-    location.href = newBookN.replaceAll("/", "")
+    try {
+        location.href = newBookN.replaceAll("/", "")
+    } catch(err) { return }
 }
 
 function del() {
@@ -395,26 +431,21 @@ function syncStatus(response) {
         writtenPages.push("");
     }
     if (JSON.stringify(writtenPages) === response) {
-        document.getElementById("sync").innerHTML = "<i id = 'grnBox'>&#9851;&#65039;</i>";
+        grnBox.style.filter = "none"
         fluentemoji.parse("#grnBox");
-        tippy('#grnBox', {
-            theme: 'light',
-            content: 'Notes are saved',
-            interactive: true,
-        });
+
+        synced.setContent("Notes are saved")
         document.title = sendThis;
     } else {
-        document.getElementById("sync").innerHTML = "<i style = 'filter: grayscale(1)' id = 'grnBox'>&#9851;&#65039;</i>";
+        grnBox.style.filter = "grayscale(1)"
         fluentemoji.parse("#grnBox");
-        tippy('#grnBox', {
-            theme: 'light',
-            content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
+        synced.setContent(
+            `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
             <br><br>
             <span onclick = 'diff()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>More details</span>
             <br><br>
-            <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
-            interactive: true,
-        });
+            <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`
+        )
         document.title = sendThis + " *"
     }
 }
@@ -426,8 +457,6 @@ function getDiff(one, other) {
     const fragment = document.createDocumentFragment();
 
     diff.forEach((part) => {
-        // green for additions, red for deletions
-        // grey for common parts
         const color = part.added ? '#33ff96 ' :
         part.removed ? '#ff5e5e' : 'rgba(0,0,0,0)';
         span = document.createElement('span');
@@ -514,14 +543,8 @@ async function wikiSearch(event) {
         if (response.ok) {
             const result = await response.json()
             let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
-            document.getElementById("icon8").innerHTML = '<span id = "wikipedia">&#129504;</span>'
             fluentemoji.parse("#wikipedia");
-            tippy('#wikipedia', {
-                theme: 'light',
-                content: `<div id = 'brain'>${summary}</div>`,
-                interactive: true,
-                maxWidth: '500px',
-            })
+            wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
             moneyAnimation(event, "&#129504;");
         }
         document.body.style.cursor = "inherit"
@@ -537,14 +560,12 @@ function moneyAnimation(mouseCoords, symbol) {
     document.getElementById("moneyAnimation").appendChild(moneyAnimation);
     moneyAnimation.classList.add("moneyAnimation"); // Add the class that animates
     fluentemoji.parse(".moneyAnimation");
-    setTimeout(() => {
+    moneyAnimation.addEventListener('animationend', () => {
         moneyAnimation.remove()
-        moneyAnimation.classList.remove("moneyAnimation"); // Add the class that animates
-    }, "1000");
+    });
 }
 
 function toggleList() {
-    let list = document.getElementById("list");
     if (list.getAttribute("data-pos") === "shown") {
         notesAreaContainer.style.width = "calc(100% - 1em)";
         list.style.display = "none"
@@ -553,6 +574,10 @@ function toggleList() {
         notesAreaContainer.style.width = "calc(100% - 1em - 15%)";
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
+        if(haveToUpdateList) {
+            createList();
+            haveToUpdateList = false;
+        }
     }
 }
 
@@ -568,19 +593,6 @@ function dropDown(ele) {
     }
 }
 
-//toggle visibility of textarea
-function toggle() {
-    let viewPref = localStorage.getItem("viewPref");
-    if(viewPref === "split") {
-        localStorage.setItem("viewPref", "write");
-    } else if (viewPref === "write") {
-        localStorage.setItem("viewPref", "read");
-    } else if (viewPref === "read") {
-        localStorage.setItem("viewPref", "split");
-    }
-    inputVisible()
-}
-
 //check user choice about textarea and apply it.
 function inputVisible() {
     let viewPref = localStorage.getItem("viewPref");
@@ -591,8 +603,23 @@ function inputVisible() {
     }
 }
 
+//toggle visibility of textarea
+function toggle() {
+    let viewPref = localStorage.getItem("viewPref");
+    if(viewPref === "split") {
+        localStorage.setItem("viewPref", "write");
+    } else if (viewPref === "write") {
+        localStorage.setItem("viewPref", "read");
+    } else if (viewPref === "read") {
+        localStorage.setItem("viewPref", "split");
+    }
+    editingWindow(localStorage.getItem("viewPref"))
+}
+
 function editingWindow(choice) {
+    const mode = document.getElementById("mode");
     if(choice === "read") {
+        mode.innerText = "R";
         notesTextArea.readOnly = true;
         notesPreviewArea.style.display = "inline";
         notesTextArea.style.display = "none";
@@ -601,6 +628,7 @@ function editingWindow(choice) {
         notesPreviewArea.style.paddingRight = "20%";
         localStorage.setItem("viewPref", "read")
     } else if (choice === "write") {
+        mode.innerText = "W";
         notesTextArea.readOnly = false;
         notesPreviewArea.style.display = "none";
         notesTextArea.style.display = "inline";
@@ -609,6 +637,7 @@ function editingWindow(choice) {
         notesTextArea.style.paddingRight = "20%";
         localStorage.setItem("viewPref", "write")
     } else {
+        mode.innerText = "S";
         notesTextArea.readOnly = false;
         notesPreviewArea.style.display = "inline";
         notesTextArea.style.display = "inline";
@@ -623,6 +652,7 @@ function editingWindow(choice) {
     notesPreviewArea.scrollTop = 0;
     notesTextArea.scrollTop = 0;
     notesAreaContainer.focus();
+    editingMode.setContent(choice);
 }
 
 leftOff(true);
@@ -630,3 +660,8 @@ inputVisible();
 createList()
 pagey();
 fluentemoji.parse("#nav");
+if(book[pgN] == null || book[pgN] === "" || book[pgN] === "undefined") {
+    pgN = 0;
+    leftOff(false)
+    accents();
+}

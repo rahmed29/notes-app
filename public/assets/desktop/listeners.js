@@ -3,7 +3,7 @@ notesTextArea.addEventListener("input", function (e) {
     updateNotes();
 });
 
-document.getElementById("icon8").addEventListener("contextmenu", function(e) {
+document.getElementById("icon7").addEventListener("contextmenu", function(e) {
     e.preventDefault();
     allowWiki = !allowWiki;
     if(allowWiki) {
@@ -15,7 +15,7 @@ document.getElementById("icon8").addEventListener("contextmenu", function(e) {
 });
 
 document.addEventListener('keydown', e => {
-    if ((e.ctrlKey && e.key === 's') && !atHome) {
+    if ((e.ctrlKey && (e.key === 's' || e.key === 'S')) && !atHome) {
         e.preventDefault();
         notePost();
     } 
@@ -30,10 +30,6 @@ document.getElementById("icon1").addEventListener('click', function(e) {
 });
 
 document.getElementById("icon2").addEventListener('click', function(e) {
-    newP();
-});
-
-document.getElementById("icon3").addEventListener('click', function(e) {
     del();
 });
 
@@ -41,15 +37,15 @@ document.getElementById("getFile1").addEventListener('change', function(e) {
     insertImage();
 });
 
-document.getElementById("icon5").addEventListener('click', function(e) {
+document.getElementById("icon4").addEventListener('click', function(e) {
     toggle();
 });
 
-document.getElementById("icon6").addEventListener('click', function(e) {
+document.getElementById("icon5").addEventListener('click', function(e) {
     addPage(true, 1);
 });
 
-document.getElementById("icon7").addEventListener('click', function(e) {
+document.getElementById("icon6").addEventListener('click', function(e) {
     addPage(false, 1);
 });
 
