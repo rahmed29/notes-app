@@ -1,15 +1,44 @@
-// Create global variables. TODO: possibly make allowWiki and haveToUpdateList in line HTMl data for their respective elements.
+// Create global variables.
 const sendThis = location.pathname.substring(1);
 let haveToUpdateList = false;
 let allowWiki = true;
 const notyf = new Notyf();
-const notesTextArea = document.getElementById("in");
-const notesPreviewArea = document.getElementById("notes");
-const notesAreaContainer = document.getElementById("notesArea");
-const topLeftPageNumber = document.getElementById("pages");
+
+const notesTextArea = document.getElementById("notesTextArea");
+const notesPreviewArea = document.getElementById("notesPreviewArea");
+const notesAreaContainer = document.getElementById("notesAreaContainer");
+const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
 const grnBox = document.getElementById("grnBox");
 const currDiff = document.getElementById("currDiff");
-const list = document.getElementById("list");
+const list = document.getElementById("listOfBooks");
+const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
+const brain = document.getElementById("wikipediaBrainAnimation")
+
+// Regex for formatting markup syntax
+function format(str) {
+    str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'userHtml'>$1$2$3</pre>")
+    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
+    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
+    str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
+    str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
+    str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
+    str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
+    str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
+    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
+    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
+    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
+    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
+    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
+    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
+    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
+    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
+    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
+    str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
+    str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
+    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
+    return DOMPurify.sanitize(str)
+}
 
 // set a global variable telling other function if we are on the home menu
 const atHome = sendThis ==="home" ? true : false
@@ -20,12 +49,12 @@ if (sendThis.includes("/")) {
 }
 
 // Create tool tips of the top toolbar
-const tips = ['Save (Ctrl + S)', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
-for(let i = 0; i < 6; i++) {
+const tips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
+for(let i = 0; i < 7; i++) {
     tippy(`#icon${i+1}`, {
         theme: 'light',
         content: tips[i],
-    }); 
+    });
 }
 
 tippy('#wordCount', {
@@ -53,13 +82,13 @@ let synced = tippy('#grnBox', {
     interactive: true,
 })[0];
 
-let editingMode = tippy('#mode', {
+let editingMode = tippy('#generalInfoViewMode', {
     theme: 'light',
     content: localStorage.getItem("viewPref"),
     placement: 'top',
 })[0];
 
-let pageNumberRight = tippy('#page', {
+let generalInfoPageNumber = tippy('#generalInfoPageNumber', {
     theme: 'light',
     content: localStorage.getItem("viewPref"),
     placement: 'top',
@@ -83,9 +112,9 @@ async function createList() {
             links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'><span>${result[i]["excerpt"][j]}...</span></div></a>`)
         }
         if(result[i]["name"] === sendThis) {
-            currBook = `<div class = "item" id = "lockedItem" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`
+            currBook = `<div class = "item" id = "lockedItem" data-pos="up" data-bn="${result[i]["name"]}" onclick = "handleListDropDowns(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`
         } else {
-            listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`);
+            listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "handleListDropDowns(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`);
         }
     }
     listedItems.unshift(currBook)
@@ -112,53 +141,44 @@ function search(term) {
 function accents() {
     notesTextArea.value = book[pgN];
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
-    updateNotes()
-    pagey();
+    updateAndSaveNotesLocally()
+    createPageNumbers();
 }
 
 // Handles moving between pages
-function addPage(goBack, amount) {
+function handlePageMovement(goBack, amount) {
     if (goBack) {
         if (pgN > 0) {
             pgN -= amount;
             accents()
         }
-    } else if(!(book[pgN] === null || book[pgN] === "" || book[pgN] === "undefined")) {
-        if(pgN === book.length-1 || pgN + amount >= book.length) {
+    } else {
+        if(pgN + amount >= book.length) {
             book.push("")
         }
         pgN += amount;
         accents()
-    } else {
-        notyf.error('You should make sure you have no blank pages before creating a new one')
     }
 }
 
-// Jumps to a certain page by calling the addPage function
-function jumpTo(desired) {
-    let writtenPages = []
-    for (let i = 0, n = book.length; i < n; i++) {
-        if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
-            writtenPages.push(book[i]);
-        }
-    }
-    if(desired > writtenPages.length) {
-        notyf.error('You should make sure you have no blank pages before creating a new one')
-    } else  if (desired < pgN) {
-        addPage(true, pgN-desired)
+// Jumps to a certain page by calling the handlePageMovement function
+function jumpToDesiredPage(desired) {
+    if (desired < pgN) {
+        handlePageMovement(true, pgN-desired)
     } else if (desired > pgN) {
-        addPage(false, desired-pgN)
+        handlePageMovement(false, desired-pgN)
     }
 }
 
+// Global variable representing the notebook save that is in the DB
 let s = "";
 
 // Set the displayed notes to whatever is in local storage, then replace local storage with whatever is in database. This way,
 // The user has a change to still save any unsaved notes from last session. If the page is blank (like it will be on the first load
 // after clearing cookies), call this function again with the goAgain parameter set to false.
-async function leftOff(goAgain) {
+async function initializeNotes(goAgain) {
     if(!atHome) {
-        s = document.getElementById("bookSave").innerText;
+        s = noteBookFromDb.innerText;
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
         if (s !== "") {
@@ -166,19 +186,19 @@ async function leftOff(goAgain) {
         }
         if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
             notesTextArea.readOnly = true;
-            leftOff(false);
+            initializeNotes(false);
         }
         notesTextArea.readOnly = false;
     }
 }
 
 // Forecefully pull the notes from the database and update the user's notes
-async function forceUpdate() {
+async function forceUpdateNotes() {
     if(confirm("Are you sure?")) {
         const response = await fetch(`/api/get/notebooks/${sendThis}`)
         const json = await response.json();
-        document.getElementById("bookSave").innerText = json["data"];
-        s = document.getElementById("bookSave").innerText;
+        noteBookFromDb.innerText = json["data"];
+        s = noteBookFromDb.innerText;
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
@@ -189,21 +209,21 @@ async function forceUpdate() {
 }
 
 // Create the page numbers in the top left
-function pagey() {
-    document.getElementById("page").innerText = pgN+1;
-    pageNumberRight.setContent(`Page ${pgN + 1}`)
+function createPageNumbers() {
+    document.getElementById("generalInfoPageNumber").innerText = pgN+1;
+    generalInfoPageNumber.setContent(`Page ${pgN + 1}`)
     let content = []
     if (book.length > 9) {
         for (let z = 0; z < 9; z++) {
-                content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);      
+                content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);      
         }
-        content.push(`<span class = 'whereTo' id = 'morePages' onclick = 'jumpTo(${book.length-1});'>.</span>`);
+        content.push(`<span class = 'whereTo' id = 'morePages' onclick = 'jumpToDesiredPage(${book.length-1});'>.</span>`);
     } else {
         for (let z = 0; z < book.length; z++) {
-            content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'toolTip(this);' onclick = 'jumpTo(${z});'>${z + 1}</span>`);     
+            content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);     
         }
     }
-    content.push(`<span class = 'whereTo' id = 'newPage' onclick = 'jumpTo(${book.length});'>+</span>`);
+    content.push(`<span class = 'whereTo' id = 'newPage' onclick = 'jumpToDesiredPage(${book.length});'>+</span>`);
     topLeftPageNumber.innerHTML = content.join('');
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
     currPage.style.backgroundColor = "rgb(116, 222, 152)";
@@ -223,7 +243,7 @@ function pagey() {
 }
 
 // Create the page previews when hovering over the page numbers in top left
-function toolTip(ele) {
+function pagePreviewToolTip(ele) {
     const bry = ele.innerText.trim() - 1;
     tippy(`#whereTo${bry}`, {
         theme: 'light',
@@ -233,7 +253,7 @@ function toolTip(ele) {
 }
 
 // Find all code blocks
-function getBlocks(str) {
+function matchCodeBlocks(str) {
     let matches = []
 
     str.replace(/```([\s\S]+?)```/g, function (string, match) {
@@ -245,7 +265,7 @@ function getBlocks(str) {
 
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
 function formatNonText() {
-    let str = getBlocks(notesTextArea.value)
+    let str = matchCodeBlocks(notesTextArea.value)
     let blocks = document.getElementsByClassName("codeBlock")
     for (let i = 0, n = blocks.length; i < n; i++) {
         blocks[i].innerText = str[i]
@@ -257,7 +277,7 @@ function formatNonText() {
     let imgs = document.getElementsByClassName("userImage")
     for (let i = 0, n = imgs.length; i < n; i++) {
         imgs[i].addEventListener("mouseover", (event) => {
-            imageTip(imgs[i])
+            removeImageToolTip(imgs[i])
         });
     }
     let links = document.getElementsByClassName("userLink")
@@ -267,7 +287,7 @@ function formatNonText() {
 }
 
 // Pad the letter and word count with 0s
-function pad(str) {
+function padWithZeroes(str) {
     str = str + ""
     if (str.length > 5) {
         str = "9999+";
@@ -279,10 +299,10 @@ function pad(str) {
 
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
-function updateNotes() {
+function updateAndSaveNotesLocally() {
     notesPreviewArea.innerHTML = format(notesTextArea.value);
-    document.getElementById("letterCount").innerText = pad(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
-    document.getElementById("wordCount").innerText = pad(notesTextArea.value.replace(/  +/g, ' ').split(" ").length-1);
+    document.getElementById("letterCount").innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
+    document.getElementById("wordCount").innerText = padWithZeroes(notesTextArea.value.replace(/  +/g, ' ').split(" ").length-1);
     formatNonText();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
@@ -291,7 +311,7 @@ function updateNotes() {
 
 let image;
 
-async function removeImage() {
+async function deleteImageFromDb() {
     let imageTo = image + "";
     let occ = `!(${imageTo.substring(imageTo.indexOf("/uploads/"))})`;
     const imageDeleteStatus = await fetch("/api/delete/images/" + imageTo.substring(imageTo.indexOf("/uploads/") + 9), {
@@ -299,49 +319,24 @@ async function removeImage() {
     })
     if (imageDeleteStatus.ok) {
         notesTextArea.value = notesTextArea.value.replaceAll(occ, "");
-        updateNotes();
+        updateAndSaveNotesLocally();
         saveNoteBookToDb();
     } else {
         notyf.error(`${imageDeleteStatus.status} Error`)
     }
 }
 
-function imageTip(given) {
+function removeImageToolTip(given) {
     image = given.src;
     tippy('.userImage', {
         theme: 'light',
-        content: "<span onclick = 'removeImage()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
+        content: "<span onclick = 'deleteImageFromDb()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
         interactive: true,
     });
 }
 
-function format(str) {
-    str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'userHtml'>$1$2$3</pre>")
-    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
-    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
-    str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
-    str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
-    str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
-    str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
-    str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
-    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
-    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
-    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
-    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
-    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
-    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
-    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
-    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
-    str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
-    str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
-    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
-    return DOMPurify.sanitize(str)
-}
-
-async function removeNote() {
+async function deleteNoteBookFromDb() {
     const noteDeleteStatus = await fetch(`/api/delete/notebooks/${sendThis}`, {
         method: "DELETE",
     })
@@ -395,7 +390,7 @@ async function saveNoteBookToDb() {
         });
         s = JSON.stringify(book);
         if (pgN > book.length - 1) {
-            jumpTo(book.length - 1);
+            jumpToDesiredPage(book.length - 1);
         } else {
             accents();
         }
@@ -409,9 +404,9 @@ async function saveNoteBookToDb() {
 }
 
 
-function deleteNoteBookFromDb() {
+function confirmBookDeletion() {
     if (confirm("Are you sure you want to delete this notebook from the database?")) {
-        removeNote()
+        deleteNoteBookFromDb()
     } else {
         notyf.error(`Notebook has not been removed`)
     }
@@ -430,16 +425,10 @@ if (!sendThis.includes("/")) {
     }
 }
 
-// Display the home screen when the user is at the /home path
-if (atHome) {
-    topLeftPageNumber.style.display = "none";
-    document.getElementById("nav").classList.add("homeNav");
-    let content = ["# Recent Notes\n"];
-    for (let i = 0, n = recentB.length; i < n; i++) {
-        content.push(`\n${i+1}. [[${recentB[i]}]]`);
-    }
-    notesTextArea.value = content.join('');
-    updateNotes();
+// Prompt user for opening notebook
+function openNoteBookPrompt() {
+    let newBookN = prompt("Enter a notebook name", sendThis)
+    location.href = newBookN.replaceAll("/", "")
 }
 
 // Determine whether the notes the user is currently editing match with what is in the DB
@@ -455,19 +444,17 @@ function syncStatus(response) {
     }
     if (JSON.stringify(writtenPages) === response) {
         grnBox.style.filter = "none"
-        fluentemoji.parse("#grnBox");
 
         synced.setContent("Notes are saved")
         document.title = sendThis;
     } else {
         grnBox.style.filter = "grayscale(1)"
-        fluentemoji.parse("#grnBox");
         synced.setContent(
             `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
             <br><br>
             <span onclick = 'diff()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>More details</span>
             <br><br>
-            <span onclick = 'forceUpdate()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`
+            <span onclick = 'forceUpdateNotes()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`
         )
         document.title = sendThis + " *"
     }
@@ -526,27 +513,8 @@ function hideDiff() {
     currDiff.style.visibility = "hidden"; 
 }
 
-// Create the dropzone for drag and drop image uploading if the user is not on the home page
-if (!atHome) {
-    new Dropzone(document.body, {
-        url: "/api/save/images",
-        paramName: 'avatar',
-        clickable: false,
-        acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
-        error: function () {
-            notyf.error('There was an error uploading the image')
-        },
-        success: function (file, response) {
-            file.previewElement.innerHTML = "";
-            notesTextArea.value += `\n\n!(${response})`;
-            updateNotes()
-            saveNoteBookToDb()
-        }
-    })
-}
-
 // Handles native image uploading
-async function insertImage() {
+async function insertAndSaveImage() {
     const formData = new FormData(document.getElementById("myForm"))
     const imageUploadStatus = await fetch("/api/save/images", {
         method: "POST",
@@ -555,7 +523,7 @@ async function insertImage() {
     if (imageUploadStatus.ok) {
         const response = await imageUploadStatus.text()
         notesTextArea.value += `\n\n!(${response})`;
-        updateNotes()
+        updateAndSaveNotesLocally()
         saveNoteBookToDb()
     } else {
         notyf.error(`${imageUploadStatus.status} Error`)
@@ -575,7 +543,6 @@ async function wikiSearch(event) {
         if (response.ok) {
             const result = await response.json()
             let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
-            fluentemoji.parse("#wikipedia");
             wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
             moneyAnimation(event, "&#129504;");
         }
@@ -583,16 +550,16 @@ async function wikiSearch(event) {
     }
 }
 
-// Displays the little brain animation when the user select text and it the wikipedia api returns an OK status
+// Displays the little brain animation when the user select text and if the wikipedia api returns an OK status
 function moneyAnimation(mouseCoords, symbol) {
-    document.getElementById("moneyAnimation").style.top = mouseCoords.clientY + "px"
-    document.getElementById("moneyAnimation").style.left = mouseCoords.clientX + "px"
+    brain.style.top = mouseCoords.clientY + "px"
+    brain.style.left = mouseCoords.clientX + "px"
     // https://stackoverflow.com/a/69970674
     var moneyAnimation = document.createElement("p");
     moneyAnimation.innerHTML = symbol;
-    document.getElementById("moneyAnimation").appendChild(moneyAnimation);
-    moneyAnimation.classList.add("moneyAnimation"); // Add the class that animates
-    fluentemoji.parse(".moneyAnimation");
+    brain.appendChild(moneyAnimation);
+    moneyAnimation.classList.add("wikipediaBrainAnimation"); // Add the class that animates
+    fluentemoji.parse(".wikipediaBrainAnimation");
     moneyAnimation.addEventListener('animationend', () => {
         moneyAnimation.remove()
     });
@@ -602,12 +569,12 @@ function moneyAnimation(mouseCoords, symbol) {
 function toggleList() {
     if (list.getAttribute("data-pos") === "shown") {
         notesAreaContainer.style.width = "calc(100% - 20px)";
-        document.getElementById("generalInfo").style.left = "20px"
+        document.getElementById("bottomLeftGeneralInfo").style.left = "20px"
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
     } else {
         notesAreaContainer.style.width = "calc(100% - 20px - 15%)";
-        document.getElementById("generalInfo").style.left = "calc(20px + 15%)"
+        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 15%)"
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {
@@ -618,7 +585,7 @@ function toggleList() {
 }
 
 // Handle drop down for items in list
-function dropDown(ele) {
+function handleListDropDowns(ele) {
     if (ele.getAttribute("data-pos") === "up") {
         ele.style.height = ele.scrollHeight + "px"
         ele.setAttribute("data-pos", "down")
@@ -631,7 +598,7 @@ function dropDown(ele) {
 }
 
 //check user choice about textarea and apply it.
-function inputVisible() {
+function applyViewPreference() {
     let viewPref = localStorage.getItem("viewPref");
     if (viewPref === null) {
         localStorage.setItem("viewPref", "split");
@@ -641,7 +608,7 @@ function inputVisible() {
 }
 
 //Cycle through visibility optionss
-function toggle() {
+function cycleViewPreferences() {
     let viewPref = localStorage.getItem("viewPref");
     if(viewPref === "split") {
         localStorage.setItem("viewPref", "write");
@@ -655,12 +622,12 @@ function toggle() {
 
 // Handle what the view preference should be **maybe make this a classlist.add() type thing**
 function editingWindow(choice) {
-    const mode = document.getElementById("mode");
+    const mode = document.getElementById("generalInfoViewMode");
     if(choice === "read") {
         mode.innerText = "R";
         notesTextArea.readOnly = true;
-        notesPreviewArea.style.display = "inline";
         notesTextArea.style.display = "none";
+        notesPreviewArea.style.display = "inline";
         notesPreviewArea.style.width = "100%";
         notesPreviewArea.style.paddingLeft = "20%";
         notesPreviewArea.style.paddingRight = "20%";
@@ -695,13 +662,111 @@ function editingWindow(choice) {
 
 // When the page loads, grab the notes, appy the users choice of textarea visibility, create the list and create the page numbers
 // Also, parse the emojis in the top menu and if the current page that the user is on is null, go to page one.
-leftOff(true);
-inputVisible();
+initializeNotes(true);
+applyViewPreference();
 createList()
-pagey();
-fluentemoji.parse("#nav");
+createPageNumbers();
+fluentemoji.parse("#toolBar");
 if(book[pgN] == null || book[pgN] === "" || book[pgN] === "undefined") {
     pgN = 0;
-    leftOff(false)
+    initializeNotes(false)
     accents();
 }
+
+// Display the home screen when the user is at the /home path
+if (atHome) {
+    topLeftPageNumber.style.display = "none";
+    document.getElementById("toolBar").classList.add("homeToolBar");
+    let content = ["# Recent Notes\n"];
+    for (let i = 0, n = recentB.length; i < n; i++) {
+        content.push(`\n${i+1}. [[${recentB[i]}]]`);
+    }
+    notesTextArea.value = content.join('');
+    updateAndSaveNotesLocally();
+} else {
+    // Create the dropzone for drag and drop image uploading if the user is not on the home page
+    new Dropzone(document.body, {
+        url: "/api/save/images",
+        paramName: 'avatar',
+        clickable: false,
+        acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
+        error: function () {
+            notyf.error('There was an error uploading the image')
+        },
+        success: function (file, response) {
+            file.previewElement.innerHTML = "";
+            notesTextArea.value += `\n\n!(${response})`;
+            updateAndSaveNotesLocally()
+            saveNoteBookToDb()
+        }
+    })
+}
+
+// Event listeners
+notesTextArea.addEventListener("input", function (e) {
+    hideDiff();
+    updateAndSaveNotesLocally();
+});
+
+document.getElementById("icon8").addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+    allowWiki = !allowWiki;
+    if(allowWiki) {
+        this.style.filter = "inherit";
+    } else {
+        this.style.filter = "grayscale(1)";
+    }
+    notyf.success(`allowWiki was set to ${allowWiki}`)
+});
+
+document.addEventListener('keydown', e => {
+    if ((e.ctrlKey && (e.key === 's' || e.key === 'S')) && !atHome) {
+        e.preventDefault();
+        saveNoteBookToDb();;
+    } 
+    else if ((e.ctrlKey && (e.key === 'e' || e.key === 'E'))) {
+        e.preventDefault();
+        cycleViewPreferences();
+    }
+});
+
+document.getElementById("icon1").addEventListener('click', function(e) {
+    saveNoteBookToDb();
+});
+
+document.getElementById("icon2").addEventListener('click', function(e) {
+    openNoteBookPrompt();
+});
+
+document.getElementById("icon3").addEventListener('click', function(e) {
+    confirmBookDeletion();
+});
+
+document.getElementById("getFile1").addEventListener('change', function(e) {
+    insertAndSaveImage();
+});
+
+document.getElementById("icon5").addEventListener('click', function(e) {
+    cycleViewPreferences();
+});
+
+document.getElementById("icon6").addEventListener('click', function(e) {
+    handlePageMovement(true, 1);
+});
+
+document.getElementById("icon7").addEventListener('click', function(e) {
+    handlePageMovement(false, 1);
+});
+
+document.getElementById("sideBarRetractList").addEventListener('click', function(e) {
+    toggleList();
+});
+
+notesAreaContainer.addEventListener('click', function(e) {
+    hideDiff();
+});
+
+notesPreviewArea.addEventListener('click', function(e) {
+    hideDiff();
+    wikiSearch(e);
+});

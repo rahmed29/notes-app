@@ -1,4 +1,4 @@
-@import url("/assets/notyf.min.css");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/notyf/3.10.0/notyf.min.css");
 @import url("https://unpkg.com/tippy.js@5/themes/light.css");
 
 body {
@@ -9,7 +9,6 @@ body {
 }
 
 * {
-    /* font-family: "Gabarito", sans-serif; */
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
 }
@@ -22,11 +21,11 @@ a {
 }
 
 /* Dynamically loaded content that is never viewed directly by the user, basically used to pass data into javascript variable with EJS file */
-#bookSave {
+#noteBookFromDb-ejs {
     display: none;
 }
 
-#container {
+#mainContainer {
     top: 0%;
     left: 0%;
     position: absolute;
@@ -38,13 +37,13 @@ a {
     display: flex;
 }
 
-#notesArea {
+#notesAreaContainer {
     width: calc(100% - 20px - 15%);
     position: relative;
     display: flex;
 }
 
-#in {
+#notesTextArea {
     color: black;
     box-sizing: border-box;
     resize: none;
@@ -61,7 +60,7 @@ a {
     overscroll-behavior-y: contain;
 }
 
-#notes {
+#notesPreviewArea {
     color: black;
     box-sizing: border-box;
     width: 50%;
@@ -76,9 +75,9 @@ a {
     overflow: auto;
 }
 
-#notes h1,
-#notes h2,
-#notes h3 {
+#notesPreviewArea h1,
+#notesPreviewArea h2,
+#notesPreviewArea h3 {
     margin-bottom: -0.25em;
 }
 
@@ -96,7 +95,7 @@ a {
     width: 1.15em;
 }
 
-#nav {
+#toolBar {
     transform: translate(-50%, -0%);
     top: 0%;
     left: 50%;
@@ -116,18 +115,16 @@ a {
     justify-content: center;
     gap: .25em;
     transition: .5s;
-    grid-area: b;
     padding-bottom: 3px;
 }
 
-
-.homeNav #icon1, .homeNav #icon2, .homeNav #icon3, .homeNav #icon5, .homeNav #icon6, .homeNav #grnBox  {
+.homeToolBar #icon1, .homeToolBar #icon3, .homeToolBar #icon4, .homeToolBar #icon6, .homeToolBar #icon7, .homeToolBar #grnBox  {
     pointer-events: none;
     opacity: .35;
     filter: grayscale(1);
 }
 
-#nav label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6 {
+#toolBar label, #icon1, #icon2, #icon3, #icon4, #icon5, #icon6, #icon7 {
     cursor: pointer;
 }
 
@@ -140,7 +137,7 @@ a {
 }
 
 /* page number and drop down of page numbers */
-#pageNumber {
+#leftMostSideBar {
     width: 20px;
     user-select: none;
     font-size: 1.3em;
@@ -152,7 +149,7 @@ a {
     background: rgb(51, 50, 48);
 }
 
-#generalInfo {
+#bottomLeftGeneralInfo {
     cursor: default;
     z-index: 1000;
     bottom: 0%;
@@ -164,20 +161,22 @@ a {
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    gap: .5em;
 }
 
-#page, #mode, #letterCount, #wordCount {
+#generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
     font-family: monospace;
     color: rgb(43, 43, 43);
 }
 
-#pages {
+#topLeftPageNumbers {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-#retract {
+#sideBarRetractList {
     flex-grow: 1;
     cursor: pointer;
     text-align: center;
@@ -240,7 +239,7 @@ a {
 }
 
 /* Sidebar */
-#list {
+#listOfBooks {
     height: 100vh;
     width: 15%;
     background: rgb(39, 38, 36);
@@ -444,7 +443,7 @@ mark {
 }
 
 /* https://stackoverflow.com/a/69970674 */
-#moneyAnimation {
+#wikipediaBrainAnimation {
     visibility: hidden;
     position: fixed;
     z-index: 1000;
@@ -452,14 +451,14 @@ mark {
     font-size: 1.2em;
 }
 
-.moneyAnimation {
-    animation: moneyAnimation 1s forwards;
+.wikipediaBrainAnimation {
+    animation: brainAnimation 1s forwards;
     position: absolute;
     visibility: visible;
 }
 
 
-@keyframes moneyAnimation {
+@keyframes brainAnimation {
     0% {
         opacity: 1;
         top: 0;

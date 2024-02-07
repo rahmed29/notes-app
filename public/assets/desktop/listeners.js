@@ -3,7 +3,7 @@ notesTextArea.addEventListener("input", function (e) {
     updateNotes();
 });
 
-document.getElementById("icon7").addEventListener("contextmenu", function(e) {
+document.getElementById("icon8").addEventListener("contextmenu", function(e) {
     e.preventDefault();
     allowWiki = !allowWiki;
     if(allowWiki) {
@@ -30,6 +30,10 @@ document.getElementById("icon1").addEventListener('click', function(e) {
 });
 
 document.getElementById("icon2").addEventListener('click', function(e) {
+    newP();
+});
+
+document.getElementById("icon3").addEventListener('click', function(e) {
     deleteNoteBookFromDb();
 });
 
@@ -37,16 +41,16 @@ document.getElementById("getFile1").addEventListener('change', function(e) {
     insertImage();
 });
 
-document.getElementById("icon4").addEventListener('click', function(e) {
+document.getElementById("icon5").addEventListener('click', function(e) {
     toggle();
 });
 
-document.getElementById("icon5").addEventListener('click', function(e) {
-    addPage(true, 1);
+document.getElementById("icon6").addEventListener('click', function(e) {
+    handlePageMovement(true, 1);
 });
 
-document.getElementById("icon6").addEventListener('click', function(e) {
-    addPage(false, 1);
+document.getElementById("icon7").addEventListener('click', function(e) {
+    handlePageMovement(false, 1);
 });
 
 document.getElementById("retract").addEventListener('click', function(e) {
