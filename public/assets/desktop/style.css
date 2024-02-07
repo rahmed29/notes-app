@@ -39,7 +39,7 @@ a {
 }
 
 #notesArea {
-    width: calc(100% - 1em - 15%);
+    width: calc(100% - 20px - 15%);
     position: relative;
     display: flex;
 }
@@ -121,7 +121,7 @@ a {
 }
 
 
-.homeNav #icon1, .homeNav #icon3, .homeNav #icon4, .homeNav #icon6, .homeNav #icon7, .homeNav #grnBox  {
+.homeNav #icon1, .homeNav #icon2, .homeNav #icon3, .homeNav #icon5, .homeNav #icon6, .homeNav #grnBox  {
     pointer-events: none;
     opacity: .35;
     filter: grayscale(1);
@@ -141,7 +141,7 @@ a {
 
 /* page number and drop down of page numbers */
 #pageNumber {
-    width: 1em;
+    width: 20px;
     user-select: none;
     font-size: 1.3em;
     display: flex;
@@ -153,32 +153,40 @@ a {
 }
 
 #generalInfo {
+    cursor: default;
     z-index: 1000;
     bottom: 0%;
-    right: 0%;
+    left: calc(20px + 15%);
     position: fixed;
-    margin-right: 1em;
+    padding-right: .5em;
+    padding-left: .5em;
+    background: rgba(230, 230, 230,.6);
+    border-top-right-radius: 12px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 #page, #mode, #letterCount, #wordCount {
     font-family: monospace;
-    color: black;
+    color: rgb(43, 43, 43);
 }
 
 #pages {
     display: flex;
     flex-direction: column;
     width: 100%;
-    flex-grow: 1;
 }
 
 #retract {
+    flex-grow: 1;
     cursor: pointer;
     text-align: center;
     font-family: monospace;
     margin-bottom: auto;
     color: peru;
     width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
 #currPage {
@@ -216,13 +224,13 @@ a {
     text-align: left;
     opacity: 0;
     padding: 2%;
-    border-radius: 20px;
     transition: .25s;
     cursor: default;
-    background: black;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    background: rgba(211, 211, 211, 0.9);
+    color: white;
+    background: rgba(48, 48, 48, 0.9);
+    white-space: pre-wrap;
 }
 
 .pageDiff {
@@ -334,7 +342,7 @@ a {
     box-sizing: border-box;
     color: white;
     transition: .15s;
-    width: 115%;
+    width: 100%;
     height: 2em;
     padding: 1em;
     padding-bottom: 0px;
@@ -406,7 +414,7 @@ mark {
 
 .userImage {
     user-select: none;
-    width: 700px;
+    width: 80%;
     height: auto;
 }
 

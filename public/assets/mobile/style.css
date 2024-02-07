@@ -4,7 +4,7 @@
 body {
     overflow-x: hidden;
     overflow-y: hidden;
-    background: #fff;
+    background: #f1f1f1;
 }
 
 * {
@@ -58,7 +58,7 @@ a {
     resize: none;
     width: 50vw;
     height: 30vh;
-    background: #fff;
+    background: #f1f1f1;
     outline: none;
     border-style: none;
     padding-left: 25vw;
@@ -77,7 +77,7 @@ a {
     position: absolute;
     width: 50vw;
     height: 50vh;
-    background: #fff;
+    background: #f1f1f1;
     padding-left: 25vw;
     padding-right: 25vw;
     padding-top: 10vh;
@@ -226,7 +226,7 @@ a {
     left: 0%;
     position: fixed;
     height: 100vh;
-    width: 20em;
+    width: 15%;
     background: rgb(39, 38, 36);
     overflow-y: auto;
     overflow-x: hidden;
@@ -255,7 +255,7 @@ a {
     outline: none;
     border-style: none;
     color: silver;
-    background: #000;
+    background: black;
     padding: .25em;
 }
 
@@ -266,12 +266,14 @@ a {
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    line-height: 0;
-    font-size: 16px;
+    font-size: 14px;
     transition: 0.15s ease-out;
     color: silver;
     padding-top: 3px;
-    padding-left: 15%;
+    padding-left: 10%;
+    overflow-x: hidden;
+    line-height: 0px;
+    white-space: nowrap;
 }
 
 .linkWrapper {
@@ -292,8 +294,8 @@ a {
 }
 
 .linkWrapper:hover span {
-    background: #ffffff;
-    background: linear-gradient(to right, #ffffff 85%, #4e4e4e 100%);
+    background: white;
+    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -301,12 +303,13 @@ a {
 
 .linkWrapper span {
     transition: .5s;
-    background: #ffffff;
-    background: linear-gradient(to right, #ffffff 85%, rgb(34, 34, 34)100%);
+    background: white;
+    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-left: -20px;
+    overflow-x: hidden;
 }
 
 .item a {
@@ -317,7 +320,7 @@ a {
     opacity: 0%;
     transition: .15s;
     visibility: hidden;
-    margin-left: 20%;
+    margin-left: 10%;
 
 }
 
@@ -329,7 +332,7 @@ a {
     height: 2em;
     padding: 1em;
     padding-bottom: 0px;
-    margin-left: -15%;
+    margin-left: -10%;
 }
 
 .listHeader:hover {
@@ -345,12 +348,12 @@ a {
     background: #4e4e4e;
 }
 
-.itemWithLinks .listHeader:hover {
-    filter: brightness(150%);
-}
-
 .itemWithLinks .linkWrapper span {
     margin-left: 0px;
+}
+
+#lockedItem .listHeader {
+    filter: brightness(150%);
 }
 
 #tab {

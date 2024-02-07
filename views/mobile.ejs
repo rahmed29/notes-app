@@ -19,6 +19,7 @@
     <script src="/libraries/popper.min.js"></script>
     <script src="/libraries/tippy-bundle.iife.min.js"></script>
     <script src="/libraries/purify.min.js"></script>
+    <script src="/libraries/syncscroll.min.js"></script>
     <script defer src="/assets/mobile/index.js"></script>
     <script defer src="/assets/mobile/listeners.js"></script>
 </head>
@@ -51,8 +52,8 @@
     <div id = "container">
         <div id="list"></div>
         <div id = "notesArea">
-            <div id="notes" name="myElements"></div>
-            <textarea readonly id="in" tabindex="0" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>       
+            <div class = "syncscroll" id="notes" name="myElements"></div>
+            <textarea readonly id="in" class = "syncscroll" tabindex="0" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>       
         </div>
     </div>
     <div id="moneyAnimation"></div>

@@ -64,19 +64,30 @@ let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
 async function createList() {
+    let currBook;
     const response = await fetch("/api/get/everything")
     const json = await response.json();
     const result = json["data"];
-    let listedItems = [`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`];
+    let listedItems = [];
     for (let i = result.length-1; i >= 0; i--) {
         let links = []
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
         {
             links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'><span>${result[i]["excerpt"][j]}...</span></div></a>`)
         }
-        listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`)
+        if(result[i]["name"] === sendThis) {
+            currBook = `<div class = "item" id = "lockedItem" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`
+        } else {
+            listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "dropDown(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`);
+        }
     }
-    document.getElementById("list").innerHTML = listedItems.join('');
+    listedItems.unshift(currBook)
+    listedItems.unshift(`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`)
+    list.innerHTML = listedItems.join('');
+    ele = document.getElementById("lockedItem")
+    ele.style.height = ele.scrollHeight + "px"
+    ele.setAttribute("data-pos", "locked")
+    ele.classList.add('itemWithLinks');
 }
 
 function search(term) {
@@ -583,7 +594,7 @@ function showList() {
     } else {
         collapseAll();
         document.getElementById("list").style.display = "inherit"
-        document.getElementById("tab").style.left = "20em"
+        document.getElementById("tab").style.left = "15%"
         document.getElementById("mobileMenu").style.height = "4em";
         document.getElementById("mobileMenu").style.width = "4em";
         listShown = true

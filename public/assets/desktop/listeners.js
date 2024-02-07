@@ -17,7 +17,7 @@ document.getElementById("icon7").addEventListener("contextmenu", function(e) {
 document.addEventListener('keydown', e => {
     if ((e.ctrlKey && (e.key === 's' || e.key === 'S')) && !atHome) {
         e.preventDefault();
-        notePost();
+        saveNoteBookToDb();;
     } 
     else if ((e.ctrlKey && (e.key === 'e' || e.key === 'E'))) {
         e.preventDefault();
@@ -26,11 +26,11 @@ document.addEventListener('keydown', e => {
 });
 
 document.getElementById("icon1").addEventListener('click', function(e) {
-    notePost();
+    saveNoteBookToDb();
 });
 
 document.getElementById("icon2").addEventListener('click', function(e) {
-    del();
+    deleteNoteBookFromDb();
 });
 
 document.getElementById("getFile1").addEventListener('change', function(e) {
