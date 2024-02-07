@@ -161,8 +161,6 @@ a {
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    display: flex;
-    gap: .5em;
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
