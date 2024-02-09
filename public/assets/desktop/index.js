@@ -7,15 +7,17 @@ const notyf = new Notyf();
 const notesTextArea = document.getElementById("notesTextArea");
 const notesPreviewArea = document.getElementById("notesPreviewArea");
 const notesAreaContainer = document.getElementById("notesAreaContainer");
+const mainContainer = document.getElementById("mainContainer");
 const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
-const grnBox = document.getElementById("grnBox");
-const currDiff = document.getElementById("currDiff");
+const areNotesSavedIcon = document.getElementById("areNotesSavedIcon");
+const bookDiffPopup = document.getElementById("bookDiffPopup");
 const list = document.getElementById("listOfBooks");
 const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
-const brain = document.getElementById("wikipediaBrainAnimation")
+const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
 
 // Regex for formatting markup syntax
 function format(str) {
+    str = DOMPurify.sanitize(str)
     str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'userHtml'>$1$2$3</pre>")
     str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
     str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
@@ -23,6 +25,7 @@ function format(str) {
     str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
     str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
     str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
+    str = str.replace(/^(?:    - )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
     str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
@@ -69,14 +72,20 @@ tippy('#letterCount', {
     interactive: true,
 })
 
+tippy('#newPage', {
+    theme: 'light',
+    content: "New Page",
+    placement: 'right-start',
+});
+
 let wikipediaTippy = tippy('#wikipedia', {
     theme: 'light',
-    content: `<div id = 'brain'>Highlight text in read mode to receive info about it here</div>`,
+    content: `<div id = 'brain'>Highlight text in read mode to receive info about it here (right click to disable this function)</div>`,
     interactive: true,
     maxWidth: '500px'
 })[0];
 
-let synced = tippy('#grnBox', {
+let synced = tippy('#areNotesSavedIcon', {
     theme: 'light',
     content: 'Notes are saved',
     interactive: true,
@@ -100,6 +109,9 @@ let book = [""];
 // Creates the list of notebooks, keeping the current notebook at the top below the search bar
 // Maybe it would be better to use DOM manipulation rather than innerHTML, but idk
 async function createList() {
+    while (list.firstChild) {
+        list.firstChild.remove();
+    }
     let currBook;
     const response = await fetch("/api/get/everything")
     const json = await response.json();
@@ -202,14 +214,21 @@ async function forceUpdateNotes() {
         localStorage.setItem(sendThis, s);
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
         accents()
-        hideDiff()
+        hideBookDiffPopup()
         updateList()
         notyf.success("Notes were pulled from database");
     }
 }
 
+let lastMorePagesTippy;
+let lastImageRemoveTippy;
+let lastPagePreviewTippy;
+
 // Create the page numbers in the top left
 function createPageNumbers() {
+    while (topLeftPageNumber.firstChild) {
+        topLeftPageNumber.firstChild.remove();
+    }
     document.getElementById("generalInfoPageNumber").innerText = pgN+1;
     generalInfoPageNumber.setContent(`Page ${pgN + 1}`)
     let content = []
@@ -218,38 +237,41 @@ function createPageNumbers() {
                 content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);      
         }
         content.push(`<span class = 'whereTo' id = 'morePages' onclick = 'jumpToDesiredPage(${book.length-1});'>.</span>`);
+
+        try {
+            lastMorePagesTippy.destroy();
+        } catch (err) {
+            console.log("No previous 'more pages' tippy to delete")
+        }
+        lastMorePagesTippy = tippy('#morePages', {
+            theme: 'light',
+            content: `${(book.length - 9)} more pages are hidden, you are on page ${pgN+1}`,
+            placement: 'right-start',
+        })[0];
     } else {
         for (let z = 0; z < book.length; z++) {
             content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);     
         }
     }
-    content.push(`<span class = 'whereTo' id = 'newPage' onclick = 'jumpToDesiredPage(${book.length});'>+</span>`);
     topLeftPageNumber.innerHTML = content.join('');
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
     currPage.style.backgroundColor = "rgb(116, 222, 152)";
     currPage.style.color = "black";
-    
-    tippy('#newPage', {
-        theme: 'light',
-        content: "New Page",
-        placement: 'right-start',
-    })[0];
-
-    tippy('#morePages', {
-        theme: 'light',
-        content: `${(book.length - 9)} more pages are hidden, you are on page ${pgN+1}`,
-        placement: 'right-start',
-    });
 }
 
 // Create the page previews when hovering over the page numbers in top left
 function pagePreviewToolTip(ele) {
+    try {
+        lastPagePreviewTippy.destroy();
+    } catch (err) {
+        console.log("no previous 'page preview' tippy to destroy")
+    }
     const bry = ele.innerText.trim() - 1;
-    tippy(`#whereTo${bry}`, {
+    lastPagePreviewTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
         content: format(book[bry].substring(0, 95)) + "...",
         placement: 'right-start',
-    });
+    })[0];
 }
 
 // Find all code blocks
@@ -276,7 +298,7 @@ function formatNonText() {
     }
     let imgs = document.getElementsByClassName("userImage")
     for (let i = 0, n = imgs.length; i < n; i++) {
-        imgs[i].addEventListener("mouseover", (event) => {
+        imgs[i].addEventListener("mouseover", (e) => {
             removeImageToolTip(imgs[i])
         });
     }
@@ -300,6 +322,9 @@ function padWithZeroes(str) {
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
 function updateAndSaveNotesLocally() {
+    while (notesPreviewArea.firstChild) {
+        notesPreviewArea.firstChild.remove();
+    }
     notesPreviewArea.innerHTML = format(notesTextArea.value);
     document.getElementById("letterCount").innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
     document.getElementById("wordCount").innerText = padWithZeroes(notesTextArea.value.replace(/  +/g, ' ').split(" ").length-1);
@@ -309,10 +334,10 @@ function updateAndSaveNotesLocally() {
     syncStatus(s);
 }
 
-let image;
+let lastHoveredImageSrc;
 
 async function deleteImageFromDb() {
-    let imageTo = image + "";
+    let imageTo = lastHoveredImageSrc + "";
     let occ = `!(${imageTo.substring(imageTo.indexOf("/uploads/"))})`;
     const imageDeleteStatus = await fetch("/api/delete/images/" + imageTo.substring(imageTo.indexOf("/uploads/") + 9), {
         method: "DELETE",
@@ -327,13 +352,18 @@ async function deleteImageFromDb() {
 }
 
 function removeImageToolTip(given) {
-    image = given.src;
-    tippy('.userImage', {
+    try {
+        lastImageRemoveTippy.destroy();
+    } catch (err) {
+        console.log("no previous 'image remove' tippy to destroy")
+    }
+    lastHoveredImageSrc = given.src;
+    lastImageRemoveTippy = tippy('.userImage', {
         theme: 'light',
         content: "<span onclick = 'deleteImageFromDb()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
         interactive: true,
-    });
+    })[0];
 }
 
 async function deleteNoteBookFromDb() {
@@ -384,10 +414,7 @@ async function saveNoteBookToDb() {
         })
     })
     if (saveStatus.ok) {
-        grnBox.classList.add("saved")
-        grnBox.addEventListener('animationend', () => {
-            grnBox.classList.remove("saved")
-        });
+        areNotesSavedIcon.classList.add("saved")
         s = JSON.stringify(book);
         if (pgN > book.length - 1) {
             jumpToDesiredPage(book.length - 1);
@@ -443,19 +470,26 @@ function syncStatus(response) {
         writtenPages.push("");
     }
     if (JSON.stringify(writtenPages) === response) {
-        grnBox.style.filter = "none"
-
-        synced.setContent("Notes are saved")
+        areNotesSavedIcon.style.filter = "none"
+        synced.destroy()
+        synced = tippy('#areNotesSavedIcon', {
+            theme: 'light',
+            content: `Notes are saved`,
+            interactive: true,
+        })[0];
         document.title = sendThis;
     } else {
-        grnBox.style.filter = "grayscale(1)"
-        synced.setContent(
-            `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
+        areNotesSavedIcon.style.filter = "grayscale(1)"
+        synced.destroy()
+        synced = tippy('#areNotesSavedIcon', {
+            theme: 'light',
+            content: `Notes shown differ from saved notes by ${Math.abs(JSON.stringify(book).length - response.length)} chars
             <br><br>
-            <span onclick = 'diff()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>More details</span>
+            <span onclick = 'showBookDiffPopup()' style = 'color: darkcyan; cursor: pointer; text-decoration: underline;'>More details</span>
             <br><br>
-            <span onclick = 'forceUpdateNotes()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`
-        )
+            <span onclick = 'forceUpdateNotes()' style = 'color: orange; cursor: pointer; text-decoration: underline;'>Force update</span>`,
+            interactive: true,
+        })[0];
         document.title = sendThis + " *"
     }
 }
@@ -480,17 +514,16 @@ function getDiff(one, other) {
 }
 
 // *Make this less hacky*, displays the popup showing the differences in the DB and currently displayed notebook
-function diff() {
-    currDiff.style.opacity = "1";
-    currDiff.style.visibility = "visible";
+function showBookDiffPopup() {
+    bookDiffPopup.classList.add("bookDiffPopupVisible")
     let content = [];
     const timesToRepeat = JSON.parse(s).length > book.length ? JSON.parse(s).length : book.length;
     const missingPage = timesToRepeat === JSON.parse(s).length ? JSON.parse(s) : book
     const colorIndicator = timesToRepeat === JSON.parse(s).length ? '#ff5e5e' : '#33ff96'
     for(let i = 0, n = timesToRepeat; i < n; i++) {
-        content.push(`<h3>Page ${i+1}</h3><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
+        content.push(`<h2>Page ${i+1}</h2><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
     }
-    currDiff.innerHTML = content.join("");
+    document.getElementById("bookDiffContent").innerHTML = content.join("");
     for(let i = 0, n = timesToRepeat; i < n; i++) {
         try {
             document.getElementById(`pageDiff${i}`).appendChild(getDiff(JSON.parse(s)[i], book[i]))
@@ -507,10 +540,8 @@ function diff() {
 }
 
 // Hide the popup displaying the differences, make these less hacky
-function hideDiff() {
-    currDiff.innerHTML = "";
-    currDiff.style.opacity = "0";
-    currDiff.style.visibility = "hidden"; 
+function hideBookDiffPopup() {
+    bookDiffPopup.classList.remove("bookDiffPopupVisible")
 }
 
 // Handles native image uploading
@@ -552,12 +583,12 @@ async function wikiSearch(event) {
 
 // Displays the little brain animation when the user select text and if the wikipedia api returns an OK status
 function moneyAnimation(mouseCoords, symbol) {
-    brain.style.top = mouseCoords.clientY + "px"
-    brain.style.left = mouseCoords.clientX + "px"
+    wikipediaBrainAnimation.style.top = mouseCoords.clientY + "px"
+    wikipediaBrainAnimation.style.left = mouseCoords.clientX + "px"
     // https://stackoverflow.com/a/69970674
     var moneyAnimation = document.createElement("p");
     moneyAnimation.innerHTML = symbol;
-    brain.appendChild(moneyAnimation);
+    wikipediaBrainAnimation.appendChild(moneyAnimation);
     moneyAnimation.classList.add("wikipediaBrainAnimation"); // Add the class that animates
     fluentemoji.parse(".wikipediaBrainAnimation");
     moneyAnimation.addEventListener('animationend', () => {
@@ -677,6 +708,7 @@ if(book[pgN] == null || book[pgN] === "" || book[pgN] === "undefined") {
 if (atHome) {
     topLeftPageNumber.style.display = "none";
     document.getElementById("toolBar").classList.add("homeToolBar");
+    document.getElementById("createNewPage").style.display = "none";
     let content = ["# Recent Notes\n"];
     for (let i = 0, n = recentB.length; i < n; i++) {
         content.push(`\n${i+1}. [[${recentB[i]}]]`);
@@ -694,7 +726,7 @@ if (atHome) {
             notyf.error('There was an error uploading the image')
         },
         success: function (file, response) {
-            file.previewElement.innerHTML = "";
+            file.previewElement.remove();
             notesTextArea.value += `\n\n!(${response})`;
             updateAndSaveNotesLocally()
             saveNoteBookToDb()
@@ -704,7 +736,7 @@ if (atHome) {
 
 // Event listeners
 notesTextArea.addEventListener("input", function (e) {
-    hideDiff();
+    hideBookDiffPopup();
     updateAndSaveNotesLocally();
 });
 
@@ -722,12 +754,16 @@ document.getElementById("icon8").addEventListener("contextmenu", function(e) {
 document.addEventListener('keydown', e => {
     if ((e.ctrlKey && (e.key === 's' || e.key === 'S')) && !atHome) {
         e.preventDefault();
-        saveNoteBookToDb();;
+        saveNoteBookToDb();
     } 
     else if ((e.ctrlKey && (e.key === 'e' || e.key === 'E'))) {
         e.preventDefault();
         cycleViewPreferences();
     }
+});
+
+areNotesSavedIcon.addEventListener('animationend', () => {
+    areNotesSavedIcon.classList.remove("saved")
 });
 
 document.getElementById("icon1").addEventListener('click', function(e) {
@@ -762,11 +798,18 @@ document.getElementById("sideBarRetractList").addEventListener('click', function
     toggleList();
 });
 
-notesAreaContainer.addEventListener('click', function(e) {
-    hideDiff();
+document.getElementById("newPage").addEventListener('click', function(e) {
+    jumpToDesiredPage(book.length);
+});
+
+mainContainer.addEventListener('click', function(e) {
+    hideBookDiffPopup();
 });
 
 notesPreviewArea.addEventListener('click', function(e) {
-    hideDiff();
     wikiSearch(e);
+});
+
+document.getElementById("bookDiffExit").addEventListener('click', function(e) {
+    hideBookDiffPopup();
 });
