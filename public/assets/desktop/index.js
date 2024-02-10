@@ -107,31 +107,54 @@ let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
 // Creates the list of notebooks, keeping the current notebook at the top below the search bar
-// Maybe it would be better to use DOM manipulation rather than innerHTML, but idk
 async function createList() {
     while (list.firstChild) {
         list.firstChild.remove();
     }
-    let currBook;
     const response = await fetch("/api/get/everything")
     const json = await response.json();
     const result = json["data"];
-    let listedItems = [];
     for (let i = result.length-1; i >= 0; i--) {
-        let links = []
+        const item = document.createElement("div")
+        item.classList.add("item")
+        item.setAttribute("data-pos", "up")
+        item.setAttribute("data-bn", result[i]["name"])
+        item.addEventListener("click", function(e) {
+            handleListDropDowns(this)
+        })
+        const header = document.createElement("div")
+        header.innerText = result[i]["name"]
+        header.classList.add("listHeader")
+        item.appendChild(header)
         for (let j = 0, n =  result[i]["length"]; j < n; j++)
-        {
-            links.push(`<a href = '/${result[i]["name"]}?${(j+1)}'><div class = 'linkWrapper'><span>${result[i]["excerpt"][j]}...</span></div></a>`)
+        {   
+            const link = document.createElement("a")
+            const linkWrapper = document.createElement("div")
+            const bookExcerpt = document.createElement("span")
+            link.href = `/${result[i]["name"]}?${j+1}`
+            linkWrapper.classList.add("linkWrapper")
+            bookExcerpt.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ")}`
+            linkWrapper.appendChild(bookExcerpt)
+            link.appendChild(linkWrapper)
+            item.appendChild(link)
         }
         if(result[i]["name"] === sendThis) {
-            currBook = `<div class = "item" id = "lockedItem" data-pos="up" data-bn="${result[i]["name"]}" onclick = "handleListDropDowns(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`
+            list.prepend(item)
+            item.id = "lockedItem";
         } else {
-            listedItems.push(`<div class = "item" data-pos="up" data-bn="${result[i]["name"]}" onclick = "handleListDropDowns(this)"><div class = 'listHeader'>${result[i]["name"]}</div>${links.join('')}</div>`);
+            list.appendChild(item)
         }
     }
-    listedItems.unshift(currBook)
-    listedItems.unshift(`<div class = "searchItem"><input placeholder="Search..." id = "searchBar" oninput="search(this.value)"></div>`)
-    list.innerHTML = listedItems.join('');
+    const searchItem = document.createElement("div")
+    searchItem.classList.add("searchItem")
+    const searchBar = document.createElement("input")
+    searchBar.placeholder = "Search..."
+    searchBar.addEventListener("input", function(e) {
+        search(this.value)
+    })
+    searchBar.id = "searchBar"
+    searchItem.appendChild(searchBar)
+    list.prepend(searchItem);
     ele = document.getElementById("lockedItem")
     ele.style.height = ele.scrollHeight + "px"
     ele.setAttribute("data-pos", "locked")
@@ -231,12 +254,27 @@ function createPageNumbers() {
     }
     document.getElementById("generalInfoPageNumber").innerText = pgN+1;
     generalInfoPageNumber.setContent(`Page ${pgN + 1}`)
-    let content = []
     if (book.length > 9) {
         for (let z = 0; z < 9; z++) {
-                content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);      
+                const box = document.createElement("div")
+                box.classList.add("whereTo")
+                box.id = `whereTo${z}`
+                box.addEventListener("mouseover", function(e) {
+                    pagePreviewToolTip(this)
+                })
+                box.addEventListener("click", function(e) {
+                    jumpToDesiredPage(z)
+                })
+                box.innerText = z+1
+                topLeftPageNumber.appendChild(box)
         }
-        content.push(`<span class = 'whereTo' id = 'morePages' onclick = 'jumpToDesiredPage(${book.length-1});'>.</span>`);
+        const morePages = document.createElement("div");
+        morePages.id = 'morePages'
+        morePages.addEventListener("click", function(e) {
+            jumpToDesiredPage(book.length-1)
+        })
+        morePages.innerText = '.'
+        topLeftPageNumber.appendChild(morePages)
 
         try {
             lastMorePagesTippy.destroy();
@@ -250,10 +288,19 @@ function createPageNumbers() {
         })[0];
     } else {
         for (let z = 0; z < book.length; z++) {
-            content.push(`<span class = 'whereTo' id = 'whereTo${z}' onmouseover = 'pagePreviewToolTip(this);' onclick = 'jumpToDesiredPage(${z});'>${z + 1}</span>`);     
+            const box = document.createElement("div")
+            box.classList.add("whereTo")
+            box.id = `whereTo${z}`
+            box.addEventListener("mouseover", function(e) {
+                pagePreviewToolTip(this)
+            })
+            box.addEventListener("click", function(e) {
+                jumpToDesiredPage(z)
+            })
+            box.innerText = z+1
+            topLeftPageNumber.appendChild(box)
         }
     }
-    topLeftPageNumber.innerHTML = content.join('');
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
     currPage.style.backgroundColor = "rgb(116, 222, 152)";
     currPage.style.color = "black";
@@ -632,10 +679,10 @@ function handleListDropDowns(ele) {
 function applyViewPreference() {
     let viewPref = localStorage.getItem("viewPref");
     if (viewPref === null) {
-        localStorage.setItem("viewPref", "split");
-    } else {
-        editingWindow(viewPref)
+        viewPref = "read"
+        localStorage.setItem("viewPref", "read");
     }
+    editingWindow(viewPref)
 }
 
 //Cycle through visibility optionss
