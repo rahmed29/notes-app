@@ -269,6 +269,7 @@ function createPageNumbers() {
                 topLeftPageNumber.appendChild(box)
         }
         const morePages = document.createElement("div");
+        morePages.classList.add("whereTo")
         morePages.id = 'morePages'
         morePages.addEventListener("click", function(e) {
             jumpToDesiredPage(book.length-1)
@@ -425,6 +426,7 @@ async function deleteNoteBookFromDb() {
         notyf.error(`${noteDeleteStatus.status} Error`)
     }
     updateList()
+    hideBookDiffPopup()
 }
 
 function updateList() {
@@ -474,6 +476,7 @@ async function saveNoteBookToDb() {
         notyf.error(`${saveStatus} Error`)
     }
     // If the list is not shown, make sure it is updated next time it is shown
+    hideBookDiffPopup()
     updateList()
 }
 
@@ -651,8 +654,8 @@ function toggleList() {
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
     } else {
-        notesAreaContainer.style.width = "calc(100% - 20px - 15%)";
-        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 15%)"
+        notesAreaContainer.style.width = "calc(100% - 20px - 300px)";
+        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 300px)"
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {
@@ -783,7 +786,6 @@ if (atHome) {
 
 // Event listeners
 notesTextArea.addEventListener("input", function (e) {
-    hideBookDiffPopup();
     updateAndSaveNotesLocally();
 });
 

@@ -32,14 +32,11 @@ a {
     background: #f1f1f1;
     width: 100vw;
     height: 100vh;
-    width: 100vw;
-    height: 100vh;
     display: flex;
 }
 
 #notesAreaContainer {
-    width: calc(100% - 20px - 15%);
-    position: relative;
+    width: calc(100% - 20px - 300px);
     display: flex;
 }
 
@@ -89,7 +86,6 @@ a {
 }
 
 .emoji {
-    user-select: none;
     margin-top: 6px;
     height: 1.15em;
     width: 1.15em;
@@ -114,7 +110,6 @@ a {
     display: flex;
     justify-content: center;
     gap: .25em;
-    transition: .5s;
     padding-bottom: 3px;
 }
 
@@ -133,6 +128,7 @@ a {
 }
 
 .tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
+    margin-top: 0px;
     margin-bottom: -1em;
 }
 
@@ -153,14 +149,13 @@ a {
     cursor: default;
     z-index: 1000;
     bottom: 0%;
-    left: calc(20px + 15%);
+    left: calc(20px + 300px);
     position: fixed;
     padding-right: .5em;
     padding-left: .5em;
     background: rgba(230, 230, 230,.6);
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
@@ -168,13 +163,7 @@ a {
     color: rgb(43, 43, 43);
 }
 
-#topLeftPageNumbers {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-#createNewPage {
+#topLeftPageNumbers, #createNewPage, #morePages {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -190,12 +179,6 @@ a {
     width: 100%;
     display: flex;
     flex-direction: column-reverse;
-}
-
-#currPage {
-    width: 100%;
-    text-align: center;
-    display: flex;
 }
 
 .whereTo {
@@ -249,7 +232,6 @@ a {
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
     width: 100%;
-    display: flex;
 }
 
 #bookDiffFooter {
@@ -258,7 +240,6 @@ a {
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
     width: 100%;
-    display: flex;
 }
 
 #bookDiffContent {
@@ -298,29 +279,26 @@ a {
 /* Sidebar */
 #listOfBooks {
     height: 100vh;
-    width: 15%;
+    width: 300px;
     background: rgb(39, 38, 36);
-    overflow-y: auto;
-    overflow-x: hidden;
     user-select: none;
+    overflow-y: auto;
 }
 
 .searchItem {
-    box-sizing: border-box;
     width: auto;
     height: 2em;
     color: #141414;
     overflow: hidden;
     transition: 0.15s ease-out;
     color: silver;
-    font-family: Arial, Helvetica, sans-serif;
 }
 
 #searchBar {
     box-sizing: border-box;
     font-size: 17px;
     width: 100%;
-    height: auto;
+    height: 100%;
     background: rgb(34, 34, 34);
     outline: none;
     border-style: none;
@@ -330,7 +308,7 @@ a {
 }
 
 .item {
-    width: 100%;
+    width: 90%;
     height: 2em;
     color: #141414;
     position: relative;
@@ -339,36 +317,44 @@ a {
     font-size: 14px;
     transition: 0.15s ease-out;
     color: silver;
-    padding-top: 3px;
     padding-left: 10%;
-    overflow-x: hidden;
     line-height: 0px;
-    white-space: nowrap;
+    padding-top: 3px;
+}
+
+.listHeader {
+    box-sizing: border-box;
+    color: white;
+    transition: .15s;
+    width: 109%;
+    height: 2em;
+    line-height: 2em;
+    padding-left: 5%;
+    margin-left: -10%;
+}
+
+.listHeader:hover {
+    background: #4e4e4e;
 }
 
 .linkWrapper {
-    width: 100%;
+    width: 99%;
     box-sizing: border-box;
     color: white;
     border-color: blue;
     transition: .15s;
     height: 2em;
-    padding: 1em;
+    line-height: 2em;
+    padding-left: 5%;
     background: none;
+    margin-top: 2px;
+    white-space: nowrap;
 }
 
 .linkWrapper:hover {
     background: #4e4e4e;
     border-color: blue;
     border-left-style: solid;
-}
-
-.linkWrapper:hover span {
-    background: white;
-    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .linkWrapper span {
@@ -379,34 +365,22 @@ a {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-left: -20px;
-    overflow-x: hidden;
+}
+
+.linkWrapper:hover span {
+    background: linear-gradient(to right, white 25%, rgba(0,0,0,0) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .item a {
-    font-family: Arial, Helvetica, sans-serif;
-    transition: 0.5s;
-    visibility: hidden;
     text-decoration: none;
     opacity: 0%;
     transition: .15s;
     visibility: hidden;
     margin-left: 10%;
 
-}
-
-.listHeader {
-    box-sizing: border-box;
-    color: white;
-    transition: .15s;
-    width: 100%;
-    height: 2em;
-    padding: 1em;
-    padding-bottom: 0px;
-    margin-left: -10%;
-}
-
-.listHeader:hover {
-    background: #4e4e4e;
 }
 
 .itemWithLinks a {
@@ -506,6 +480,7 @@ mark {
 
 /* https://stackoverflow.com/a/69970674 */
 #wikipediaBrainAnimation {
+    user-select: none;
     visibility: hidden;
     position: fixed;
     z-index: 1000;
@@ -519,13 +494,11 @@ mark {
     visibility: visible;
 }
 
-
 @keyframes brainAnimation {
     0% {
         opacity: 1;
         top: 0;
     }
-
     100% {
         opacity: 0;
         top: -50px;
@@ -540,20 +513,15 @@ mark {
     30% {
         transform: scale(1.2);
     }
-
-    40%,
-    60% {
+    40%, 60% {
         transform: rotate(-20deg) scale(1.2);
     }
-
     50% {
         transform: rotate(20deg) scale(1.2);
     }
-
     70% {
         transform: rotate(0deg) scale(1.2);
     }
-
     100% {
         transform: scale(1);
     }
