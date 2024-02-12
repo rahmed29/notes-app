@@ -1,8 +1,10 @@
 # Note Taking Website
 
-This is my personal note taking website made with vanilla JavaScript. It is essentially a WYSIWYM text editor built with Regex
+![Screenshot](https://raw.githubusercontent.com/rahmed29/notes-app/master/notes.png)
 
-Current features:
+This is my personal note taking website made with vanilla JavaScript.
+
+nice features:
 - Select text to recieve the wikipedia summary of it
 - Insert images through native file upload or drag and drop
 - Custom syntax similar to markdown (allows for underlined and red text, which isn't supported in regular markdown)
