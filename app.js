@@ -116,7 +116,6 @@ app.get("/api/get/everything", async (req, res) => {
 })
 
 app.get('/:name', async (req, res) => {
-  let displayed = req.header("User-Agent").includes("iPhone OS") ? "mobile.ejs" : "desktop.ejs";
   const name = req.params.name;
   if(name == "null") {
     res.redirect("/home")
@@ -126,11 +125,11 @@ app.get('/:name', async (req, res) => {
   }
   const item = await Item.findOne({ name });
   if(name == "home") {
-    res.render(displayed, {data: {book: ""}});
+    res.render("desktop.ejs", {data: {book: ""}});
   } else if (!item) {
-    res.render(displayed, {data: {book: ""}});
+    res.render("desktop.ejs", {data: {book: ""}});
   } else {
-      res.render(displayed, {data: {book: item.content }});
+      res.render("desktop.ejs", {data: {book: item.content }});
   }
 });
 

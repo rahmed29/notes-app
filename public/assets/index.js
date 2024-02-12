@@ -1,8 +1,21 @@
 // Create global variables.
 const sendThis = location.pathname.substring(1);
-let haveToUpdateList = false;
 let allowWiki = true;
-const notyf = new Notyf();
+const notyf = new Notyf({
+    position: {
+        y: 'top'
+    },
+    dismissible: true
+});
+const mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
+// set a global variable telling other function if we are on mobile or not
+const onMobile = mediaScreen.matches ? true : false; 
+// the amount of padding we will apply to the textarea and preview area depends on whether we are on mobile or not. I wouldn't have to do this if I used classLists for the editingWindow but will do for now
+const notesPaddingAmount = onMobile ? 10 : 20; 
+// set to true when the list is not shown but needs to be updated to due to saved or deleted notebooks. On mobile is is hidden by default
+let haveToUpdateList = onMobile ? true : false;
+// set a global variable telling other function if we are on the home menu
+const atHome = sendThis ==="home" ? true : false
 
 const notesTextArea = document.getElementById("notesTextArea");
 const notesPreviewArea = document.getElementById("notesPreviewArea");
@@ -11,7 +24,7 @@ const mainContainer = document.getElementById("mainContainer");
 const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
 const areNotesSavedIcon = document.getElementById("areNotesSavedIcon");
 const bookDiffPopup = document.getElementById("bookDiffPopup");
-const list = document.getElementById("listOfBooks");
+const list = onMobile ? document.getElementById("mobileList") :  document.getElementById("listOfBooks");
 const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
 
@@ -43,20 +56,17 @@ function format(str) {
     return DOMPurify.sanitize(str)
 }
 
-// set a global variable telling other function if we are on the home menu
-const atHome = sendThis ==="home" ? true : false
-
 // remove /'s from the path as it causes CSS to not load
 if (sendThis.includes("/")) {
     location.href = "/" + sendThis.substring(0, sendThis.length - 1);
 }
 
-// Create tool tips of the top toolbar
-const tips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
+// Create tool tips
+const toolBarTips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
 for(let i = 0; i < 7; i++) {
     tippy(`#icon${i+1}`, {
         theme: 'light',
-        content: tips[i],
+        content: toolBarTips[i],
     });
 }
 
@@ -243,6 +253,7 @@ async function forceUpdateNotes() {
     }
 }
 
+// storing a few tooltips so we can delete them when creating new ones. didn't use setContent here because it creates the tooltips on every hover since some elements with tooltips often gets re-rendered
 let lastMorePagesTippy;
 let lastImageRemoveTippy;
 let lastPagePreviewTippy;
@@ -382,6 +393,7 @@ function updateAndSaveNotesLocally() {
     syncStatus(s);
 }
 
+// Store the src of the image that the user is currently hovering over so that it can be deleted
 let lastHoveredImageSrc;
 
 async function deleteImageFromDb() {
@@ -399,6 +411,7 @@ async function deleteImageFromDb() {
     }
 }
 
+// tooltip to delete image
 function removeImageToolTip(given) {
     try {
         lastImageRemoveTippy.destroy();
@@ -430,6 +443,7 @@ async function deleteNoteBookFromDb() {
 }
 
 function updateList() {
+    // Refetch data and re render the list. If the list is not shown, make sure it is updated next time it is shown
     if (list.getAttribute("data-pos") === "hidden") {
         haveToUpdateList = true;
     } else {
@@ -475,7 +489,6 @@ async function saveNoteBookToDb() {
     } else {
         notyf.error(`${saveStatus} Error`)
     }
-    // If the list is not shown, make sure it is updated next time it is shown
     hideBookDiffPopup()
     updateList()
 }
@@ -521,6 +534,7 @@ function syncStatus(response) {
     }
     if (JSON.stringify(writtenPages) === response) {
         areNotesSavedIcon.style.filter = "none"
+        document.getElementById("mobileSync").style.background = "#61da20";
         synced.destroy()
         synced = tippy('#areNotesSavedIcon', {
             theme: 'light',
@@ -530,6 +544,7 @@ function syncStatus(response) {
         document.title = sendThis;
     } else {
         areNotesSavedIcon.style.filter = "grayscale(1)"
+        document.getElementById("mobileSync").style.background = "gray";
         synced.destroy()
         synced = tippy('#areNotesSavedIcon', {
             theme: 'light',
@@ -563,7 +578,7 @@ function getDiff(one, other) {
     return fragment;
 }
 
-// *Make this less hacky*, displays the popup showing the differences in the DB and currently displayed notebook
+// *maybe make this less hacky*, displays the popup showing the differences in the DB and currently displayed notebook
 function showBookDiffPopup() {
     bookDiffPopup.classList.add("bookDiffPopupVisible")
     let content = [];
@@ -589,7 +604,7 @@ function showBookDiffPopup() {
     notyf.success("Comparing your notes vs saved notes");
 }
 
-// Hide the popup displaying the differences, make these less hacky
+// Hide the popup displaying the differences
 function hideBookDiffPopup() {
     bookDiffPopup.classList.remove("bookDiffPopupVisible")
 }
@@ -636,7 +651,7 @@ function moneyAnimation(mouseCoords, symbol) {
     wikipediaBrainAnimation.style.top = mouseCoords.clientY + "px"
     wikipediaBrainAnimation.style.left = mouseCoords.clientX + "px"
     // https://stackoverflow.com/a/69970674
-    var moneyAnimation = document.createElement("p");
+    const moneyAnimation = document.createElement("p");
     moneyAnimation.innerHTML = symbol;
     wikipediaBrainAnimation.appendChild(moneyAnimation);
     moneyAnimation.classList.add("wikipediaBrainAnimation"); // Add the class that animates
@@ -647,7 +662,8 @@ function moneyAnimation(mouseCoords, symbol) {
 }
 
 // Toggles the visibility of the list of notebooks. if the list was not shown when the notebook was saved or deleted, it updates.
-function toggleList() {
+// On mobile the function is a little different because of the size and z-index of the list
+const toggleList = !onMobile ? () => {
     if (list.getAttribute("data-pos") === "shown") {
         notesAreaContainer.style.width = "calc(100% - 20px)";
         document.getElementById("bottomLeftGeneralInfo").style.left = "20px"
@@ -656,6 +672,18 @@ function toggleList() {
     } else {
         notesAreaContainer.style.width = "calc(100% - 20px - 300px)";
         document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 300px)"
+        list.setAttribute("data-pos", "shown");
+        list.style.display = "inline"
+        if(haveToUpdateList) {
+            createList();
+            haveToUpdateList = false;
+        }
+    }
+} : () => {
+    if (list.getAttribute("data-pos") === "shown") {
+        list.style.display = "none"
+        list.setAttribute("data-pos", "hidden");
+    } else {
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {
@@ -689,7 +717,8 @@ function applyViewPreference() {
 }
 
 //Cycle through visibility optionss
-function cycleViewPreferences() {
+// On mobile the function disallows the split mode
+const cycleViewPreferences = !onMobile ? () => {
     let viewPref = localStorage.getItem("viewPref");
     if(viewPref === "split") {
         localStorage.setItem("viewPref", "write");
@@ -697,6 +726,14 @@ function cycleViewPreferences() {
         localStorage.setItem("viewPref", "read");
     } else if (viewPref === "read") {
         localStorage.setItem("viewPref", "split");
+    }
+    editingWindow(localStorage.getItem("viewPref"))
+} : () => {
+    let viewPref = localStorage.getItem("viewPref");
+    if (viewPref === "write") {
+        localStorage.setItem("viewPref", "read");
+    } else if (viewPref === "read") {
+        localStorage.setItem("viewPref", "write");
     }
     editingWindow(localStorage.getItem("viewPref"))
 }
@@ -710,8 +747,8 @@ function editingWindow(choice) {
         notesTextArea.style.display = "none";
         notesPreviewArea.style.display = "inline";
         notesPreviewArea.style.width = "100%";
-        notesPreviewArea.style.paddingLeft = "20%";
-        notesPreviewArea.style.paddingRight = "20%";
+        notesPreviewArea.style.paddingLeft = notesPaddingAmount + "%";
+        notesPreviewArea.style.paddingRight = notesPaddingAmount + "%";
         localStorage.setItem("viewPref", "read")
     } else if (choice === "write") {
         mode.innerText = "W";
@@ -719,8 +756,8 @@ function editingWindow(choice) {
         notesPreviewArea.style.display = "none";
         notesTextArea.style.display = "inline";
         notesTextArea.style.width = "100%";
-        notesTextArea.style.paddingLeft = "20%";
-        notesTextArea.style.paddingRight = "20%";
+        notesTextArea.style.paddingLeft =  notesPaddingAmount + "%";
+        notesTextArea.style.paddingRight = notesPaddingAmount + "%";
         localStorage.setItem("viewPref", "write")
     } else {
         mode.innerText = "S";
@@ -745,7 +782,9 @@ function editingWindow(choice) {
 // Also, parse the emojis in the top menu and if the current page that the user is on is null, go to page one.
 initializeNotes(true);
 applyViewPreference();
-createList()
+if(!onMobile) {
+    createList()
+}
 createPageNumbers();
 fluentemoji.parse("#toolBar");
 if(book[pgN] == null || book[pgN] === "" || book[pgN] === "undefined") {
@@ -845,6 +884,14 @@ document.getElementById("icon7").addEventListener('click', function(e) {
 
 document.getElementById("sideBarRetractList").addEventListener('click', function(e) {
     toggleList();
+});
+
+document.getElementById("mobileMenu").addEventListener('click', function(e) {
+    toggleList();
+});
+
+document.getElementById("mobileSyncContainer").addEventListener('click', function(e) {
+    forceUpdateNotes();
 });
 
 document.getElementById("newPage").addEventListener('click', function(e) {

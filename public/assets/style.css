@@ -55,6 +55,7 @@ a {
     padding-right: 5%;
     font-size: 17px;
     overscroll-behavior-y: contain;
+    overflow-x: hidden;
 }
 
 #notesPreviewArea {
@@ -69,7 +70,7 @@ a {
     padding-right: 5%;
     font-size: 17px;
     overscroll-behavior-y: contain;
-    overflow: auto;
+    overflow-x: hidden;
 }
 
 #notesPreviewArea h1,
@@ -111,6 +112,46 @@ a {
     justify-content: center;
     gap: .25em;
     padding-bottom: 3px;
+}
+
+#mobileMenu {
+    z-index: 1001;
+    height: 3.5em;
+    width: 3.5em;
+    border-radius: 50%;
+    right: 0%;
+    bottom: 6.5vh;
+    position: fixed;
+    display: none;
+    background: rgb(116, 222, 152);
+    line-height: 3.5em;
+    text-align: center;
+    font-size: 1em;
+    color: #000;
+    transition: .5s;
+    user-select: none;
+    margin-bottom: 2em;
+    margin-right: .75em;
+}
+
+#mobileSyncContainer {
+    left: 50%;
+    top: 0%;
+    transform: translate(-50%, 0%);
+    border-radius: 25px;
+    width: 25vw;
+    height: 20px;
+    position: fixed;
+    z-index: 1000;
+    transition: .5s;
+}
+
+#mobileSync {
+    border-radius: 25px;
+    width: 25vw;
+    height: 3px;
+    transition: .5s;
+    display: none;
 }
 
 .homeToolBar #icon1, .homeToolBar #icon3, .homeToolBar #icon4, .homeToolBar #icon6, .homeToolBar #icon7, .homeToolBar #grnBox  {
@@ -400,6 +441,19 @@ a {
     filter: brightness(150%);
 }
 
+#mobileList {
+    top: 0%;
+    left: 0%;
+    position: fixed;
+    z-index: 1000;
+    height: 90vh;
+    width: 100vw;
+    display: none;
+    background: black;
+    user-select: none;
+    overflow-y: auto;
+}
+
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
 .spoiler {
     background: rgb(0, 0, 0);
@@ -524,5 +578,85 @@ mark {
     }
     100% {
         transform: scale(1);
+    }
+}
+
+@media only screen and (max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+    body {
+        background: black;
+    }
+    #notesTextArea, #notesPreviewArea {
+        background: black;
+        color: white;
+        padding-left: 0%;
+        padding-right: 0%;
+        padding-top: 5vh;
+        height: 90vh;
+    }
+    #notesTextArea {
+        padding-top: 10vh;
+    }
+    #leftMostSideBar, #generalInfoViewMode, #letterCount, #wordCount {
+        display: none;
+    }
+    #generalInfoPageNumber {
+        color: whitesmoke;
+    }
+    #notesAreaContainer {
+        width: 100%;
+        background: black;
+    }
+    #bottomLeftGeneralInfo {
+        top: 0%;
+        left: 0%;
+        background: none;
+        height: 1px;
+        z-index: 999;
+    }
+    #toolBar {
+        width: 100%;
+        gap: .6em;
+        height: 6.5vh;
+        width: 100%;
+        border-radius: 0px;
+        padding-bottom: 7%;
+        top: inherit;
+        bottom: 0%;
+        touch-action: manipulation;
+    }
+    #toolBar span {
+        font-size: 1.3em;
+        margin-top: .3em;
+    }
+    #icon8, #areNotesSavedIcon {
+        display: none;
+    }
+    #mobileMenu {
+        display: inherit;
+    }
+    #listOfBooks {
+        display: none;
+    }
+    #mobileMenu, #mobileSync {
+        display: inherit;
+    }
+    a {
+        color: lightblue;
+    }
+    .codeBlock, .userHtml {
+        width: 90%;
+        background: #141414;
+    }
+    .unorder, .order {
+        margin-left: 1em;
+    }
+    .unorderIndented {
+        margin-left: 2em;
+    }
+    .tippy-popper {
+        visibility: hidden !important;
+    }
+    .reference {
+        color: violet;
     }
 }
