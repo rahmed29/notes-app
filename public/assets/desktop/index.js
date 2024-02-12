@@ -317,7 +317,7 @@ function pagePreviewToolTip(ele) {
     const bry = ele.innerText.trim() - 1;
     lastPagePreviewTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
-        content: format(book[bry].substring(0, 95)) + "...",
+        content: format(book[bry].substring(0, 200)) + "...",
         placement: 'right-start',
     })[0];
 }
@@ -375,7 +375,7 @@ function updateAndSaveNotesLocally() {
     }
     notesPreviewArea.innerHTML = format(notesTextArea.value);
     document.getElementById("letterCount").innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
-    document.getElementById("wordCount").innerText = padWithZeroes(notesTextArea.value.replace(/  +/g, ' ').split(" ").length-1);
+    document.getElementById("wordCount").innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
     formatNonText();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
