@@ -108,7 +108,6 @@ app.get("/api/get/everything", async (req, res) => {
     }
     data.push({
       name: result[i]["name"],
-      length: JSON.parse(result[i]["content"]).length,
       excerpt: excerpts
     })
   }

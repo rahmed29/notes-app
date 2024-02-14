@@ -36,7 +36,7 @@ a {
 }
 
 #notesAreaContainer {
-    width: calc(100% - 20px - 300px);
+    width: calc(100% - 20px - 250px);
     display: flex;
 }
 
@@ -190,7 +190,7 @@ a {
     cursor: default;
     z-index: 1000;
     bottom: 0%;
-    left: calc(20px + 300px);
+    left: calc(20px + 250px);
     position: fixed;
     padding-right: .5em;
     padding-left: .5em;
@@ -320,7 +320,7 @@ a {
 /* Sidebar */
 #listOfBooks {
     height: 100vh;
-    width: 300px;
+    width: 250px;
     background: rgb(39, 38, 36);
     user-select: none;
     overflow-y: auto;

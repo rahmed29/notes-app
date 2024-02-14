@@ -136,7 +136,7 @@ async function createList() {
         header.innerText = result[i]["name"]
         header.classList.add("listHeader")
         item.appendChild(header)
-        for (let j = 0, n =  result[i]["length"]; j < n; j++)
+        for (let j = 0, n = result[i]["excerpt"].length; j < n; j++)
         {   
             const link = document.createElement("a")
             const linkWrapper = document.createElement("div")
@@ -670,8 +670,8 @@ const toggleList = !onMobile ? () => {
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
     } else {
-        notesAreaContainer.style.width = "calc(100% - 20px - 300px)";
-        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 300px)"
+        notesAreaContainer.style.width = "calc(100% - 20px - 250px)";
+        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 250px)"
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {
