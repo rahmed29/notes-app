@@ -63,7 +63,7 @@ if (sendThis.includes("/")) {
 
 // Create tool tips
 const toolBarTips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
-for(let i = 0; i < 7; i++) {
+for (let i = 0; i < 7; i++) {
     tippy(`#icon${i+1}`, {
         theme: 'light',
         content: toolBarTips[i],
@@ -174,7 +174,7 @@ async function createList() {
 // handles the search bar in the list of notebooks
 function search(term) {
     let items = document.getElementsByClassName("item");
-    for(let i = 0, n = items.length; i < n; i++) {
+    for (let i = 0, n = items.length; i < n; i++) {
         items[i].style.display = "inherit";
         if(!items[i].getAttribute("data-bn").toLowerCase().includes(term.toLowerCase())) {
             items[i].style.display = "none";
@@ -585,11 +585,11 @@ function showBookDiffPopup() {
     const timesToRepeat = JSON.parse(s).length > book.length ? JSON.parse(s).length : book.length;
     const missingPage = timesToRepeat === JSON.parse(s).length ? JSON.parse(s) : book
     const colorIndicator = timesToRepeat === JSON.parse(s).length ? '#ff5e5e' : '#33ff96'
-    for(let i = 0, n = timesToRepeat; i < n; i++) {
+    for (let i = 0, n = timesToRepeat; i < n; i++) {
         content.push(`<h2>Page ${i+1}</h2><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
     }
     document.getElementById("bookDiffContent").innerHTML = content.join("");
-    for(let i = 0, n = timesToRepeat; i < n; i++) {
+    for (let i = 0, n = timesToRepeat; i < n; i++) {
         try {
             document.getElementById(`pageDiff${i}`).appendChild(getDiff(JSON.parse(s)[i], book[i]))
         } catch(err) {
