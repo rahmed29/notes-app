@@ -151,27 +151,6 @@ app.delete('/api/delete/notebooks/:name', async (req, res) => {
   }
 });
 
-app.post('/api/save/notebooks', async (req, res) => {
-  const { name, content } = req.body;
-  if (!name || !content) {
-    return res.status(400).json({ error: 'Both name and lastName are required for the update' });
-  }
-  try {
-    const existingItem = await Item.findOne({ name })
-    if (!existingItem) {
-      const newItem = new Item({ name, content });
-      await newItem.save()
-      res.status(201).json({ status: "Created"});
-    } else if (existingItem.name === name) {
-      existingItem.content = content;
-      await existingItem.save()
-      res.status(204).json({ status: "Updated"})
-    }
-  } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 app.all('*', (req, res) => { 
   res.status(404).send("<h1 style = 'text-align: center; font-family: arial; line-height: 100vh;'>404! Page not found</h1>"); 
 });

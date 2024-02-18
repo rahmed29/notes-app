@@ -197,6 +197,7 @@ a {
     background: rgba(230, 230, 230,.6);
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
+    user-select: none;
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
