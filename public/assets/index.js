@@ -30,7 +30,6 @@ const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation
 
 // Regex for formatting markup syntax
 function format(str) {
-    str = DOMPurify.sanitize(str)
     str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'userHtml'>$1$2$3</pre>")
     str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
     str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
@@ -42,7 +41,7 @@ function format(str) {
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
     str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<b>$1</b>")
     str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
     str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
     str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")

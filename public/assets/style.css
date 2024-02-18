@@ -73,11 +73,11 @@ a {
     overflow-x: hidden;
 }
 
-#notesPreviewArea h1,
+/* #notesPreviewArea h1,
 #notesPreviewArea h2,
 #notesPreviewArea h3 {
     margin-bottom: -0.25em;
-}
+} */
 
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
 #brain {
