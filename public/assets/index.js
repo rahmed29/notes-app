@@ -151,6 +151,9 @@ async function createList() {
         if(result[i]["name"] === sendThis) {
             list.prepend(item)
             item.id = "lockedItem";
+            item.style.height = item.scrollHeight + "px"
+            item.setAttribute("data-pos", "locked")
+            item.classList.add('itemWithLinks');
         } else {
             list.appendChild(item)
         }
@@ -165,10 +168,6 @@ async function createList() {
     searchBar.id = "searchBar"
     searchItem.appendChild(searchBar)
     list.prepend(searchItem);
-    ele = document.getElementById("lockedItem")
-    ele.style.height = ele.scrollHeight + "px"
-    ele.setAttribute("data-pos", "locked")
-    ele.classList.add('itemWithLinks');
 }
 
 // handles the search bar in the list of notebooks
