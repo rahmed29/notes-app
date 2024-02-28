@@ -1,7 +1,5 @@
 # Note Taking Website
 
-### Deprecated, I now use Obsidian.md which is basically what i was trying to make
-
 ![Screenshot](https://raw.githubusercontent.com/rahmed29/notes-app/master/notes.png)
 
 This is my personal note taking website made with vanilla JavaScript.

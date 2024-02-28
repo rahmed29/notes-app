@@ -37,7 +37,7 @@ function format(str) {
     str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
     str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
     str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
-    str = str.replace(/^(?:    - )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
+    str = str.replace(/^(?:\t- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
     str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
@@ -51,7 +51,7 @@ function format(str) {
     str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
     str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
-    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
+    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'><code>$1</code></pre>")
     return DOMPurify.sanitize(str)
 }
 
@@ -140,7 +140,13 @@ async function createList() {
             const link = document.createElement("a")
             const linkWrapper = document.createElement("div")
             const bookExcerpt = document.createElement("span")
-            link.href = `/${result[i]["name"]}?${j+1}`
+            if(result[i]["name"] === sendThis) {
+                link.addEventListener("click", function(e) {
+                    jumpToDesiredPage(j);
+                })
+            } else {
+                link.href = `/${result[i]["name"]}?${j+1}`
+            }
             linkWrapper.classList.add("linkWrapper")
             bookExcerpt.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ")}`
             linkWrapper.appendChild(bookExcerpt)
@@ -326,7 +332,7 @@ function pagePreviewToolTip(ele) {
     const bry = ele.innerText.trim() - 1;
     lastPagePreviewTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
-        content: format(book[bry].substring(0, 200)) + "...",
+        content: `${format(book[bry].substring(0, 200))}...`,
         placement: 'right-start',
     })[0];
 }
@@ -822,6 +828,23 @@ if (atHome) {
 }
 
 // Event listeners
+notesTextArea.addEventListener('keydown', function(e) {
+    if (e.key == 'Tab') {
+      e.preventDefault();
+      var start = this.selectionStart;
+      var end = this.selectionEnd;
+  
+      // set textarea value to: text before caret + tab + text after caret
+      this.value = this.value.substring(0, start) +
+        "\t" + this.value.substring(end);
+  
+      // put caret at right position again
+      this.selectionStart =
+        this.selectionEnd = start + 1;
+        updateAndSaveNotesLocally();
+    }
+  });
+
 notesTextArea.addEventListener("input", function (e) {
     updateAndSaveNotesLocally();
 });
