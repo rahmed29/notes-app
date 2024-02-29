@@ -34,7 +34,6 @@ fs.readdir("./public", (err, files) => {
 });
 
 app.use(express.static('./public'))
-app.use('./public', express.static(path.join(__dirname, './public')))
 
 const mongoURI = 'mongodb://localhost:27017/notes';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => console.log('Connected to MongoDB')).catch(err => console.error('MongoDB connection error:', err));
