@@ -456,12 +456,18 @@ a {
 }
 
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
+.MathJax {
+    font-size: 17px !important;
+    pointer-events: none;
+}
+
 .spoiler {
     background: rgb(0, 0, 0);
     color: rgb(0, 0, 0);
     padding-left: .3em;
     padding-right: .3em;
     cursor: default;
+    border-radius: 6px;
 }
 
 .spoiler:hover {

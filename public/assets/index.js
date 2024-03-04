@@ -16,6 +16,7 @@ const notesPaddingAmount = onMobile ? 10 : 20;
 let haveToUpdateList = onMobile ? true : false;
 // set a global variable telling other function if we are on the home menu
 const atHome = sendThis ==="home" ? true : false
+let iterator 
 
 const notesTextArea = document.getElementById("notesTextArea");
 const notesPreviewArea = document.getElementById("notesPreviewArea");
@@ -27,6 +28,8 @@ const bookDiffPopup = document.getElementById("bookDiffPopup");
 const list = onMobile ? document.getElementById("mobileList") :  document.getElementById("listOfBooks");
 const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
+
+let history
 
 // Regex for formatting markup syntax
 function format(str) {
@@ -41,7 +44,7 @@ function format(str) {
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
     str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<b>$1</b>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
     str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
     str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
     str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
@@ -49,7 +52,7 @@ function format(str) {
     str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
     str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
-    str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
+    // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
     str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'><code>$1</code></pre>")
     return DOMPurify.sanitize(str)
@@ -148,7 +151,7 @@ async function createList() {
                 link.href = `/${result[i]["name"]}?${j+1}`
             }
             linkWrapper.classList.add("linkWrapper")
-            bookExcerpt.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ")}`
+            bookExcerpt.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ").replaceAll("#", "")}`
             linkWrapper.appendChild(bookExcerpt)
             link.appendChild(linkWrapper)
             item.appendChild(link)
@@ -189,6 +192,7 @@ function search(term) {
 // Update the textarea value, update the url search [?], update the notes and update the page numbers
 function accents() {
     notesTextArea.value = book[pgN];
+    history = [[notesTextArea.value, notesTextArea.selectionStart]]
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateAndSaveNotesLocally()
     createPageNumbers();
@@ -369,6 +373,7 @@ function formatNonText() {
     for (let i = 0, n = links.length; i < n; i++) {
         links[i].href = "https://" + links[i].innerText;
     }
+    MathJax.typeset();
 }
 
 // Pad the letter and word count with 0s
@@ -511,7 +516,7 @@ if (!sendThis.includes("/")) {
     recentB = JSON.parse(localStorage.getItem("recents")) || [];
     if (!recentB.includes(sendThis) && recentB.length < 5 && !atHome) {
         recentB.unshift(sendThis)
-         localStorage.setItem("recents", JSON.stringify(recentB))
+        localStorage.setItem("recents", JSON.stringify(recentB))
     } else if (!recentB.includes(sendThis) && recentB.length >= 5 && !atHome) {
         recentB.pop()
         recentB.unshift(sendThis)
@@ -827,23 +832,110 @@ if (atHome) {
     })
 }
 
-// Event listeners
-notesTextArea.addEventListener('keydown', function(e) {
-    if (e.key == 'Tab') {
-      e.preventDefault();
-      var start = this.selectionStart;
-      var end = this.selectionEnd;
-  
-      // set textarea value to: text before caret + tab + text after caret
-      this.value = this.value.substring(0, start) +
-        "\t" + this.value.substring(end);
-  
-      // put caret at right position again
-      this.selectionStart =
-        this.selectionEnd = start + 1;
+const emptyOlist = /^[0-9]+\.\s$/i;
+const olist = /^[0-9]+\.\s.+/i;
+const ulist = /^-\s.+/i;
+const ulistI = /^\t-\s.+/i;
+let currLine
+
+function handleHistory(item) {
+    if(history.length > 100) {
+        history.shift();
+    }
+    history.push([item.value, item.selectionStart]);
+    iterator = history.length-1
+}
+
+function handleIterator(num, textarea) {
+    if(iterator+num >= 0 && iterator+num <= history.length-1) {
+        iterator = iterator+num;
+        textarea.value = history[iterator][0];
+        textarea.selectionStart = textarea.selectionEnd = history[iterator][1];
         updateAndSaveNotesLocally();
     }
-  });
+}
+
+function getLinePos() {
+    //substring from 0 to caret position
+    let toCaret = notesTextArea.value.substring(0, notesTextArea.selectionStart)
+    //substring from caret position onwards
+    let fromCaret = notesTextArea.value.substring(notesTextArea.selectionStart)
+    if(toCaret.substring(toCaret.lastIndexOf("\n")) + fromCaret.substring(0, fromCaret.indexOf("\n")) !== "\n") {
+        currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
+    }
+    currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
+    console.log(currLine);
+}
+
+notesTextArea.addEventListener('keyup', function (e) {
+    getLinePos();
+});
+
+notesTextArea.addEventListener('mouseup', () => {
+    getLinePos();
+});
+
+notesTextArea.addEventListener('keydown', function (e) {
+    let start = this.selectionStart;
+    let end = this.selectionEnd;
+    if (e.ctrlKey && e.altKey && e.key === 'z') {
+        e.preventDefault();
+        handleIterator(1, this)
+    } else if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        handleIterator(-1, this)
+    } else 
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        if(currLine === "- ") {
+            this.value = this.value.substring(0, start - 2) + "\t- " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 1;
+        } else {
+            this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 1;
+        }
+    } else if (e.key === "Enter" && !e.shiftKey && !onMobile) {
+        if(currLine === "- ") {
+            // leave empty unordered list
+            e.preventDefault()
+            this.value = this.value.substring(0, start-2) + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start - 2;
+        } else if (emptyOlist.test(currLine)) {
+            // leave empty ordered list
+            e.preventDefault()
+            let back = currLine.substring(0, currLine.indexOf(". ")).length + 2;
+            this.value = this.value.substring(0, start-back) + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start - back;
+        } else if (currLine == "\t- ") {
+            //leave empty indented unordered list
+            e.preventDefault()
+            this.value = this.value.substring(0, start-3) + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start - 3;
+        } else if(olist.test(currLine)) {
+            // Add item to ordered list
+            e.preventDefault()
+            let num = parseInt(currLine.substring(0,currLine.indexOf("."))) + 1;
+            this.value = this.value.substring(0, start) + "\n" + num + ". " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + (num + "").length + 3;
+        } else if (ulist.test(currLine)) {
+            // Add item to unordered list
+            e.preventDefault()
+            this.value = this.value.substring(0, start) + "\n- " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 3;
+        } else if (ulistI.test(currLine)) {
+            // Add item to indented unordered list
+            e.preventDefault()
+            this.value = this.value.substring(0, start) + "\n\t- " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+        updateAndSaveNotesLocally();
+        syncStatus(s);
+    }
+});
+
+notesTextArea.addEventListener("beforeinput", function (e) {
+    handleHistory(this);
+});
 
 notesTextArea.addEventListener("input", function (e) {
     updateAndSaveNotesLocally();
