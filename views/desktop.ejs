@@ -16,14 +16,16 @@
     <script src="https://emoji.fluent-cdn.com/latest/fluentemoji.min.js" crossorigin="anonymous"></script>
     <script>
         MathJax = {
-          tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']]
-          }
+            tex: {
+                inlineMath: [['$', '$']]
+            },
+            startup: {
+                typeset: false
+            }
         };
-        </script>
-        <script id="MathJax-script" async
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-        </script>
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js" integrity="sha512-tjg8I2d6Fi0OBGz1csmr7RfI4uupYaCfL/RqhVRTS42RMGwfBsjwBGmhzhI+e2dPmyew8cFkoxnVkGvADDLvbg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src = "/libraries/diff.min.js"></script>
     <script src = "/libraries/dragscroll.min.js"></script>
     <script src="/libraries/notyf.min.js"></script>
@@ -85,6 +87,7 @@
             <div id="notesPreviewArea" class="syncscroll" name="myElements"></div>  
         </div>
     </div>
+    <div id = "typeSetting">Typesetting...</div>
     <div id="wikipediaBrainAnimation"></div>
     <span id = "noteBookFromDb-ejs"><%= data.book %></span>
 </body>

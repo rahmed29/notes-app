@@ -92,7 +92,7 @@ tippy('#newPage', {
 
 let wikipediaTippy = tippy('#wikipedia', {
     theme: 'light',
-    content: `<div id = 'brain'>Highlight text in read mode to receive info about it here (right click to disable this function)</div>`,
+    content: `<div id = 'brain'>Highlight text in read mode to receive info about it here (right click to toggle this function)</div>`,
     interactive: true,
     maxWidth: '500px'
 })[0];
@@ -352,6 +352,20 @@ function matchCodeBlocks(str) {
     return matches;
 }
 
+function typeSet(eles) {
+    try {
+        MathJax.texReset(eles);
+        MathJax.typesetClear(eles)
+        MathJax.typeset(eles);
+        document.getElementById("typeSetting").style.opacity = "0"
+    } catch (err) {
+        document.getElementById("typeSetting").style.opacity = "1"
+        setTimeout(() => {
+            typeSet(eles)
+        }, "500");
+    }
+}
+
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
 function formatNonText() {
     let str = matchCodeBlocks(notesTextArea.value)
@@ -373,7 +387,7 @@ function formatNonText() {
     for (let i = 0, n = links.length; i < n; i++) {
         links[i].href = "https://" + links[i].innerText;
     }
-    MathJax.typeset();
+    typeSet([notesPreviewArea]);
 }
 
 // Pad the letter and word count with 0s
@@ -838,6 +852,8 @@ const ulist = /^-\s.+/i;
 const ulistI = /^\t-\s.+/i;
 let currLine
 
+history[0][1] = 0;
+
 function handleHistory(item) {
     if(history.length > 100) {
         history.shift();
@@ -864,7 +880,6 @@ function getLinePos() {
         currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
     }
     currLine = toCaret.substring(toCaret.lastIndexOf("\n")+1) + fromCaret.substring(0, fromCaret.indexOf("\n"))
-    console.log(currLine);
 }
 
 notesTextArea.addEventListener('keyup', function (e) {
@@ -886,6 +901,7 @@ notesTextArea.addEventListener('keydown', function (e) {
         handleIterator(-1, this)
     } else 
     if (e.key === 'Tab') {
+        handleHistory(this);
         e.preventDefault();
         if(currLine === "- ") {
             this.value = this.value.substring(0, start - 2) + "\t- " + this.value.substring(end);
@@ -895,6 +911,7 @@ notesTextArea.addEventListener('keydown', function (e) {
             this.selectionStart = this.selectionEnd = start + 1;
         }
     } else if (e.key === "Enter" && !e.shiftKey && !onMobile) {
+        handleHistory(this);
         if(currLine === "- ") {
             // leave empty unordered list
             e.preventDefault()

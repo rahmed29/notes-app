@@ -12,6 +12,7 @@ body {
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
 }
+
 @supports (font-variation-settings: normal) {
   :root { font-family: InterVariable, sans-serif; }
 }
@@ -73,10 +74,9 @@ a {
     overflow-x: hidden;
 }
 
-#notesPreviewArea h1,
-#notesPreviewArea h2,
-#notesPreviewArea h3 {
-    margin-bottom: -0.25em;
+#notesPreviewArea * {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
@@ -198,6 +198,23 @@ a {
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
     user-select: none;
+}
+
+#typeSetting {
+    cursor: default;
+    z-index: 1000;
+    bottom: 0%;
+    right: 0%;
+    position: fixed;
+    padding-right: .5em;
+    padding-left: .5em;
+    background: rgba(230, 230, 230,.6);
+    border-top-right-radius: 12px;
+    backdrop-filter: blur(5px);
+    user-select: none;
+    font-family: monospace;
+    transition: .5s;
+    opacity: 0;
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
@@ -461,6 +478,10 @@ a {
     pointer-events: none;
 }
 
+.mathLoading {
+    font-size: 1px;
+}
+
 .spoiler {
     background: rgb(0, 0, 0);
     color: rgb(0, 0, 0);
@@ -521,7 +542,6 @@ mark {
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
-    margin-bottom: -1em;
     color: #2ddd2d;
     overflow-x: auto;
     font-family: monospace;
@@ -535,7 +555,7 @@ mark {
     line-height: 1.25em;
     color: #29df29;
     padding: .75rem 1rem;
-} */
+}
   
 blockquote p{
     border-left-style: solid;
@@ -544,7 +564,7 @@ blockquote p{
     border-color: rgb(153, 148, 148);
 }
   
-/* #notesPreviewArea pre code {
+#notesPreviewArea pre code {
     font-family: monospace;
     background: none;
     color: inherit;
@@ -557,7 +577,6 @@ blockquote p{
     background: black;
     border-radius: 10px;
     padding: 1em;
-    margin-bottom: -1em;
     color: #2ddd2d;
     overflow-x: auto;
     font-family: monospace;
@@ -689,5 +708,8 @@ blockquote p{
     }
     .reference {
         color: violet;
+    }
+    #typeSetting {
+        display: none;
     }
 }
