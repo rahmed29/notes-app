@@ -52,6 +52,7 @@ function format(str) {
     str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
     str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
+    // str = str.replace(new RegExp(">(.+?)<", 'g'), "<p></p>")
     // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
     str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'><code>$1</code></pre>")
@@ -192,7 +193,7 @@ function search(term) {
 // Update the textarea value, update the url search [?], update the notes and update the page numbers
 function accents() {
     notesTextArea.value = book[pgN];
-    history = [[notesTextArea.value, notesTextArea.selectionStart]]
+    history = [[notesTextArea.value, 0]]
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
     updateAndSaveNotesLocally()
     createPageNumbers();
@@ -229,7 +230,7 @@ let s = "";
 // Set the displayed notes to whatever is in local storage, then replace local storage with whatever is in database. This way,
 // The user has a change to still save any unsaved notes from last session. If the page is blank (like it will be on the first load
 // after clearing cookies), call this function again with the goAgain parameter set to false.
-async function initializeNotes(goAgain) {
+async function initializeNotes() {
     if(!atHome) {
         s = noteBookFromDb.innerText;
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
@@ -237,10 +238,10 @@ async function initializeNotes(goAgain) {
         if (s !== "") {
             localStorage.setItem(sendThis, s);
         }
-        if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
-            notesTextArea.readOnly = true;
-            initializeNotes(false);
-        }
+        // if ((notesTextArea.value === "undefined" || notesTextArea.value === "") && goAgain) {
+        //     notesTextArea.readOnly = true;
+        //     initializeNotes(false);
+        // }
         notesTextArea.readOnly = false;
     }
 }
@@ -357,12 +358,10 @@ function typeSet(eles) {
         MathJax.texReset(eles);
         MathJax.typesetClear(eles)
         MathJax.typeset(eles);
-        document.getElementById("typeSetting").style.opacity = "0"
     } catch (err) {
-        document.getElementById("typeSetting").style.opacity = "1"
         setTimeout(() => {
             typeSet(eles)
-        }, "500");
+        }, "10");
     }
 }
 
@@ -474,12 +473,20 @@ function updateList() {
     }
 }
 
+function pageIsNull(i) {
+    if((book[i] === null || book[i] === "" || book[i] === "undefined")) {
+        return true
+    } else {
+        return false
+    }
+}
+
 async function saveNoteBookToDb() {
     book[pgN] = notesTextArea.value;
     let sentArr = [];
 
     for (let i = 0, n = book.length; i < n; i++) {
-        if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
+        if (!pageIsNull(i)) {
             sentArr.push(book[i]);
         }
     }
@@ -548,7 +555,7 @@ function openNoteBookPrompt() {
 function syncStatus(response) {
     let writtenPages = []
     for (let i = 0, n = book.length; i < n; i++) {
-        if (!(book[i] === null || book[i] === "" || book[i] === "undefined")) {
+        if (!pageIsNull(i)) {
             writtenPages.push(book[i]);
         }
     }
@@ -803,16 +810,17 @@ function editingWindow(choice) {
 
 // When the page loads, grab the notes, appy the users choice of textarea visibility, create the list and create the page numbers
 // Also, parse the emojis in the top menu and if the current page that the user is on is null, go to page one.
-initializeNotes(true);
+initializeNotes();
 applyViewPreference();
 if(!onMobile) {
     createList()
 }
 createPageNumbers();
 fluentemoji.parse("#toolBar");
-if(book[pgN] == null || book[pgN] === "" || book[pgN] === "undefined") {
+fluentemoji.parse("#bookDiffPopup")
+if(pageIsNull(pgN)) {
     pgN = 0;
-    initializeNotes(false)
+    initializeNotes()
     accents();
 }
 
@@ -851,8 +859,6 @@ const olist = /^[0-9]+\.\s.+/i;
 const ulist = /^-\s.+/i;
 const ulistI = /^\t-\s.+/i;
 let currLine
-
-history[0][1] = 0;
 
 function handleHistory(item) {
     if(history.length > 100) {
