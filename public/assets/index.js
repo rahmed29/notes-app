@@ -29,6 +29,8 @@ const list = onMobile ? document.getElementById("mobileList") :  document.getEle
 const listContainer = onMobile ? document.getElementById("mobileListContainer") : document.getElementById("listContainer")
 const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
+const bottomLeftGeneralInfo = document.getElementById("bottomLeftGeneralInfo")
+const generalInfoPageNumberEle = document.getElementById("generalInfoPageNumber")
 
 let history
 
@@ -147,6 +149,14 @@ let book = [""];
 
 let listHandlers = []
 
+function dropWrapper(e) {
+    handleListDropDowns(e.currentTarget)
+}
+
+function jumpWrapper(e) {
+    jumpToDesiredPage(e.currentTarget.getAttribute("data-page"))
+}
+
 // Creates the list of notebooks, keeping the current notebook at the top below the search bar
 async function createList() {
     listHandlers.forEach(({ element, type, listener }) => {
@@ -164,10 +174,8 @@ async function createList() {
         item.classList.add("item")
         item.setAttribute("data-pos", "up")
         item.setAttribute("data-bn", result[i]["name"])
-        item.addEventListener("click", function(e) {
-            handleListDropDowns(this)
-        })
-        listHandlers.push({ element: item, type: 'click', listener: handleListDropDowns});
+        item.addEventListener("click", dropWrapper)
+        listHandlers.push({ element: item, type: 'click', listener: dropWrapper});
         const header = document.createElement("div")
         header.innerText = result[i]["name"]
         header.classList.add("listHeader")
@@ -175,13 +183,12 @@ async function createList() {
         for (let j = 0, n = result[i]["excerpt"].length; j < n; j++)
         {   
             const link = document.createElement("a")
+            link.setAttribute("data-page", j)
             const linkWrapper = document.createElement("div")
             const bookExcerpt = document.createElement("span")
             if(result[i]["name"] === sendThis) {
-                link.addEventListener("click", function(e) {
-                    jumpToDesiredPage(j);
-                })
-                listHandlers.push({ element: link, type: 'click', listener: jumpToDesiredPage});
+                link.addEventListener("click", jumpWrapper)
+                listHandlers.push({ element: link, type: 'click', listener: jumpWrapper});
             } else {
                 link.href = `/${result[i]["name"]}?${j+1}`
             }
@@ -297,11 +304,15 @@ async function forceUpdateNotes() {
 }
 
 // storing a few tooltips so we can delete them when creating new ones. didn't use setContent here because it creates the tooltips on every hover since some elements with tooltips often gets re-rendered
-let lastMorePagesTippy;
-let lastImageRemoveTippy;
-let lastPagePreviewTippy;
+let lastDynamicTippy
 
 let pageHandlers = []
+
+function pagePreviewWrapper(e) {
+    pagePreviewToolTip(e.currentTarget)
+}
+
+let lastMorePagesTippy
 
 // Create the page numbers in the top left
 function createPageNumbers() {
@@ -312,30 +323,27 @@ function createPageNumbers() {
     while (topLeftPageNumber.firstChild) {
         topLeftPageNumber.firstChild.remove();
     }
-    document.getElementById("generalInfoPageNumber").innerText = pgN+1;
+    generalInfoPageNumberEle.innerText = pgN+1;
     generalInfoPageNumber.setContent(`Page ${pgN + 1}`)
     if (book.length > 9) {
         for (let z = 0; z < 9; z++) {
                 const box = document.createElement("div")
                 box.classList.add("whereTo")
                 box.id = `whereTo${z}`
-                box.addEventListener("mouseover", function(e) {
-                    pagePreviewToolTip(this)
-                })
-                pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewToolTip});
-                box.addEventListener("click", function(e) {
-                    jumpToDesiredPage(z)
-                })
-                pageHandlers.push({ element: box, type: 'click', listener: jumpToDesiredPage});
+                box.setAttribute("data-page", z)
+                box.addEventListener("mouseover", pagePreviewWrapper)
+                pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewWrapper});
+                box.addEventListener("click", jumpWrapper)
+                pageHandlers.push({ element: box, type: 'click', listener: jumpWrapper});
                 box.innerText = z+1
                 topLeftPageNumber.appendChild(box)
         }
         const morePages = document.createElement("div");
         morePages.classList.add("whereTo")
         morePages.id = 'morePages'
-        morePages.addEventListener("click", function(e) {
-            jumpToDesiredPage(book.length-1)
-        })
+        morePages.setAttribute("data-page", book.length-1)
+        morePages.addEventListener("click", jumpWrapper)
+        pageHandlers.push({ element: morePages, type: 'click', listener: jumpWrapper});
         morePages.innerText = '.'
         topLeftPageNumber.appendChild(morePages)
         try {
@@ -353,14 +361,11 @@ function createPageNumbers() {
             const box = document.createElement("div")
             box.classList.add("whereTo")
             box.id = `whereTo${z}`
-            box.addEventListener("mouseover", function(e) {
-                pagePreviewToolTip(this)
-            })
-            pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewToolTip});
-            box.addEventListener("click", function(e) {
-                jumpToDesiredPage(z)
-            })
-            pageHandlers.push({ element: box, type: 'click', listener: jumpToDesiredPage});
+            box.addEventListener("mouseover", pagePreviewWrapper)
+            pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewWrapper});
+            box.setAttribute("data-page", z)
+            box.addEventListener("click", jumpWrapper)
+            pageHandlers.push({ element: box, type: 'click', listener: jumpWrapper});
             box.innerText = z+1
             topLeftPageNumber.appendChild(box)
         }
@@ -373,12 +378,12 @@ function createPageNumbers() {
 // Create the page previews when hovering over the page numbers in top left
 function pagePreviewToolTip(ele) {
     try {
-        lastPagePreviewTippy.destroy();
+        lastDynamicTippy.destroy();
     } catch (err) {
-        console.log("no previous 'page preview' tippy to destroy")
+        console.log("no previous dynamic tippy to destroy")
     }
     const bry = ele.innerText.trim() - 1;
-    lastPagePreviewTippy = tippy(`#whereTo${bry}`, {
+    lastDynamicTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
         content: `<div class = 'pagePreviewContainer'>${formatForTippy(book[bry])}</div>`,
         placement: 'right-start',
@@ -406,12 +411,20 @@ function typeSet(eles) {
         console.log(err)
         setTimeout(() => {
             typeSet(eles)
-        }, "10");
+        }, "1");
     }
 }
 
 let imageHandlers = []
 let refHandlers = []
+
+function imageRemoveWrapper(e) {
+    removeImageToolTip(e.currentTarget)
+}
+
+function referTipWrapper(e) {
+    referToolTip(e.currentTarget)
+}
 
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
 function formatNonText() {
@@ -426,11 +439,8 @@ function formatNonText() {
     }
     let imgs = document.getElementsByClassName("userImage")
     for (let i = 0, n = imgs.length; i < n; i++) {
-        imgs[i].addEventListener("mouseover", function(e) {
-            removeImageToolTip(imgs[i])
-        });
-        console.log(imgs[i])
-        imageHandlers.push({ element: imgs[i], type: 'mouseover', listener: removeImageToolTip});
+        imgs[i].addEventListener("mouseover", imageRemoveWrapper);
+        imageHandlers.push({ element: imgs[i], type: 'mouseover', listener: imageRemoveWrapper});
     }
     let links = document.getElementsByClassName("userLink")
     for (let i = 0, n = links.length; i < n; i++) {
@@ -438,10 +448,8 @@ function formatNonText() {
     }
     let refs = document.getElementsByClassName("reference")
     for (let i = 0, n = refs.length; i < n; i++) {
-        refs[i].addEventListener("mouseover", function(e) {
-            referToolTip(refs[i])
-        });
-        refHandlers.push({ element: refs[i], type: 'mouseover', listener: referToolTip});
+        refs[i].addEventListener("mouseover", referTipWrapper);
+        refHandlers.push({ element: refs[i], type: 'mouseover', listener: referTipWrapper});
     }
     typeSet([notesPreviewArea]);
 }
@@ -457,6 +465,9 @@ function padWithZeroes(str) {
     return str;
 }
 
+const letterCount = document.getElementById("letterCount")
+const wordCount = document.getElementById("wordCount")
+
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
 function updateAndSaveNotesLocally() {
@@ -470,8 +481,8 @@ function updateAndSaveNotesLocally() {
     refHandlers = []
     notesPreviewArea.innerHTML = format(notesTextArea.value);
     formatNonText();
-    document.getElementById("letterCount").innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
-    document.getElementById("wordCount").innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
+    letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
+    wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     syncStatus(s);
@@ -498,12 +509,12 @@ async function deleteImageFromDb() {
 // tooltip to delete image
 function removeImageToolTip(given) {
     try {
-        lastImageRemoveTippy.destroy();
+        lastDynamicTippy.destroy();
     } catch (err) {
-        console.log("no previous 'image remove' tippy to destroy")
+        console.log("no previous dynamic tippy to destroy")
     }
     lastHoveredImageSrc = given.src;
-    lastImageRemoveTippy = tippy([given], {
+    lastDynamicTippy = tippy([given], {
         theme: 'light',
         content: "<span onclick = 'deleteImageFromDb()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
@@ -519,7 +530,7 @@ async function getAnyBookContent(bookName) {
         let json = await response.json();
         return json["data"]
     } else if(response.status === 404) {
-        return `This notebook doesn't exist... <i>yet.</i>`
+        return `["This notebook doesn't exist"]`
     } else {
         return `Error ${response.status}`
     }
@@ -527,18 +538,18 @@ async function getAnyBookContent(bookName) {
 
 async function referToolTip(given) {
     try {
-        lastPagePreviewTippy.destroy();
+        lastDynamicTippy.destroy();
     } catch (err) {
-        console.log("no previous 'reference' tippy to destroy")
+        console.log("no previous dynamic tippy to destroy")
     }
-    lastPagePreviewTippy = tippy([given], {
+    lastDynamicTippy = tippy([given], {
         theme: 'light',
         content: 'Loading...',
         placement: 'right',
         interactive: true,
     })[0];
     let content = formatForTippy(JSON.parse(await getAnyBookContent(given.innerText))[0])
-    lastPagePreviewTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
+    lastDynamicTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
 }
 
 async function deleteNoteBookFromDb() {
@@ -643,6 +654,8 @@ function openNoteBookPrompt() {
     location.href = newBookN.replaceAll("/", "")
 }
 
+const mobileSync =  document.getElementById("mobileSync")
+
 // Determine whether the notes the user is currently editing match with what is in the DB
 function syncStatus(response) {
     let writtenPages = []
@@ -656,7 +669,7 @@ function syncStatus(response) {
     }
     if (JSON.stringify(writtenPages) === response) {
         areNotesSavedIcon.style.filter = "none"
-        document.getElementById("mobileSync").style.background = "#61da20";
+        mobileSync.style.background = "#61da20";
         synced.destroy()
         synced = tippy('#areNotesSavedIcon', {
             theme: 'light',
@@ -666,7 +679,7 @@ function syncStatus(response) {
         document.title = sendThis;
     } else {
         areNotesSavedIcon.style.filter = "grayscale(1)"
-        document.getElementById("mobileSync").style.background = "gray";
+        mobileSync.style.background = "gray";
         synced.destroy()
         synced = tippy('#areNotesSavedIcon', {
             theme: 'light',
@@ -700,6 +713,8 @@ function getDiff(one, other) {
     return fragment;
 }
 
+const bookDiffContent = document.getElementById("bookDiffContent")
+
 // *maybe make this less hacky*, displays the popup showing the differences in the DB and currently displayed notebook
 function showBookDiffPopup() {
     bookDiffPopup.classList.add("bookDiffPopupVisible")
@@ -710,7 +725,7 @@ function showBookDiffPopup() {
     for (let i = 0, n = timesToRepeat; i < n; i++) {
         content.push(`<h2>Page ${i+1}</h2><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
     }
-    document.getElementById("bookDiffContent").innerHTML = content.join("");
+    bookDiffContent.innerHTML = content.join("");
     for (let i = 0, n = timesToRepeat; i < n; i++) {
         try {
             document.getElementById(`pageDiff${i}`).appendChild(getDiff(JSON.parse(s)[i], book[i]))
@@ -731,9 +746,11 @@ function hideBookDiffPopup() {
     bookDiffPopup.classList.remove("bookDiffPopupVisible")
 }
 
+const myForm = document.getElementById("myForm")
+
 // Handles native image uploading
 async function insertAndSaveImage() {
-    const formData = new FormData(document.getElementById("myForm"))
+    const formData = new FormData(myForm)
     const imageUploadStatus = await fetch("/api/save/images", {
         method: "POST",
         body: formData
@@ -780,20 +797,22 @@ function moneyAnimation(mouseCoords, symbol) {
     fluentemoji.parse(".wikipediaBrainAnimation");
     moneyAnimation.addEventListener('animationend', () => {
         moneyAnimation.remove()
-    });
+    }, { once: true });
 }
+
+const mobileMenu = document.getElementById("mobileMenu")
 
 // Toggles the visibility of the list of notebooks. if the list was not shown when the notebook was saved or deleted, it updates.
 // On mobile the function is a little different because of the size and z-index of the list
 const toggleList = !onMobile ? () => {
     if (list.getAttribute("data-pos") === "shown") {
         notesAreaContainer.style.width = "calc(100% - 20px)";
-        document.getElementById("bottomLeftGeneralInfo").style.left = "20px"
+        bottomLeftGeneralInfo.style.left = "20px"
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
     } else {
         notesAreaContainer.style.width = "calc(100% - 20px - 250px)";
-        document.getElementById("bottomLeftGeneralInfo").style.left = "calc(20px + 250px)"
+        bottomLeftGeneralInfo.style.left = "calc(20px + 250px)"
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {
@@ -805,8 +824,8 @@ const toggleList = !onMobile ? () => {
     if (list.getAttribute("data-pos") === "shown") {
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
-        document.getElementById("mobileMenu").style.height = "3.5em"
-        document.getElementById("mobileMenu").style.width = "3.5em"
+        mobileMenu.style.height = "3.5em"
+        mobileMenu.style.width = "3.5em"
     } else {
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
@@ -814,13 +833,14 @@ const toggleList = !onMobile ? () => {
             createList();
             haveToUpdateList = false;
         }
-        document.getElementById("mobileMenu").style.height = "4em"
-        document.getElementById("mobileMenu").style.width = "4em"
+        mobileMenu.style.height = "4em"
+        mobileMenu.style.width = "4em"
     }
 }
 
 // Handle drop down for items in list
 function handleListDropDowns(ele) {
+    console.log(ele)
     if (ele.getAttribute("data-pos") === "up") {
         ele.style.height = ele.scrollHeight + "px"
         ele.setAttribute("data-pos", "down")
@@ -864,9 +884,10 @@ const cycleViewPreferences = !onMobile ? () => {
     editingWindow(localStorage.getItem("viewPref"))
 }
 
+const mode = document.getElementById("generalInfoViewMode");
+
 // Handle what the view preference should be **maybe make this a classlist.add() type thing**
 function editingWindow(choice) {
-    const mode = document.getElementById("generalInfoViewMode");
     if(choice === "read") {
         mode.innerText = "R";
         notesTextArea.readOnly = true;
@@ -985,10 +1006,12 @@ function getLinePos() {
 }
 
 notesTextArea.addEventListener('keyup', function (e) {
+    history[history.length-1][1] = this.selectionStart
     getLinePos();
 });
 
-notesTextArea.addEventListener('mouseup', () => {
+notesTextArea.addEventListener('mouseup', function (e) {
+    history[history.length-1][1] = this.selectionStart
     getLinePos();
 });
 
