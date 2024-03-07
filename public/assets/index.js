@@ -26,6 +26,7 @@ const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
 const areNotesSavedIcon = document.getElementById("areNotesSavedIcon");
 const bookDiffPopup = document.getElementById("bookDiffPopup");
 const list = onMobile ? document.getElementById("mobileList") :  document.getElementById("listOfBooks");
+const listContainer = onMobile ? document.getElementById("mobileListContainer") : document.getElementById("listContainer")
 const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
 
@@ -52,10 +53,35 @@ function format(str) {
     str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
     str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
-    // str = str.replace(new RegExp(">(.+?)<", 'g'), "<p></p>")
     // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
-    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'><code>$1</code></pre>")
+    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
+    return DOMPurify.sanitize(str)
+}
+
+function formatForTippy(str) {
+    str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'tippyUserHtml'>$1$2$3</pre>")
+    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
+    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
+    str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
+    str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
+    str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
+    str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
+    str = str.replace(/^(?:\t- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
+    str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
+    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
+    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
+    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
+    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a>$1</a> ")
+    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img src = '$1' loading = 'lazy'>")
+    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
+    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
+    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
+    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'tippyReference' href = '/$1'>$1</a>")
+    // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
+    str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
+    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'tippyCodeBlock'>$1</pre>")
     return DOMPurify.sanitize(str)
 }
 
@@ -119,10 +145,16 @@ let generalInfoPageNumber = tippy('#generalInfoPageNumber', {
 let pgN = parseInt(location.search.substring(1)) - 1 || 0;
 let book = [""];
 
+let listHandlers = []
+
 // Creates the list of notebooks, keeping the current notebook at the top below the search bar
 async function createList() {
-    while (list.firstChild) {
-        list.firstChild.remove();
+    listHandlers.forEach(({ element, type, listener }) => {
+        element.removeEventListener(type, listener);
+    });
+    listHandlers = []
+    while (listContainer.firstChild) {
+        listContainer.firstChild.remove();
     }
     const response = await fetch("/api/get/everything")
     const json = await response.json();
@@ -135,6 +167,7 @@ async function createList() {
         item.addEventListener("click", function(e) {
             handleListDropDowns(this)
         })
+        listHandlers.push({ element: item, type: 'click', listener: handleListDropDowns});
         const header = document.createElement("div")
         header.innerText = result[i]["name"]
         header.classList.add("listHeader")
@@ -148,6 +181,7 @@ async function createList() {
                 link.addEventListener("click", function(e) {
                     jumpToDesiredPage(j);
                 })
+                listHandlers.push({ element: link, type: 'click', listener: jumpToDesiredPage});
             } else {
                 link.href = `/${result[i]["name"]}?${j+1}`
             }
@@ -158,25 +192,25 @@ async function createList() {
             item.appendChild(link)
         }
         if(result[i]["name"] === sendThis) {
-            list.prepend(item)
+            listContainer.prepend(item)
             item.id = "lockedItem";
             item.style.height = item.scrollHeight + "px"
             item.setAttribute("data-pos", "locked")
             item.classList.add('itemWithLinks');
         } else {
-            list.appendChild(item)
+            listContainer.appendChild(item)
         }
     }
-    const searchItem = document.createElement("div")
-    searchItem.classList.add("searchItem")
-    const searchBar = document.createElement("input")
-    searchBar.placeholder = "Search..."
-    searchBar.addEventListener("input", function(e) {
-        search(this.value)
-    })
-    searchBar.id = "searchBar"
-    searchItem.appendChild(searchBar)
-    list.prepend(searchItem);
+    // const searchItem = document.createElement("div")
+    // searchItem.classList.add("searchItem")
+    // const searchBar = document.createElement("input")
+    // searchBar.placeholder = "Search..."
+    // searchBar.addEventListener("input", function(e) {
+    //     search(this.value)
+    // })
+    // searchBar.id = "searchBar"
+    // searchItem.appendChild(searchBar)
+    // list.prepend(searchItem);
 }
 
 // handles the search bar in the list of notebooks
@@ -267,8 +301,14 @@ let lastMorePagesTippy;
 let lastImageRemoveTippy;
 let lastPagePreviewTippy;
 
+let pageHandlers = []
+
 // Create the page numbers in the top left
 function createPageNumbers() {
+    pageHandlers.forEach(({ element, type, listener }) => {
+        element.removeEventListener(type, listener);
+    });
+    pageHandlers = []
     while (topLeftPageNumber.firstChild) {
         topLeftPageNumber.firstChild.remove();
     }
@@ -282,9 +322,11 @@ function createPageNumbers() {
                 box.addEventListener("mouseover", function(e) {
                     pagePreviewToolTip(this)
                 })
+                pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewToolTip});
                 box.addEventListener("click", function(e) {
                     jumpToDesiredPage(z)
                 })
+                pageHandlers.push({ element: box, type: 'click', listener: jumpToDesiredPage});
                 box.innerText = z+1
                 topLeftPageNumber.appendChild(box)
         }
@@ -296,7 +338,6 @@ function createPageNumbers() {
         })
         morePages.innerText = '.'
         topLeftPageNumber.appendChild(morePages)
-
         try {
             lastMorePagesTippy.destroy();
         } catch (err) {
@@ -315,9 +356,11 @@ function createPageNumbers() {
             box.addEventListener("mouseover", function(e) {
                 pagePreviewToolTip(this)
             })
+            pageHandlers.push({ element: box, type: 'mouseover', listener: pagePreviewToolTip});
             box.addEventListener("click", function(e) {
                 jumpToDesiredPage(z)
             })
+            pageHandlers.push({ element: box, type: 'click', listener: jumpToDesiredPage});
             box.innerText = z+1
             topLeftPageNumber.appendChild(box)
         }
@@ -337,8 +380,9 @@ function pagePreviewToolTip(ele) {
     const bry = ele.innerText.trim() - 1;
     lastPagePreviewTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
-        content: `${format(book[bry].substring(0, 200))}...`,
+        content: `<div class = 'pagePreviewContainer'>${formatForTippy(book[bry])}</div>`,
         placement: 'right-start',
+        interactive: true,
     })[0];
 }
 
@@ -359,11 +403,15 @@ function typeSet(eles) {
         MathJax.typesetClear(eles)
         MathJax.typeset(eles);
     } catch (err) {
+        console.log(err)
         setTimeout(() => {
             typeSet(eles)
         }, "10");
     }
 }
+
+let imageHandlers = []
+let refHandlers = []
 
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
 function formatNonText() {
@@ -378,13 +426,22 @@ function formatNonText() {
     }
     let imgs = document.getElementsByClassName("userImage")
     for (let i = 0, n = imgs.length; i < n; i++) {
-        imgs[i].addEventListener("mouseover", (e) => {
+        imgs[i].addEventListener("mouseover", function(e) {
             removeImageToolTip(imgs[i])
         });
+        console.log(imgs[i])
+        imageHandlers.push({ element: imgs[i], type: 'mouseover', listener: removeImageToolTip});
     }
     let links = document.getElementsByClassName("userLink")
     for (let i = 0, n = links.length; i < n; i++) {
         links[i].href = "https://" + links[i].innerText;
+    }
+    let refs = document.getElementsByClassName("reference")
+    for (let i = 0, n = refs.length; i < n; i++) {
+        refs[i].addEventListener("mouseover", function(e) {
+            referToolTip(refs[i])
+        });
+        refHandlers.push({ element: refs[i], type: 'mouseover', listener: referToolTip});
     }
     typeSet([notesPreviewArea]);
 }
@@ -403,13 +460,18 @@ function padWithZeroes(str) {
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
 function updateAndSaveNotesLocally() {
-    while (notesPreviewArea.firstChild) {
-        notesPreviewArea.firstChild.remove();
-    }
+    imageHandlers.forEach(({ element, type, listener }) => {
+        element.removeEventListener(type, listener);
+    });
+    imageHandlers = []
+    refHandlers.forEach(({ element, type, listener }) => {
+        element.removeEventListener(type, listener);
+    });
+    refHandlers = []
     notesPreviewArea.innerHTML = format(notesTextArea.value);
+    formatNonText();
     document.getElementById("letterCount").innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
     document.getElementById("wordCount").innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
-    formatNonText();
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     syncStatus(s);
@@ -441,12 +503,42 @@ function removeImageToolTip(given) {
         console.log("no previous 'image remove' tippy to destroy")
     }
     lastHoveredImageSrc = given.src;
-    lastImageRemoveTippy = tippy('.userImage', {
+    lastImageRemoveTippy = tippy([given], {
         theme: 'light',
         content: "<span onclick = 'deleteImageFromDb()' style = 'color: blue; cursor: pointer; text-decoration: underline;'>Delete Image</span>",
         placement: 'right-start',
         interactive: true,
     })[0];
+}
+
+async function getAnyBookContent(bookName) {
+    const response = await fetch(`api/get/notebooks/${bookName}`, {
+        method: "get",
+    })
+    if(response.ok) {
+        let json = await response.json();
+        return json["data"]
+    } else if(response.status === 404) {
+        return `This notebook doesn't exist... <i>yet.</i>`
+    } else {
+        return `Error ${response.status}`
+    }
+}
+
+async function referToolTip(given) {
+    try {
+        lastPagePreviewTippy.destroy();
+    } catch (err) {
+        console.log("no previous 'reference' tippy to destroy")
+    }
+    lastPagePreviewTippy = tippy([given], {
+        theme: 'light',
+        content: 'Loading...',
+        placement: 'right',
+        interactive: true,
+    })[0];
+    let content = formatForTippy(JSON.parse(await getAnyBookContent(given.innerText))[0])
+    lastPagePreviewTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
 }
 
 async function deleteNoteBookFromDb() {
@@ -668,7 +760,7 @@ async function wikiSearch(event) {
         })
         if (response.ok) {
             const result = await response.json()
-            let summary = `<u>${selection.trim()}</u>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
+            let summary = `<b>${selection.trim()}</b>:<br><br>${DOMPurify.sanitize(result['extract_html'])}<br><a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
             wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
             moneyAnimation(event, "&#129504;");
         }
@@ -713,6 +805,8 @@ const toggleList = !onMobile ? () => {
     if (list.getAttribute("data-pos") === "shown") {
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
+        document.getElementById("mobileMenu").style.height = "3.5em"
+        document.getElementById("mobileMenu").style.width = "3.5em"
     } else {
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
@@ -720,6 +814,8 @@ const toggleList = !onMobile ? () => {
             createList();
             haveToUpdateList = false;
         }
+        document.getElementById("mobileMenu").style.height = "4em"
+        document.getElementById("mobileMenu").style.width = "4em"
     }
 }
 

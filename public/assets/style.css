@@ -164,12 +164,16 @@ a {
     cursor: pointer;
 }
 
-.tippy-popper .codeBlock, .tippy-popper .userHtml {
-    width: 90%;
+.tippy-popper * {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.tippy-popper a {
+    pointer-events: none;
 }
 
 .tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
-    margin-top: 0px;
     margin-bottom: -1em;
 }
 
@@ -213,13 +217,17 @@ a {
 #sideBarRetractList {
     flex-grow: 1;
     cursor: pointer;
+    width: 100%;
+}
+
+#goHome {
+    cursor: pointer;
     text-align: center;
     font-family: monospace;
     margin-bottom: auto;
     color: peru;
     width: 100%;
-    display: flex;
-    flex-direction: column-reverse;
+    text-decoration: none;
 }
 
 .whereTo {
@@ -237,6 +245,13 @@ a {
 .whereTo:hover {
     background: white;
     color: black;
+}
+
+.pagePreviewContainer {
+    overflow: auto;
+    height: 300px;
+    width: 300px;
+    padding: 10px;
 }
 
 #bookDiffPopup {
@@ -329,7 +344,7 @@ a {
     overflow-y: auto;
 }
 
-.searchItem {
+#searchItem {
     width: auto;
     height: 2em;
     color: #141414;
@@ -460,7 +475,6 @@ a {
 /* Styles for note markup, stuff like bullet points and code blocks .marked is for numbers before ordered list (it's not an actual ol)*/
 .MathJax {
     font-size: 17px !important;
-    pointer-events: none;
 }
 
 .spoiler {
@@ -469,7 +483,6 @@ a {
     padding-left: .3em;
     padding-right: .3em;
     cursor: default;
-    border-radius: 6px;
 }
 
 .spoiler:hover {
@@ -505,12 +518,12 @@ mark {
     color: red;
 }
 
-.reference {
+.reference, .tippyReference {
     color: rebeccapurple;
     text-decoration: none;
 }
 
-.userImage {
+.userImage, .tippy-popper img {
     user-select: none;
     width: 80%;
     height: auto;
@@ -526,6 +539,20 @@ mark {
     color: #2ddd2d;
     overflow-x: auto;
     font-family: monospace;
+    white-space: pre;
+}
+
+.tippyCodeBlock {
+    width: 90%;
+    height: auto;
+    background: black;
+    border-radius: 10px;
+    padding: 1em;
+    padding-top: 0px;
+    color: #2ddd2d;
+    overflow-x: auto;
+    font-family: monospace;
+    white-space: pre;
 }
 
 
@@ -554,6 +581,17 @@ blockquote p{
 
 .userHtml {
     width: 100%;
+    height: auto;
+    background: black;
+    border-radius: 10px;
+    padding: 1em;
+    color: #2ddd2d;
+    overflow-x: auto;
+    font-family: monospace;
+}
+
+.tippyUserHtml {
+    width: 90%;
     height: auto;
     background: black;
     border-radius: 10px;

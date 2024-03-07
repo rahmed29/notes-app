@@ -17,11 +17,15 @@
     <script>
         MathJax = {
             tex: {
-                inlineMath: [['$', '$']]
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
             },
             startup: {
                 typeset: false
-            }
+            },
+            options: {
+                enableMenu: false,
+            },
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
@@ -50,7 +54,12 @@
     <div id = "mobileMenu">
         ...
     </div>
-    <div id = "mobileList" data-pos = "hidden"></div>
+    <div id = "mobileList" data-pos = "hidden">
+        <div id = "searchItem">
+            <input placeholder="Search..." id = "searchBar" oninput="search(this.value)">
+        </div>
+        <div id = "mobileListContainer"></div>
+    </div>
     <div id="toolBar">
         <span id="icon1">&#128190;</span>
         <span id="icon2">&#128214;</span>
@@ -79,9 +88,17 @@
             <div id = "createNewPage">
                 <span class = 'whereTo' id = 'newPage'>+</span>
             </div>
-            <div id = "sideBarRetractList">&#9679;</div>
+            <div id = "sideBarRetractList"></div>
+            <a href = "/home" id = "goHome">&#9679;</a>
         </div>
-        <div id="listOfBooks" data-pos="shown"></div>
+        <div id="listOfBooks" data-pos="shown">
+            <div id = "searchItem">
+                <input placeholder="Search..." id = "searchBar" oninput="search(this.value)">
+            </div>
+            <div id = "listContainer">
+
+            </div>
+        </div>
         <div id = "notesAreaContainer">
             <textarea id="notesTextArea" tabindex="0" class="syncscroll" name="myElements" spellcheck="true" placeholder="Type your notes here"></textarea>     
             <div id="notesPreviewArea" class="syncscroll" name="myElements"></div>  
