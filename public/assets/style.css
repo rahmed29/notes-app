@@ -75,7 +75,6 @@ a {
 }
 
 #notesPreviewArea * {
-    margin-top: 0px;
     margin-bottom: 0px;
 }
 
@@ -84,6 +83,10 @@ a {
     width: 400px;
     height: auto;
     text-align: left;
+}
+
+#brain a {
+    pointer-events: all !important;
 }
 
 .emoji {

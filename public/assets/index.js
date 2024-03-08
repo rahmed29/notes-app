@@ -452,7 +452,30 @@ function formatNonText() {
         refHandlers.push({ element: refs[i], type: 'mouseover', listener: referTipWrapper});
     }
     typeSet([notesPreviewArea]);
+    let arr = []
+    for (const child of notesPreviewArea.childNodes) {
+        if(child.tagName !== "BR") {
+            arr.push(child);
+        }
+    }
+    console.log(arr)
+    for(let i = 0; i < arr.length-1; i++) {
+        if((arr[i].tagName === "H3" || arr[i].tagName === "H2" || arr[i].tagName === "H1") && (arr[i+1].tagName === "H3" || arr[i+1].tagName === "H2" || arr[i+1].tagName === "H1")) {
+            arr[i].style.marginBottom = "-1em";
+        } else if (arr[i].nodeName === "#text") {
+            let wrapper = document.createElement("span")
+            wrapper.classList.add("plainText")
+            wrap(arr[i], wrapper)
+        }
+    }
 }
+
+function wrap(el, wrapper) {
+    if (el && el.parentNode) {
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+    }
+  }
 
 // Pad the letter and word count with 0s
 function padWithZeroes(str) {
@@ -530,7 +553,7 @@ async function getAnyBookContent(bookName) {
         let json = await response.json();
         return json["data"]
     } else if(response.status === 404) {
-        return `["This notebook doesn't exist"]`
+        return false
     } else {
         return `Error ${response.status}`
     }
@@ -548,8 +571,13 @@ async function referToolTip(given) {
         placement: 'right',
         interactive: true,
     })[0];
-    let content = formatForTippy(JSON.parse(await getAnyBookContent(given.innerText))[0])
-    lastDynamicTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
+    let content
+    try {
+        content = formatForTippy(JSON.parse(await getAnyBookContent(given.innerText))[0])
+        lastDynamicTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
+    } catch (err) {
+        lastDynamicTippy.destroy()
+    }
 }
 
 async function deleteNoteBookFromDb() {
@@ -840,7 +868,6 @@ const toggleList = !onMobile ? () => {
 
 // Handle drop down for items in list
 function handleListDropDowns(ele) {
-    console.log(ele)
     if (ele.getAttribute("data-pos") === "up") {
         ele.style.height = ele.scrollHeight + "px"
         ele.setAttribute("data-pos", "down")
