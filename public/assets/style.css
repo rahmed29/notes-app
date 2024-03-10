@@ -8,13 +8,15 @@ body {
     background: #f1f1f1;
 }
 
-* {
+:root {
     font-family: Inter, sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 @supports (font-variation-settings: normal) {
-  :root { font-family: InterVariable, sans-serif; }
+    :root {
+        font-family: InterVariable, sans-serif;
+    }
 }
 
 a {
@@ -57,6 +59,8 @@ a {
     font-size: 17px;
     overscroll-behavior-y: contain;
     overflow-x: hidden;
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 #notesPreviewArea {
@@ -85,10 +89,6 @@ a {
     text-align: left;
 }
 
-#brain a {
-    pointer-events: all !important;
-}
-
 .emoji {
     margin-top: 6px;
     height: 1.15em;
@@ -100,7 +100,7 @@ a {
     top: 0%;
     left: 50%;
     position: fixed;
-    z-index: 1000;
+    z-index: 1;
     user-select: none;
     font-size: 1.4rem;
     height: auto;
@@ -118,7 +118,7 @@ a {
 }
 
 #mobileMenu {
-    z-index: 1001;
+    z-index: 2;
     height: 3.5em;
     width: 3.5em;
     border-radius: 50%;
@@ -145,7 +145,7 @@ a {
     width: 25vw;
     height: 20px;
     position: fixed;
-    z-index: 1000;
+    z-index: 1;
     transition: .5s;
 }
 
@@ -167,19 +167,6 @@ a {
     cursor: pointer;
 }
 
-.tippy-popper * {
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
-.tippy-popper a {
-    pointer-events: none;
-}
-
-.tippy-popper h1, .tippy-popper h2, .tippy-popper h3 {
-    margin-bottom: -1em;
-}
-
 /* page number and drop down of page numbers */
 #leftMostSideBar {
     width: 20px;
@@ -194,7 +181,7 @@ a {
 
 #bottomLeftGeneralInfo {
     cursor: default;
-    z-index: 1000;
+    z-index: 1;
     bottom: 0%;
     left: calc(20px + 250px);
     position: fixed;
@@ -211,7 +198,7 @@ a {
     color: rgb(43, 43, 43);
 }
 
-#topLeftPageNumbers, #createNewPage, #morePages {
+#topLeftPageNumbers, #newPage, #morePages {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -252,14 +239,27 @@ a {
 
 .pagePreviewContainer {
     overflow: auto;
-    height: 300px;
+    max-height: 300px;
     width: 300px;
     padding: 10px;
 }
 
+.pagePreviewContainer * {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.pagePreviewContainer h1, .pagePreviewContainer h2, .pagePreviewContainer h3 {
+    margin-bottom: -1em !important;
+}
+
+.pagePreviewContainer a {
+    pointer-events: none;
+}
+
 #bookDiffPopup {
     visibility: hidden;
-    z-index: 1000;
+    z-index: 1;
     height: 80%;
     width: 50%;
     top: 50%;
@@ -466,7 +466,7 @@ a {
     top: 0%;
     left: 0%;
     position: fixed;
-    z-index: 1000;
+    z-index: 1;
     height: 90vh;
     width: 100vw;
     display: none;
@@ -609,7 +609,7 @@ blockquote p{
     user-select: none;
     visibility: hidden;
     position: fixed;
-    z-index: 1000;
+    z-index: 100000;
     pointer-events: none;
     font-size: 1.2em;
 }
@@ -683,7 +683,7 @@ blockquote p{
         left: 0%;
         background: none;
         height: 1px;
-        z-index: 999;
+        z-index: -1;
     }
     #toolBar {
         width: 100%;

@@ -222,11 +222,10 @@ async function createList() {
 
 // handles the search bar in the list of notebooks
 function search(term) {
-    let items = document.getElementsByClassName("item");
-    for (let i = 0, n = items.length; i < n; i++) {
-        items[i].style.display = "inherit";
-        if(!items[i].getAttribute("data-bn").toLowerCase().includes(term.toLowerCase())) {
-            items[i].style.display = "none";
+    for(const item of document.getElementsByClassName("item")) {
+        item.style.display = "inherit";
+        if(!item.getAttribute("data-bn").toLowerCase().includes(term.toLowerCase())) {
+            item.style.display = "none";
         }
     }
 }
@@ -241,27 +240,28 @@ function accents() {
 }
 
 // Handles moving between pages
-function handlePageMovement(goBack, amount) {
-    if (goBack) {
-        if (pgN > 0) {
-            pgN -= amount;
+function handlePageMovement(goBack, amount, shouldCreateNewPage) {
+    if (goBack && pgN > 0) {
+        pgN -= amount;
+        accents()
+    } else if (!goBack){
+        if(pgN + amount >= book.length && shouldCreateNewPage) {
+            book.push("")
+            pgN += amount;
+            accents()
+        } else if (!(pgN+amount >= book.length)) {
+            pgN += amount;
             accents()
         }
-    } else {
-        if(pgN + amount >= book.length) {
-            book.push("")
-        }
-        pgN += amount;
-        accents()
     }
 }
 
 // Jumps to a certain page by calling the handlePageMovement function
 function jumpToDesiredPage(desired) {
     if (desired < pgN) {
-        handlePageMovement(true, pgN-desired)
+        handlePageMovement(true, pgN-desired, true)
     } else if (desired > pgN) {
-        handlePageMovement(false, desired-pgN)
+        handlePageMovement(false, desired-pgN, true)
     }
 }
 
@@ -427,47 +427,42 @@ function referTipWrapper(e) {
 }
 
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
-function formatNonText() {
+async function formatNonText() {
     let str = matchCodeBlocks(notesTextArea.value)
     let blocks = document.getElementsByClassName("codeBlock")
     for (let i = 0, n = blocks.length; i < n; i++) {
         blocks[i].innerText = str[i]
     }
-    let userHtml = document.getElementsByClassName("userHtml")
-    for (let i = 0; i < userHtml.length; i++) {
-        userHtml[i].innerText = userHtml[i].innerHTML
+    for (const block of document.getElementsByClassName("userHtml")) {
+       block.innerText = block.innerHTML
     }
-    let imgs = document.getElementsByClassName("userImage")
-    for (let i = 0, n = imgs.length; i < n; i++) {
-        imgs[i].addEventListener("mouseover", imageRemoveWrapper);
-        imageHandlers.push({ element: imgs[i], type: 'mouseover', listener: imageRemoveWrapper});
+    for (const img of document.getElementsByClassName("userImage")) {
+        img.addEventListener("mouseover", imageRemoveWrapper);
+        imageHandlers.push({ element: img, type: 'mouseover', listener: imageRemoveWrapper});
     }
-    let links = document.getElementsByClassName("userLink")
-    for (let i = 0, n = links.length; i < n; i++) {
-        links[i].href = "https://" + links[i].innerText;
+    for (const link of document.getElementsByClassName("userLink")) {
+        link.href = "https://" + link.innerText;
     }
-    let refs = document.getElementsByClassName("reference")
-    for (let i = 0, n = refs.length; i < n; i++) {
-        refs[i].addEventListener("mouseover", referTipWrapper);
-        refHandlers.push({ element: refs[i], type: 'mouseover', listener: referTipWrapper});
+    for (const ref of document.getElementsByClassName("reference")) {
+        ref.addEventListener("mouseover", referTipWrapper);
+        refHandlers.push({ element: ref, type: 'mouseover', listener: referTipWrapper});
     }
-    typeSet([notesPreviewArea]);
     let arr = []
     for (const child of notesPreviewArea.childNodes) {
         if(child.tagName !== "BR") {
             arr.push(child);
         }
     }
-    console.log(arr)
-    for(let i = 0; i < arr.length-1; i++) {
+    for (let i = 0; i < arr.length-1; i++) {
         if((arr[i].tagName === "H3" || arr[i].tagName === "H2" || arr[i].tagName === "H1") && (arr[i+1].tagName === "H3" || arr[i+1].tagName === "H2" || arr[i+1].tagName === "H1")) {
             arr[i].style.marginBottom = "-1em";
         } else if (arr[i].nodeName === "#text") {
             let wrapper = document.createElement("span")
-            wrapper.classList.add("plainText")
+            wrapper.classList.add("textNode")
             wrap(arr[i], wrapper)
         }
     }
+    typeSet([notesPreviewArea]);
 }
 
 function wrap(el, wrapper) {
@@ -663,6 +658,8 @@ function confirmBookDeletion() {
     }
 }
 
+let recentB
+
 // Update list of recent notes to be displayed on home screen
 if (!sendThis.includes("/")) {
     recentB = JSON.parse(localStorage.getItem("recents")) || [];
@@ -805,7 +802,7 @@ async function wikiSearch(event) {
         })
         if (response.ok) {
             const result = await response.json()
-            let summary = `<b>${selection.trim()}</b>:<br><br>${DOMPurify.sanitize(result['extract_html'])}<br><a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
+            let summary = `<b>${selection.trim()}</b>:<br>${DOMPurify.sanitize(result['extract_html'])}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`
             wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
             moneyAnimation(event, "&#129504;");
         }
@@ -972,7 +969,7 @@ if(pageIsNull(pgN)) {
 if (atHome) {
     topLeftPageNumber.style.display = "none";
     document.getElementById("toolBar").classList.add("homeToolBar");
-    document.getElementById("createNewPage").style.display = "none";
+    document.getElementById("newPage").style.display = "none";
     let content = ["# Recent Notes\n"];
     for (let i = 0, n = recentB.length; i < n; i++) {
         content.push(`\n${i+1}. [[${recentB[i]}]]`);
@@ -1157,11 +1154,11 @@ document.getElementById("icon5").addEventListener('click', function(e) {
 });
 
 document.getElementById("icon6").addEventListener('click', function(e) {
-    handlePageMovement(true, 1);
+    handlePageMovement(true, 1, false);
 });
 
 document.getElementById("icon7").addEventListener('click', function(e) {
-    handlePageMovement(false, 1);
+    handlePageMovement(false, 1, false);
 });
 
 document.getElementById("sideBarRetractList").addEventListener('click', function(e) {
