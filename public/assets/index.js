@@ -10,12 +10,12 @@ const notyf = new Notyf({
 const mediaScreen = window.matchMedia("(max-width: 390px) and (max-height: 844px) and (-webkit-device-pixel-ratio: 3)")
 // set a global variable telling other function if we are on mobile or not
 const onMobile = mediaScreen.matches ? true : false; 
-// the amount of padding we will apply to the textarea and preview area depends on whether we are on mobile or not. I wouldn't have to do this if I used classLists for the editingWindow but will do for now
-const notesPaddingAmount = onMobile ? 10 : 20; 
 // set to true when the list is not shown but needs to be updated to due to saved or deleted notebooks. On mobile is is hidden by default
 let haveToUpdateList = onMobile ? true : false;
 // set a global variable telling other function if we are on the home menu
 const atHome = sendThis ==="home" ? true : false
+
+let history
 let iterator 
 
 const notesTextArea = document.getElementById("notesTextArea");
@@ -31,8 +31,9 @@ const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
 const bottomLeftGeneralInfo = document.getElementById("bottomLeftGeneralInfo")
 const generalInfoPageNumberEle = document.getElementById("generalInfoPageNumber")
+const ms = document.getElementById("timeToFormat")
 
-let history
+const indentAmount = onMobile ? 2 : 4;
 
 // Regex for formatting markup syntax
 function format(str) {
@@ -42,20 +43,38 @@ function format(str) {
     str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
     str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
     str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
-    str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
-    str = str.replace(/^(?:\t- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
-    str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
-    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
-    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
+    // str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
+    // // str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder indented'>$1</li>")
+    str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, (txt) => {
+        const indents = txt.substring(0,txt.indexOf("- ")).length+1
+        let listStyle = ""
+        if(indents == 1) {
+            listStyle = ""
+        } else if (indents == 2) {
+            listStyle = "circle"
+        } else {
+            listStyle = "square"
+        }
+        return `<span class = 'unorder ${listStyle}' style = 'margin-left: ${indents*indentAmount}em;'>${txt.substring(txt.indexOf("- ")+2)}</span>`
+    })
+    // str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<span class = 'order'><span class = 'marked'>$1. </span>$2</span>")
+    str = str.replace(/^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, (txt) => {
+        let numAsText = txt.substring(0,txt.indexOf(".")).replaceAll("\t", "")
+        let count = txt.substring(0, txt.indexOf(numAsText)).length + 1
+        console.log(count)
+        return `<span class = 'order' style = 'margin-left: ${count*indentAmount}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
+    })
+
+    // str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
+    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<strong>$1</strong>")
+    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<strong>$1</strong>")
+    str = str.replace(new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g'), "<em>$1</em>")
     str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
     str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
     str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
     str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
     str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
     str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
-    // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
     str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
     str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
     return DOMPurify.sanitize(str)
@@ -68,13 +87,23 @@ function formatForTippy(str) {
     str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
     str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
     str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
-    str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
-    str = str.replace(/^(?:\t- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorderIndented'>$1</li>")
+    str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, (txt) => {
+        const indents = txt.substring(0,txt.indexOf("- ")).split("\t").length
+        let listStyle = ""
+        if(indents == 1) {
+            listStyle = ""
+        } else if (indents == 2) {
+            listStyle = "circle"
+        } else {
+            listStyle = "square"
+        }
+        return `<li class = 'unorder ${listStyle}' style = 'margin-left: ${indents*2}em;'>${txt.substring(txt.indexOf("- ")+2)}</li>`
+    })
     str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<b>$1</b>")
+    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<strong>$1</strong>")
+    str = str.replace(new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g'), "<em>$1</em>")
     str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
-    str = str.replace(new RegExp("\\\\\\\\(?! )(.+?)(?<! )\\\\\\\\", 'g'), "<i>$1</i>")
     str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a>$1</a> ")
     str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img src = '$1' loading = 'lazy'>")
     str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
@@ -96,7 +125,7 @@ if (sendThis.includes("/")) {
 const toolBarTips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
 for (let i = 0; i < 7; i++) {
     tippy(`#icon${i+1}`, {
-        theme: 'light',
+        // theme: 'light',
         content: toolBarTips[i],
     });
 }
@@ -110,6 +139,12 @@ tippy('#wordCount', {
 tippy('#letterCount', {
     theme: 'light',
     content: 'Character Count',
+    interactive: true,
+})
+
+tippy('#timeToFormat', {
+    theme: 'light',
+    content: 'Format time',
     interactive: true,
 })
 
@@ -208,16 +243,6 @@ async function createList() {
             listContainer.appendChild(item)
         }
     }
-    // const searchItem = document.createElement("div")
-    // searchItem.classList.add("searchItem")
-    // const searchBar = document.createElement("input")
-    // searchBar.placeholder = "Search..."
-    // searchBar.addEventListener("input", function(e) {
-    //     search(this.value)
-    // })
-    // searchBar.id = "searchBar"
-    // searchItem.appendChild(searchBar)
-    // list.prepend(searchItem);
 }
 
 // handles the search bar in the list of notebooks
@@ -371,7 +396,8 @@ function createPageNumbers() {
         }
     }
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
-    currPage.style.backgroundColor = "rgb(116, 222, 152)";
+    // currPage.style.backgroundColor = "rgb(116, 222, 152)";
+    currPage.style.backgroundColor = "palegoldenrod";
     currPage.style.color = "black";
 }
 
@@ -489,6 +515,7 @@ const wordCount = document.getElementById("wordCount")
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
 function updateAndSaveNotesLocally() {
+    let startTime = Date.now();
     imageHandlers.forEach(({ element, type, listener }) => {
         element.removeEventListener(type, listener);
     });
@@ -504,6 +531,7 @@ function updateAndSaveNotesLocally() {
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     syncStatus(s);
+    ms.innerText = `${Date.now() - startTime}ms`;
 }
 
 // Store the src of the image that the user is currently hovering over so that it can be deleted
@@ -910,37 +938,28 @@ const cycleViewPreferences = !onMobile ? () => {
 
 const mode = document.getElementById("generalInfoViewMode");
 
-// Handle what the view preference should be **maybe make this a classlist.add() type thing**
+// Handle what the view preference should be
 function editingWindow(choice) {
     if(choice === "read") {
         mode.innerText = "R";
         notesTextArea.readOnly = true;
-        notesTextArea.style.display = "none";
-        notesPreviewArea.style.display = "inline";
-        notesPreviewArea.style.width = "100%";
-        notesPreviewArea.style.paddingLeft = notesPaddingAmount + "%";
-        notesPreviewArea.style.paddingRight = notesPaddingAmount + "%";
+        notesAreaContainer.classList.add("readMode")
+        notesAreaContainer.classList.remove("writeMode")
+        notesAreaContainer.classList.remove("splitMode")
         localStorage.setItem("viewPref", "read")
     } else if (choice === "write") {
         mode.innerText = "W";
         notesTextArea.readOnly = false;
-        notesPreviewArea.style.display = "none";
-        notesTextArea.style.display = "inline";
-        notesTextArea.style.width = "100%";
-        notesTextArea.style.paddingLeft =  notesPaddingAmount + "%";
-        notesTextArea.style.paddingRight = notesPaddingAmount + "%";
+        notesAreaContainer.classList.remove("readMode")
+        notesAreaContainer.classList.add("writeMode")
+        notesAreaContainer.classList.remove("splitMode")
         localStorage.setItem("viewPref", "write")
     } else {
         mode.innerText = "S";
         notesTextArea.readOnly = false;
-        notesPreviewArea.style.display = "inline";
-        notesTextArea.style.display = "inline";
-        notesPreviewArea.style.width = "50%";
-        notesTextArea.style.width = "50%";
-        notesTextArea.style.paddingLeft = "5%";
-        notesTextArea.style.paddingRight = "5%";
-        notesPreviewArea.style.paddingLeft = "5%";
-        notesPreviewArea.style.paddingRight = "5%";
+        notesAreaContainer.classList.remove("readMode")
+        notesAreaContainer.classList.remove("writeMode")
+        notesAreaContainer.classList.add("splitMode")
         localStorage.setItem("viewPref", "split")
     }
     notesPreviewArea.scrollTop = 0;
@@ -967,6 +986,7 @@ if(pageIsNull(pgN)) {
 
 // Display the home screen when the user is at the /home path
 if (atHome) {
+    document.getElementById("goHome").style.color = "gray"
     topLeftPageNumber.style.display = "none";
     document.getElementById("toolBar").classList.add("homeToolBar");
     document.getElementById("newPage").style.display = "none";
@@ -995,10 +1015,10 @@ if (atHome) {
     })
 }
 
-const emptyOlist = /^[0-9]+\.\s$/i;
-const olist = /^[0-9]+\.\s.+/i;
-const ulist = /^-\s.+/i;
-const ulistI = /^\t-\s.+/i;
+const emptyOlist = /^\t*[0-9]+\.\s$/i;
+const olist = /^\t*[0-9]+\.\s.+$/i;
+const ulist = /^\t*-\s.+$/i;
+const emptyUList = /^\t*-\s$/i;
 let currLine
 
 function handleHistory(item) {
@@ -1048,51 +1068,47 @@ notesTextArea.addEventListener('keydown', function (e) {
     } else if (e.ctrlKey && e.key === 'z') {
         e.preventDefault();
         handleIterator(-1, this)
-    } else 
-    if (e.key === 'Tab') {
+    } else if (e.key === 'Tab') {
         handleHistory(this);
         e.preventDefault();
-        if(currLine === "- ") {
-            this.value = this.value.substring(0, start - 2) + "\t- " + this.value.substring(end);
+        if(emptyUList.test(currLine)) {
+            this.value = this.value.substring(0, start - 2) + `\t- ` + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start + 1;
+        } else if (emptyOlist.test(currLine)) {
+            this.value = this.value.substring(0, start - 2 - 1) + `\t1. ` + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 1 + 3;
         } else {
             this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start + 1;
         }
     } else if (e.key === "Enter" && !e.shiftKey && !onMobile) {
         handleHistory(this);
-        if(currLine === "- ") {
-            // leave empty unordered list
-            e.preventDefault()
-            this.value = this.value.substring(0, start-2) + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start - 2;
-        } else if (emptyOlist.test(currLine)) {
+        if (emptyOlist.test(currLine)) {
             // leave empty ordered list
             e.preventDefault()
             let back = currLine.substring(0, currLine.indexOf(". ")).length + 2;
             this.value = this.value.substring(0, start-back) + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start - back;
-        } else if (currLine == "\t- ") {
-            //leave empty indented unordered list
+        } else if (emptyUList.test(currLine)) {
+            //leave empty unordered list
             e.preventDefault()
-            this.value = this.value.substring(0, start-3) + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start - 3;
+            let count = currLine.substring(0, currLine.indexOf("- ")).length
+            this.value = this.value.substring(0, start-2-count) + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start - 2 - count;
         } else if(olist.test(currLine)) {
             // Add item to ordered list
             e.preventDefault()
+            let numAsText = currLine.substring(0,currLine.indexOf(".")).replaceAll("\t", "")
+            let count = currLine.substring(0, currLine.indexOf(numAsText)).length
             let num = parseInt(currLine.substring(0,currLine.indexOf("."))) + 1;
-            this.value = this.value.substring(0, start) + "\n" + num + ". " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + (num + "").length + 3;
+            this.value = this.value.substring(0, start) + `\n${"\t".repeat(count)}` + num + ". " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + (num + "").length + 3 + count;
         } else if (ulist.test(currLine)) {
             // Add item to unordered list
             e.preventDefault()
-            this.value = this.value.substring(0, start) + "\n- " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + 3;
-        } else if (ulistI.test(currLine)) {
-            // Add item to indented unordered list
-            e.preventDefault()
-            this.value = this.value.substring(0, start) + "\n\t- " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + 4;
+            let count = currLine.substring(0, currLine.indexOf("- ")).length
+            this.value = this.value.substring(0, start) + `\n${"\t".repeat(count)}- ` + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 3 + count;
         }
         updateAndSaveNotesLocally();
         syncStatus(s);
@@ -1105,6 +1121,7 @@ notesTextArea.addEventListener("beforeinput", function (e) {
 
 notesTextArea.addEventListener("input", function (e) {
     updateAndSaveNotesLocally();
+    hideBookDiffPopup();
 });
 
 document.getElementById("icon8").addEventListener("contextmenu", function(e) {

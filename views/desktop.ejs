@@ -31,7 +31,6 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js" integrity="sha512-tjg8I2d6Fi0OBGz1csmr7RfI4uupYaCfL/RqhVRTS42RMGwfBsjwBGmhzhI+e2dPmyew8cFkoxnVkGvADDLvbg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src = "/libraries/diff.min.js"></script>
-    <script src = "/libraries/dragscroll.min.js"></script>
     <script src="/libraries/notyf.min.js"></script>
     <script src="/libraries/dropzone-min.js"></script>
     <script src="/libraries/popper.min.js"></script>
@@ -48,7 +47,7 @@
         <div id = "bookDiffHeader">
             <div id = "bookDiffExit">&nbsp;</div>
         </div>
-        <div id = "bookDiffContent" class="dragscroll"></div>
+        <div id = "bookDiffContent"></div>
         <div id = "bookDiffFooter">&nbsp;</div>
     </div>
     <div id = "mobileMenu">
@@ -81,6 +80,8 @@
         <span id = "generalInfoViewMode"></span>&nbsp;
         <span id = "letterCount"></span>&nbsp;
         <span id = "wordCount"></span>&nbsp;
+        <span id = "spacer">|</span>&nbsp;
+        <span id = "timeToFormat"></span>&nbsp;
     </div>
     <div id = "mainContainer">
         <div id="leftMostSideBar">

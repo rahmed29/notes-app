@@ -3,9 +3,7 @@
 
 body {
     margin: 0px;
-    overflow-x: hidden;
     overflow-y: hidden;
-    background: #f1f1f1;
 }
 
 :root {
@@ -31,8 +29,6 @@ a {
 #mainContainer {
     top: 0%;
     left: 0%;
-    position: absolute;
-    background: #f1f1f1;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -43,13 +39,41 @@ a {
     display: flex;
 }
 
+.readMode #notesTextArea {
+    display: none;
+}
+
+.readMode #notesPreviewArea {
+    display: inline;
+    width: 100%;
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.writeMode #notesPreviewArea{
+    display: none;
+}
+
+.writeMode #notesTextArea {
+    display: inline;
+    width: 100%;
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.splitMode #notesPreviewArea, .splitMode #notesTextArea {
+    display: inline;
+    width: 50%;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
 #notesTextArea {
-    color: black;
     box-sizing: border-box;
     resize: none;
     width: 50%;
     height: 100%;
-    background: #f1f1f1;
+    background: floralwhite;
     outline: none;
     border-style: none;
     padding-top: 10vh;
@@ -58,17 +82,15 @@ a {
     padding-right: 5%;
     font-size: 17px;
     overscroll-behavior-y: contain;
-    overflow-x: hidden;
     font-family: Inter, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 #notesPreviewArea {
-    color: black;
     box-sizing: border-box;
     width: 50%;
     height: 100%;
-    background: #f1f1f1;
+    background: floralwhite;
     padding-top: 10vh;
     padding-bottom: 40vh;
     padding-left: 5%;
@@ -78,15 +100,14 @@ a {
     overflow-x: hidden;
 }
 
-#notesPreviewArea * {
-    margin-bottom: 0px;
+#notesPreviewArea h1, #notesPreviewArea h2, #notesPreviewArea h3 {
+    margin-bottom: -.25em;
 }
 
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
 #brain {
     width: 400px;
     height: auto;
-    text-align: left;
 }
 
 .emoji {
@@ -157,7 +178,7 @@ a {
     display: none;
 }
 
-.homeToolBar #icon1, .homeToolBar #icon3, .homeToolBar #icon4, .homeToolBar #icon6, .homeToolBar #icon7, .homeToolBar #grnBox  {
+.homeToolBar #icon1, .homeToolBar #icon3, .homeToolBar #icon4, .homeToolBar #icon6, .homeToolBar #icon7, .homeToolBar #grnBox, .homeToolBar #areNotesSavedIcon  {
     pointer-events: none;
     opacity: .35;
     filter: grayscale(1);
@@ -174,8 +195,6 @@ a {
     font-size: 1.3em;
     display: flex;
     flex-direction: column;
-    align-items: baseline;
-    justify-content: start;
     background: rgb(51, 50, 48);
 }
 
@@ -193,38 +212,26 @@ a {
     user-select: none;
 }
 
-#generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount {
+#generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount, #timeToFormat, #spacer {
     font-family: monospace;
     color: rgb(43, 43, 43);
-}
-
-#topLeftPageNumbers, #newPage, #morePages {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
 }
 
 #sideBarRetractList {
     flex-grow: 1;
     cursor: pointer;
-    width: 100%;
 }
 
 #goHome {
-    cursor: pointer;
     text-align: center;
     font-family: monospace;
-    margin-bottom: auto;
     color: peru;
-    width: 100%;
     text-decoration: none;
 }
 
 .whereTo {
     transition: .25s;
     text-align: center;
-    box-sizing: border-box;
-    width: 100%;
     cursor: pointer;
     background: rgb(51, 50, 48);
     color: white;
@@ -238,18 +245,15 @@ a {
 }
 
 .pagePreviewContainer {
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     max-height: 300px;
     width: 300px;
     padding: 10px;
 }
 
-.pagePreviewContainer * {
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
 .pagePreviewContainer h1, .pagePreviewContainer h2, .pagePreviewContainer h3 {
+    margin-top: 0px;
     margin-bottom: -1em !important;
 }
 
@@ -268,7 +272,6 @@ a {
     position: fixed;
     opacity: 0;
     transition: .25s;
-    cursor: default;
     color: white;
     display: flex;
     flex-direction: column;
@@ -291,9 +294,6 @@ a {
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
 #bookDiffFooter {
@@ -320,22 +320,9 @@ a {
     text-decoration: underline;
 }
 
-#viewDiffContainer {
-    padding-left: 10%;
-    padding-right: 10%;
-    width: auto;
-    height: 100%;
-}
-
 .bookDiffPopupVisible {
     visibility: visible !important;
     opacity: 1 !important;
-}
-
-.pageDiff {
-    width: 100%;
-    padding: 2%;
-    width: auto;
 }
 
 /* Sidebar */
@@ -350,10 +337,7 @@ a {
 #searchItem {
     width: auto;
     height: 2em;
-    color: #141414;
-    overflow: hidden;
     transition: 0.15s ease-out;
-    color: silver;
 }
 
 #searchBar {
@@ -388,11 +372,12 @@ a {
     box-sizing: border-box;
     color: white;
     transition: .15s;
-    width: 109%;
+    width: 108%;
     height: 2em;
     line-height: 2em;
     padding-left: 5%;
     margin-left: -10%;
+    border-radius: 6px;
 }
 
 .listHeader:hover {
@@ -400,10 +385,9 @@ a {
 }
 
 .linkWrapper {
-    width: 99%;
+    width: 98%;
     box-sizing: border-box;
     color: white;
-    border-color: blue;
     transition: .15s;
     height: 2em;
     line-height: 2em;
@@ -411,12 +395,11 @@ a {
     background: none;
     margin-top: 2px;
     white-space: nowrap;
+    border-radius: 6px;
 }
 
 .linkWrapper:hover {
     background: #4e4e4e;
-    border-color: blue;
-    border-left-style: solid;
 }
 
 .linkWrapper span {
@@ -426,7 +409,6 @@ a {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* margin-left: -20px; */
 }
 
 .linkWrapper:hover span {
@@ -442,7 +424,6 @@ a {
     transition: .15s;
     visibility: hidden;
     margin-left: 10%;
-
 }
 
 .itemWithLinks a {
@@ -453,10 +434,6 @@ a {
 .itemWithLinks .listHeader {
     background: #4e4e4e;
 }
-
-/* .itemWithLinks .linkWrapper span {
-    margin-left: 0px;
-} */
 
 #lockedItem .listHeader {
     background: #757575;
@@ -492,13 +469,22 @@ a {
     color: white;
 }
 
-.unorderIndented {
-    margin-left: 8em;
+.unorder {
+    display: list-item;
+}
+
+.square {
+    display: list-item;
+    list-style: square;
+}
+
+.circle {
+    display: list-item;
     list-style: circle;
 }
 
-.unorder, .order {
-    margin-left: 4em;
+.order {
+    display: list-item;
 }
 
 .order::marker {
@@ -512,9 +498,9 @@ a {
 }
 
 mark {
-    color: black;
     padding-left: .3em;
     padding-right: .3em;
+    background: rgb(255, 239, 149);
 }
 
 .red {
@@ -535,29 +521,32 @@ mark {
 .codeBlock {
     width: 100%;
     height: auto;
-    background: black;
+    background: rgb(37, 19, 19);
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
-    color: #2ddd2d;
+    color: white;
     overflow-x: auto;
     font-family: monospace;
     white-space: pre;
+    margin-bottom: -.25em;
+    font-size: 1rem;
 }
 
 .tippyCodeBlock {
     width: 90%;
     height: auto;
-    background: black;
+    background: rgb(37, 19, 19);
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
-    color: #2ddd2d;
+    color: white;
     overflow-x: auto;
     font-family: monospace;
     white-space: pre;
+    margin-bottom: -.25em;
+    font-size: 1rem;
 }
-
 
 /* #notesPreviewArea pre {
     background: #0d0d0d;
@@ -585,12 +574,14 @@ blockquote p{
 .userHtml {
     width: 100%;
     height: auto;
-    background: black;
+    background: rgb(37, 19, 19);
     border-radius: 10px;
     padding: 1em;
-    color: #2ddd2d;
+    color: white;
     overflow-x: auto;
     font-family: monospace;
+    font-size: 1rem;
+    margin-bottom: -.25em;
 }
 
 .tippyUserHtml {
@@ -602,6 +593,7 @@ blockquote p{
     color: #2ddd2d;
     overflow-x: auto;
     font-family: monospace;
+    margin-bottom: -.25em;
 }
 
 /* https://stackoverflow.com/a/69970674 */
@@ -719,10 +711,7 @@ blockquote p{
         width: 90%;
         background: #141414;
     }
-    .unorder, .order {
-        margin-left: 1em;
-    }
-    .unorderIndented {
+    .order {
         margin-left: 2em;
     }
     .tippy-popper {
@@ -730,5 +719,13 @@ blockquote p{
     }
     .reference {
         color: violet;
+    }
+    .readMode #notesPreviewArea {
+        padding-left: 10%;
+        padding-right: 10%;
+    }
+    .writeMode #notesTextArea {
+        padding-left: 10%;
+        padding-right: 10%;
     }
 }
