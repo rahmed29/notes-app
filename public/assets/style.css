@@ -73,7 +73,7 @@ a {
     resize: none;
     width: 50%;
     height: 100%;
-    background: floralwhite;
+    background: whitesmoke;
     outline: none;
     border-style: none;
     padding-top: 10vh;
@@ -90,7 +90,7 @@ a {
     box-sizing: border-box;
     width: 50%;
     height: 100%;
-    background: floralwhite;
+    background: whitesmoke;
     padding-top: 10vh;
     padding-bottom: 40vh;
     padding-left: 5%;
@@ -136,6 +136,8 @@ a {
     justify-content: center;
     gap: .25em;
     padding-bottom: 3px;
+    z-index: 2;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 #mobileMenu {
@@ -210,6 +212,7 @@ a {
     border-top-right-radius: 12px;
     backdrop-filter: blur(5px);
     user-select: none;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount, #timeToFormat, #spacer {
@@ -229,14 +232,35 @@ a {
     text-decoration: none;
 }
 
+#stickyNotes {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    z-index: 2;
+    height: 3.5em;
+    width: 3.5em;
+    border-radius: 50%;
+    right: 0%;
+    bottom: 0%;
+    position: fixed;
+    background: palegoldenrod;
+    line-height: 3.5em;
+    text-align: center;
+    font-size: 1em;
+    color: #000;
+    transition: .25s;
+    user-select: none;
+    margin-bottom: .75em;
+    margin-right: .75em;
+}
+
 .whereTo {
     transition: .25s;
     text-align: center;
     cursor: pointer;
     background: rgb(51, 50, 48);
     color: white;
-    font-family: monospace;
-    font-weight: 600;
+    font-size: 15px;
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 .whereTo:hover {
@@ -276,6 +300,8 @@ a {
     display: flex;
     flex-direction: column;
     align-items: center;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 #bookDiffExit {
@@ -336,13 +362,12 @@ a {
 
 #searchItem {
     width: auto;
-    height: 2em;
-    transition: 0.15s ease-out;
+    height: 1.5em;
 }
 
 #searchBar {
     box-sizing: border-box;
-    font-size: 17px;
+    font-size: 14px;
     width: 100%;
     height: 100%;
     background: rgb(34, 34, 34);
@@ -351,6 +376,8 @@ a {
     color: silver;
     background: black;
     padding: .25em;
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 .item {
@@ -372,12 +399,13 @@ a {
     box-sizing: border-box;
     color: white;
     transition: .15s;
-    width: 108%;
+    width: 110%;
     height: 2em;
     line-height: 2em;
     padding-left: 5%;
     margin-left: -10%;
-    border-radius: 6px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
 }
 
 .listHeader:hover {
@@ -385,7 +413,7 @@ a {
 }
 
 .linkWrapper {
-    width: 98%;
+    width: 100;
     box-sizing: border-box;
     color: white;
     transition: .15s;
@@ -395,7 +423,8 @@ a {
     background: none;
     margin-top: 2px;
     white-space: nowrap;
-    border-radius: 6px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
 }
 
 .linkWrapper:hover {
@@ -521,7 +550,7 @@ mark {
 .codeBlock {
     width: 100%;
     height: auto;
-    background: rgb(37, 19, 19);
+    background: #141414;
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
@@ -536,7 +565,7 @@ mark {
 .tippyCodeBlock {
     width: 90%;
     height: auto;
-    background: rgb(37, 19, 19);
+    background: #141414;
     border-radius: 10px;
     padding: 1em;
     padding-top: 0px;
@@ -574,7 +603,7 @@ blockquote p{
 .userHtml {
     width: 100%;
     height: auto;
-    background: rgb(37, 19, 19);
+    background: #141414;
     border-radius: 10px;
     padding: 1em;
     color: white;
@@ -660,7 +689,7 @@ blockquote p{
     #notesTextArea {
         padding-top: 10vh;
     }
-    #leftMostSideBar, #generalInfoViewMode, #letterCount, #wordCount {
+    #leftMostSideBar, #generalInfoViewMode, #letterCount, #wordCount, #timeToFormat, #spacer {
         display: none;
     }
     #generalInfoPageNumber {
@@ -675,7 +704,6 @@ blockquote p{
         left: 0%;
         background: none;
         height: 1px;
-        z-index: -1;
     }
     #toolBar {
         width: 100%;
@@ -687,6 +715,7 @@ blockquote p{
         top: inherit;
         bottom: 0%;
         touch-action: manipulation;
+        box-shadow: none;
     }
     #toolBar span {
         font-size: 1.3em;
@@ -694,9 +723,6 @@ blockquote p{
     }
     #icon8, #areNotesSavedIcon {
         display: none;
-    }
-    #mobileMenu {
-        display: inherit;
     }
     #listOfBooks {
         display: none;
@@ -727,5 +753,8 @@ blockquote p{
     .writeMode #notesTextArea {
         padding-left: 10%;
         padding-right: 10%;
+    }
+    #stickyNotes {
+        display: none;
     }
 }

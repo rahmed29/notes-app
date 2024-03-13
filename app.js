@@ -101,14 +101,16 @@ app.get("/api/get/everything", async (req, res) => {
   let data = [];
   const result = await Item.find();
   for(let i = 0; i < result.length; i++) {
-    let excerpts = [];
-    for(let j = 0; j < JSON.parse(result[i]["content"]).length; j++) {
-      excerpts.push(JSON.parse(result[i]["content"])[j].substring(0,30));
+    if(result[i]["name"] !== "sticky__notes") {
+      let excerpts = [];
+      for(let j = 0; j < JSON.parse(result[i]["content"]).length; j++) {
+        excerpts.push(JSON.parse(result[i]["content"])[j].substring(0,30));
+      }
+      data.push({
+        name: result[i]["name"],
+        excerpt: excerpts
+      })
     }
-    data.push({
-      name: result[i]["name"],
-      excerpt: excerpts
-    })
   }
   res.status(200).json({ data });
 })

@@ -61,7 +61,6 @@ function format(str) {
     str = str.replace(/^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, (txt) => {
         let numAsText = txt.substring(0,txt.indexOf(".")).replaceAll("\t", "")
         let count = txt.substring(0, txt.indexOf(numAsText)).length + 1
-        console.log(count)
         return `<span class = 'order' style = 'margin-left: ${count*indentAmount}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
     })
 
@@ -99,7 +98,11 @@ function formatForTippy(str) {
         }
         return `<li class = 'unorder ${listStyle}' style = 'margin-left: ${indents*2}em;'>${txt.substring(txt.indexOf("- ")+2)}</li>`
     })
-    str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<li class = 'order'><span class = 'marked'>$1. </span>$2</li>")
+    str = str.replace(/^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, (txt) => {
+        const numAsText = txt.substring(0,txt.indexOf(".")).replaceAll("\t", "")
+        const indents = txt.substring(0, txt.indexOf(numAsText)).length + 1
+        return `<span class = 'order' style = 'margin-left: ${indents*2}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
+    })
     str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
     str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<strong>$1</strong>")
     str = str.replace(new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g'), "<em>$1</em>")
@@ -125,7 +128,7 @@ if (sendThis.includes("/")) {
 const toolBarTips = ['Save (Ctrl + S)', 'Open', 'Delete', 'Insert Image', 'Switch View (Ctrl + E)', 'Prev Page', 'Next Page']
 for (let i = 0; i < 7; i++) {
     tippy(`#icon${i+1}`, {
-        // theme: 'light',
+        theme: 'light',
         content: toolBarTips[i],
     });
 }
@@ -396,8 +399,7 @@ function createPageNumbers() {
         }
     }
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
-    // currPage.style.backgroundColor = "rgb(116, 222, 152)";
-    currPage.style.backgroundColor = "palegoldenrod";
+    currPage.style.backgroundColor = "rgb(116, 222, 152)";
     currPage.style.color = "black";
 }
 
@@ -774,7 +776,7 @@ function showBookDiffPopup() {
     let content = [];
     const timesToRepeat = JSON.parse(s).length > book.length ? JSON.parse(s).length : book.length;
     const missingPage = timesToRepeat === JSON.parse(s).length ? JSON.parse(s) : book
-    const colorIndicator = timesToRepeat === JSON.parse(s).length ? '#ff5e5e' : '#33ff96'
+    const colorIndicator = timesToRepeat === JSON.parse(s).length ? ['#ff5e5e', 'black'] :  ['#33ff96', 'black']
     for (let i = 0, n = timesToRepeat; i < n; i++) {
         content.push(`<h2>Page ${i+1}</h2><div class = "pageDiff" id = "pageDiff${i}"></div><br>`);
     }
@@ -785,7 +787,8 @@ function showBookDiffPopup() {
         } catch(err) {
             const fragment = document.createDocumentFragment();
             span = document.createElement('span');
-            span.style.background = colorIndicator;
+            span.style.background = colorIndicator[0];
+            span.style.color = colorIndicator[1]
             span.appendChild(document.createTextNode(missingPage[i]));
             fragment.appendChild(span);
             document.getElementById(`pageDiff${i}`).appendChild(fragment);
@@ -1075,8 +1078,9 @@ notesTextArea.addEventListener('keydown', function (e) {
             this.value = this.value.substring(0, start - 2) + `\t- ` + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start + 1;
         } else if (emptyOlist.test(currLine)) {
+            let numAsText = currLine.substring(0,currLine.indexOf(".")).replaceAll("\t", "")
             this.value = this.value.substring(0, start - 2 - 1) + `\t1. ` + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + 1 + 3;
+            this.selectionStart = this.selectionEnd = start + numAsText.length;
         } else {
             this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start + 1;
@@ -1100,9 +1104,8 @@ notesTextArea.addEventListener('keydown', function (e) {
             e.preventDefault()
             let numAsText = currLine.substring(0,currLine.indexOf(".")).replaceAll("\t", "")
             let count = currLine.substring(0, currLine.indexOf(numAsText)).length
-            let num = parseInt(currLine.substring(0,currLine.indexOf("."))) + 1;
-            this.value = this.value.substring(0, start) + `\n${"\t".repeat(count)}` + num + ". " + this.value.substring(end);
-            this.selectionStart = this.selectionEnd = start + (num + "").length + 3 + count;
+            this.value = this.value.substring(0, start) + `\n${"\t".repeat(count)}` + (parseInt(numAsText) + 1) + ". " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + numAsText.length + 3 + count;
         } else if (ulist.test(currLine)) {
             // Add item to unordered list
             e.preventDefault()
@@ -1114,6 +1117,66 @@ notesTextArea.addEventListener('keydown', function (e) {
         syncStatus(s);
     }
 });
+
+async function saveStickyNotes() {
+    const saveStatus = await fetch("/api/save/notebooks/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name: "sticky__notes",
+            content: JSON.stringify([document.getElementById("stickyNotes").firstChild.value])
+        })
+    })
+}
+
+function showStickyNotes(ele) {
+        ele.style.borderRadius = "0px"
+        ele.style.width = "300px"
+        ele.style.height = "300px"
+        ele.style.padding = "10px"
+        ele.style.zindex = "1000";
+        ele.innerText = ""
+        const ta = document.createElement("textarea")
+        ta.value = ele.getAttribute("data-text")
+        ta.style.height = "300px"
+        ta.style.width = "300px"
+        ta.style.position = "relative"
+        ta.style.outline = "none"
+        ta.style.border = "none"
+        ta.style.resize = "none"
+        ta.style.backgroundColor = "palegoldenrod"
+        ta.addEventListener('input', saveStickyNotes)
+        ele.appendChild(ta)
+        ele.setAttribute("data-pos", "visible")
+        ta.focus()
+}
+
+function hideStickyNotes() {
+    ele = document.getElementById("stickyNotes")
+    if(ele.getAttribute("data-pos") === "visible") {
+        ele.addEventListener('click', function(e) {
+            showStickyNotes(this);
+        }, {once: true});
+        ele.setAttribute("data-text", ele.firstChild.value)
+        ele.firstChild.removeEventListener("input", saveStickyNotes)
+        ele.firstChild.remove()
+        ele.style.borderRadius = "3.5em"
+        ele.style.width = "3.5em"
+        ele.style.height = "3.5em"
+        ele.style.padding = "0px"
+        ele.innerText = "..."
+        ele.setAttribute("data-pos", "hidden")
+    }
+}
+
+async function retrieveStickyNotes() {
+    let sticky = JSON.parse(await getAnyBookContent("sticky__notes"))[0]
+    document.getElementById("stickyNotes").setAttribute("data-text", sticky)
+}
+
+retrieveStickyNotes();
 
 notesTextArea.addEventListener("beforeinput", function (e) {
     handleHistory(this);
@@ -1174,9 +1237,15 @@ document.getElementById("icon6").addEventListener('click', function(e) {
     handlePageMovement(true, 1, false);
 });
 
-document.getElementById("icon7").addEventListener('click', function(e) {
-    handlePageMovement(false, 1, false);
-});
+if(onMobile) {
+    document.getElementById("icon7").addEventListener('click', function(e) {
+        handlePageMovement(false, 1, true);
+    });
+} else {
+    document.getElementById("icon7").addEventListener('click', function(e) {
+        handlePageMovement(false, 1, false);
+    });
+}
 
 document.getElementById("sideBarRetractList").addEventListener('click', function(e) {
     toggleList();
@@ -1196,6 +1265,7 @@ document.getElementById("newPage").addEventListener('click', function(e) {
 
 mainContainer.addEventListener('click', function(e) {
     hideBookDiffPopup();
+    hideStickyNotes();
 });
 
 notesPreviewArea.addEventListener('click', function(e) {
@@ -1205,3 +1275,7 @@ notesPreviewArea.addEventListener('click', function(e) {
 document.getElementById("bookDiffExit").addEventListener('click', function(e) {
     hideBookDiffPopup();
 });
+
+document.getElementById("stickyNotes").addEventListener('click', function(e) {
+    showStickyNotes(this);
+}, {once: true});
