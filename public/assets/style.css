@@ -258,14 +258,19 @@ a {
     cursor: pointer;
     background: rgb(51, 50, 48);
     color: white;
-    font-size: 15px;
-    font-family: Inter, sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1;
+    font-family: monospace;
+    font-weight: bold;
+    height: 20px;
 }
 
 .whereTo:hover {
     background: white;
     color: black;
+}
+
+#morePages {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif !important;
+    font-size: 16px;
 }
 
 .pagePreviewContainer {
@@ -413,7 +418,6 @@ a {
 }
 
 .linkWrapper {
-    width: 100;
     box-sizing: border-box;
     color: white;
     transition: .15s;
@@ -464,7 +468,7 @@ a {
     background: #4e4e4e;
 }
 
-#lockedItem .listHeader {
+.lockedItem .listHeader {
     background: #757575;
 }
 

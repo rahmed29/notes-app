@@ -136,19 +136,16 @@ for (let i = 0; i < 7; i++) {
 tippy('#wordCount', {
     theme: 'light',
     content: 'Word Count',
-    interactive: true,
 })
 
 tippy('#letterCount', {
     theme: 'light',
     content: 'Character Count',
-    interactive: true,
 })
 
 tippy('#timeToFormat', {
     theme: 'light',
     content: 'Format time',
-    interactive: true,
 })
 
 tippy('#newPage', {
@@ -238,7 +235,7 @@ async function createList() {
         }
         if(result[i]["name"] === sendThis) {
             listContainer.prepend(item)
-            item.id = "lockedItem";
+            item.classList.add("lockedItem")
             item.style.height = item.scrollHeight + "px"
             item.setAttribute("data-pos", "locked")
             item.classList.add('itemWithLinks');
@@ -372,7 +369,7 @@ function createPageNumbers() {
         morePages.setAttribute("data-page", book.length-1)
         morePages.addEventListener("click", jumpWrapper)
         pageHandlers.push({ element: morePages, type: 'click', listener: jumpWrapper});
-        morePages.innerText = '.'
+        morePages.innerText = '...'
         topLeftPageNumber.appendChild(morePages)
         try {
             lastMorePagesTippy.destroy();
@@ -399,7 +396,7 @@ function createPageNumbers() {
         }
     }
     const currPage = document.getElementById(`whereTo${pgN}`) || document.getElementById(`morePages`)
-    currPage.style.backgroundColor = "rgb(116, 222, 152)";
+    currPage.style.background = "rgb(116, 222, 152)";
     currPage.style.color = "black";
 }
 
@@ -481,7 +478,7 @@ async function formatNonText() {
             arr.push(child);
         }
     }
-    for (let i = 0; i < arr.length-1; i++) {
+    for (let i = 0, n = arr.length-1; i < n; i++) {
         if((arr[i].tagName === "H3" || arr[i].tagName === "H2" || arr[i].tagName === "H1") && (arr[i+1].tagName === "H3" || arr[i+1].tagName === "H2" || arr[i+1].tagName === "H1")) {
             arr[i].style.marginBottom = "-1em";
         } else if (arr[i].nodeName === "#text") {
@@ -533,7 +530,13 @@ function updateAndSaveNotesLocally() {
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     syncStatus(s);
-    ms.innerText = `${Date.now() - startTime}ms`;
+    if (Date.now() - startTime > 20) {
+        ms.innerText = `${Date.now() - startTime}ms`;
+        ms.style.color = "rgb(226, 70, 70)";
+    } else {
+        ms.innerText = `${Date.now() - startTime}ms`;
+        ms.style.color = "inherit";
+    }
 }
 
 // Store the src of the image that the user is currently hovering over so that it can be deleted
