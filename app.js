@@ -56,27 +56,31 @@ app.get('/api/get/notebooks/:name', async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get('/api/beta/', async (req, res) => {
+  res.render("react.ejs")
+});
   
-  app.post('/api/save/notebooks', async (req, res) => {
-    const { name, content } = req.body;
-    if (!name || !content) {
-      return res.status(400).json({ error: 'Both name and lastName are required for the update' });
+app.post('/api/save/notebooks', async (req, res) => {
+  const { name, content } = req.body;
+  if (!name || !content) {
+    return res.status(400).json({ error: 'Both name and lastName are required for the update' });
+  }
+  try {
+    const existingItem = await Item.findOne({ name })
+    if (!existingItem) {
+      const newItem = new Item({ name, content });
+      await newItem.save()
+      res.status(201).json({ status: "Created"});
+    } else if (existingItem.name === name) {
+      existingItem.content = content;
+      await existingItem.save()
+      res.status(204).json({ status: "Updated"})
     }
-    try {
-      const existingItem = await Item.findOne({ name })
-      if (!existingItem) {
-        const newItem = new Item({ name, content });
-        await newItem.save()
-        res.status(201).json({ status: "Created"});
-      } else if (existingItem.name === name) {
-        existingItem.content = content;
-        await existingItem.save()
-        res.status(204).json({ status: "Updated"})
-      }
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.delete('/api/delete/images/:name', (req, res) => {
   const itemName = "./public/uploads/" + req.params.name;

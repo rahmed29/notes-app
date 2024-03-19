@@ -35,17 +35,33 @@ const ms = document.getElementById("timeToFormat")
 
 const indentAmount = onMobile ? 2 : 4;
 
-// Regex for formatting markup syntax
+const one = new RegExp("(<.*?>)(.*?)(</.*?>)", 'g')
+const two = /^(?:# )\s*(.+?)[ \t]*$/gm
+const three = /^(?:## )\s*(.+?)[ \t]*$/gm
+const four = /^(?:### )\s*(.+?)[ \t]*$/gm
+const five = /^(?:\t*- )\s*(.+?)[ \t]*$/gm
+const six = /^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm
+const seven = new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g')
+const eight = new RegExp("__(?! )(.+?)(?<! )__", 'g')
+const nine = new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g')
+const ten = new RegExp("https://(?! )(.+?[^\n ]*)", 'g')
+const eleven = new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g')
+const twelve = new RegExp("==(?! )(.+?)(?<! )==", 'g')
+const thirteen = new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g')
+const fourteen = new RegExp("~~(?! )(.+?)(?<! )~~", 'g')
+const fifteen = new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g')
+const sixteen = /(?:\r\n|\r|\n)/g
+const seventeen = new RegExp("```(.+?)```", 'g')
+
 function format(str) {
-    str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'userHtml'>$1$2$3</pre>")
+    str = str.replace(one, "<pre class = 'userHtml'>$1$2$3</pre>")
     str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
     str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
-    str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
-    str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
-    str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
-    // str = str.replace(/^(?:- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder'>$1</li>")
-    // // str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, "<li class = 'unorder indented'>$1</li>")
-    str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, (txt) => {
+    str = str.replace(two, "<h1>$1</h1>")
+    str = str.replace(three, "<h2>$1</h2>")
+    str = str.replace(four, "<h3>$1</h3>")
+
+    str = str.replace(five, (txt) => {
         const indents = txt.substring(0,txt.indexOf("- ")).length+1
         let listStyle = ""
         if(indents == 1) {
@@ -57,25 +73,24 @@ function format(str) {
         }
         return `<span class = 'unorder ${listStyle}' style = 'margin-left: ${indents*indentAmount}em;'>${txt.substring(txt.indexOf("- ")+2)}</span>`
     })
-    // str = str.replace(/^(?:([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, "<span class = 'order'><span class = 'marked'>$1. </span>$2</span>")
-    str = str.replace(/^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, (txt) => {
+
+    str = str.replace(six, (txt) => {
         let numAsText = txt.substring(0,txt.indexOf(".")).replaceAll("\t", "")
         let count = txt.substring(0, txt.indexOf(numAsText)).length + 1
         return `<span class = 'order' style = 'margin-left: ${count*indentAmount}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
     })
 
-    // str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<strong>$1</strong>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<strong>$1</strong>")
-    str = str.replace(new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g'), "<em>$1</em>")
-    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a class = 'userLink'>$1</a> ")
-    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img class = 'userImage' src = '$1' loading = 'lazy'>")
-    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
-    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
-    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
-    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'reference' href = '/$1'>$1</a>")
-    str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
-    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'codeBlock'>$1</pre>")
+    str = str.replace(seven, "<strong>$1</strong>")
+    str = str.replace(eight, "<strong>$1</strong>")
+    str = str.replace(nine, "<em>$1</em>")
+    str = str.replace(ten, "<a class = 'userLink'>$1</a> ")
+    str = str.replace(eleven, "<img class = 'userImage' src = '$1' loading = 'lazy'>")
+    str = str.replace(twelve, "<mark>$1</mark>")
+    str = str.replace(thirteen, "<span class ='spoiler'>$1</span>")
+    str = str.replace(fourteen, "<s>$1</s>")
+    str = str.replace(fifteen, "<a class = 'reference' href = '/$1'>$1</a>")
+    str = str.replace(sixteen, '<br>')
+    str = str.replace(seventeen, "<pre class = 'codeBlock'>$1</pre>")
     return DOMPurify.sanitize(str)
 }
 
@@ -452,10 +467,10 @@ function referTipWrapper(e) {
 }
 
 //Formatting code blocks and creating tooltips to delete image, also adds hrefs to anchors (helps to prevent anchors from having HTML in them after format() function)
-async function formatNonText() {
+function formatNonText() {
+    const blocks = document.getElementsByClassName("codeBlock")
     let str = matchCodeBlocks(notesTextArea.value)
-    let blocks = document.getElementsByClassName("codeBlock")
-    for (let i = 0, n = blocks.length; i < n; i++) {
+    for (let i = 0, n = str.length; i < n; i++) {
         blocks[i].innerText = str[i]
     }
     for (const block of document.getElementsByClassName("userHtml")) {
@@ -513,8 +528,11 @@ const wordCount = document.getElementById("wordCount")
 
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
-function updateAndSaveNotesLocally() {
+async function updateAndSaveNotesLocally() {
     let startTime = Date.now();
+    book[pgN] = notesTextArea.value;
+    localStorage.setItem(sendThis, JSON.stringify(book));
+    syncStatus(s);
     imageHandlers.forEach(({ element, type, listener }) => {
         element.removeEventListener(type, listener);
     });
@@ -527,9 +545,6 @@ function updateAndSaveNotesLocally() {
     formatNonText();
     letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
     wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
-    book[pgN] = notesTextArea.value;
-    localStorage.setItem(sendThis, JSON.stringify(book));
-    syncStatus(s);
     if (Date.now() - startTime > 20) {
         ms.innerText = `${Date.now() - startTime}ms`;
         ms.style.color = "rgb(226, 70, 70)";
