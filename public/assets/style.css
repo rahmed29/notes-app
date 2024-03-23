@@ -215,7 +215,7 @@ a {
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-#generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount, #timeToFormat, #spacer {
+#generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount, #spacer {
     font-family: monospace;
     color: rgb(43, 43, 43);
 }
@@ -386,7 +386,7 @@ a {
 }
 
 .item {
-    width: 90%;
+    width: 95%;
     height: 2em;
     color: #141414;
     position: relative;
@@ -395,7 +395,7 @@ a {
     font-size: 14px;
     transition: 0.15s ease-out;
     color: silver;
-    padding-left: 10%;
+    padding-left: 5%;
     line-height: 0px;
     padding-top: 3px;
 }
@@ -404,13 +404,11 @@ a {
     box-sizing: border-box;
     color: white;
     transition: .15s;
-    width: 110%;
+    width: 105%;
     height: 2em;
     line-height: 2em;
     padding-left: 5%;
-    margin-left: -10%;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
+    margin-left: -5%;
 }
 
 .listHeader:hover {
@@ -419,7 +417,7 @@ a {
 
 .linkWrapper {
     box-sizing: border-box;
-    color: white;
+    color: whitesmoke;
     transition: .15s;
     height: 2em;
     line-height: 2em;
@@ -427,8 +425,9 @@ a {
     background: none;
     margin-top: 2px;
     white-space: nowrap;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
+    border-left-style: solid;
+    border-width: 1px;
+    border-color: #585858;
 }
 
 .linkWrapper:hover {
@@ -436,19 +435,10 @@ a {
 }
 
 .linkWrapper span {
-    transition: .5s;
-    background: white;
-    background: linear-gradient(to right, whitesmoke 70%, rgba(0,0,0,0) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.linkWrapper:hover span {
-    background: linear-gradient(to right, whitesmoke 50%, rgba(0,0,0,0) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    overflow: hidden
 }
 
 .item a {
@@ -693,7 +683,7 @@ blockquote p{
     #notesTextArea {
         padding-top: 10vh;
     }
-    #leftMostSideBar, #generalInfoViewMode, #letterCount, #wordCount, #timeToFormat, #spacer {
+    #leftMostSideBar, #generalInfoViewMode, #letterCount, #wordCount, #spacer {
         display: none;
     }
     #generalInfoPageNumber {
@@ -760,5 +750,93 @@ blockquote p{
     }
     #stickyNotes {
         display: none;
+    }
+}
+
+.lds-grid {
+    display: inline-block;
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(50%,-50%);
+}
+
+.lds-grid * {
+    filter: none !important;
+}
+
+.lds-grid div {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #000000;
+    animation: lds-grid 1.2s linear infinite;
+}
+
+.lds-grid div:nth-child(1) {
+    top: 8px;
+    left: 8px;
+    animation-delay: 0s;
+}
+
+.lds-grid div:nth-child(2) {
+    top: 8px;
+    left: 32px;
+    animation-delay: -0.4s;
+}
+
+.lds-grid div:nth-child(3) {
+    top: 8px;
+    left: 56px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(4) {
+    top: 32px;
+    left: 8px;
+    animation-delay: -0.4s;
+}
+
+.lds-grid div:nth-child(5) {
+    top: 32px;
+    left: 32px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(6) {
+    top: 32px;
+    left: 56px;
+    animation-delay: -1.2s;
+}
+
+.lds-grid div:nth-child(7) {
+    top: 56px;
+    left: 8px;
+    animation-delay: -0.8s;
+}
+
+.lds-grid div:nth-child(8) {
+    top: 56px;
+    left: 32px;
+    animation-delay: -1.2s;
+
+}
+
+.lds-grid div:nth-child(9) {
+    top: 56px;
+    left: 56px;
+    animation-delay: -1.6s;
+}
+
+@keyframes lds-grid {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
     }
 }

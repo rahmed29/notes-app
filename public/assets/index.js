@@ -35,6 +35,20 @@ const ms = document.getElementById("timeToFormat")
 
 const indentAmount = onMobile ? 2 : 4;
 
+function asyncInnerHTML(HTML, callback) {
+    let temp = document.createElement('div')
+    let frag = document.createDocumentFragment()
+    temp.innerHTML = format(HTML);
+    (function(){
+        if(temp.firstChild){
+            frag.appendChild(temp.firstChild);
+            setTimeout(arguments.callee, 0);
+        } else {
+            callback(frag);
+        }
+    })();
+}
+
 const one = new RegExp("(<.*?>)(.*?)(</.*?>)", 'g')
 const two = /^(?:# )\s*(.+?)[ \t]*$/gm
 const three = /^(?:## )\s*(.+?)[ \t]*$/gm
@@ -271,11 +285,11 @@ function search(term) {
 }
 
 // Update the textarea value, update the url search [?], update the notes and update the page numbers
-function accents() {
+function accents(navigating) {
     notesTextArea.value = book[pgN];
     history = [[notesTextArea.value, 0]]
     window.history.replaceState({}, '', `${sendThis}?${(pgN + 1)}`);
-    updateAndSaveNotesLocally()
+    updateAndSaveNotesLocally(navigating)
     createPageNumbers();
 }
 
@@ -283,15 +297,15 @@ function accents() {
 function handlePageMovement(goBack, amount, shouldCreateNewPage) {
     if (goBack && pgN > 0) {
         pgN -= amount;
-        accents()
+        accents(true)
     } else if (!goBack){
         if(pgN + amount >= book.length && shouldCreateNewPage) {
             book.push("")
             pgN += amount;
-            accents()
+            accents(true)
         } else if (!(pgN+amount >= book.length)) {
             pgN += amount;
-            accents()
+            accents(true)
         }
     }
 }
@@ -315,7 +329,7 @@ async function initializeNotes() {
     if(!atHome) {
         s = noteBookFromDb.innerText;
         book = JSON.parse(localStorage.getItem(sendThis)) || [""]
-        accents()
+        accents(true)
         if (s !== "") {
             localStorage.setItem(sendThis, s);
         }
@@ -526,10 +540,12 @@ function padWithZeroes(str) {
 const letterCount = document.getElementById("letterCount")
 const wordCount = document.getElementById("wordCount")
 
+notesPreviewArea.innerHTML = format(notesTextArea.value)
+formatNonText()
+
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
-async function updateAndSaveNotesLocally() {
-    let startTime = Date.now();
+async function updateAndSaveNotesLocally(navigating) {
     book[pgN] = notesTextArea.value;
     localStorage.setItem(sendThis, JSON.stringify(book));
     syncStatus(s);
@@ -541,17 +557,18 @@ async function updateAndSaveNotesLocally() {
         element.removeEventListener(type, listener);
     });
     refHandlers = []
-    notesPreviewArea.innerHTML = format(notesTextArea.value);
-    formatNonText();
+    if(navigating) {
+        notesPreviewArea.style.background = "#d8d8d8"
+        notesPreviewArea.innerHTML = `<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>`
+    }
+    asyncInnerHTML((notesTextArea.value), function(fragment){
+        notesPreviewArea.style.background = "whitesmoke"
+        notesPreviewArea.innerHTML = ""
+        notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
+        formatNonText();
+    });
     letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
     wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
-    if (Date.now() - startTime > 20) {
-        ms.innerText = `${Date.now() - startTime}ms`;
-        ms.style.color = "rgb(226, 70, 70)";
-    } else {
-        ms.innerText = `${Date.now() - startTime}ms`;
-        ms.style.color = "inherit";
-    }
 }
 
 // Store the src of the image that the user is currently hovering over so that it can be deleted
