@@ -35,7 +35,9 @@ const ms = document.getElementById("timeToFormat")
 
 const indentAmount = onMobile ? 2 : 4;
 
+let going = false;
 function asyncInnerHTML(HTML, callback) {
+    going = true;
     let temp = document.createElement('div')
     let frag = document.createDocumentFragment()
     temp.innerHTML = format(HTML);
@@ -78,12 +80,15 @@ function format(str) {
     str = str.replace(five, (txt) => {
         const indents = txt.substring(0,txt.indexOf("- ")).length+1
         let listStyle = ""
-        if(indents == 1) {
-            listStyle = ""
-        } else if (indents == 2) {
-            listStyle = "circle"
-        } else {
-            listStyle = "square"
+        switch(indents) {
+            case 1:
+                listStyle = ""
+                break;
+            case 2:
+                listStyle = "circle"
+                break;
+            default:
+                listStyle = "square"
         }
         return `<span class = 'unorder ${listStyle}' style = 'margin-left: ${indents*indentAmount}em;'>${txt.substring(txt.indexOf("- ")+2)}</span>`
     })
@@ -118,12 +123,15 @@ function formatForTippy(str) {
     str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, (txt) => {
         const indents = txt.substring(0,txt.indexOf("- ")).split("\t").length
         let listStyle = ""
-        if(indents == 1) {
-            listStyle = ""
-        } else if (indents == 2) {
-            listStyle = "circle"
-        } else {
-            listStyle = "square"
+        switch(indents) {
+            case 1:
+                listStyle = ""
+                break;
+            case 2:
+                listStyle = "circle"
+                break;
+            default:
+                listStyle = "square"
         }
         return `<li class = 'unorder ${listStyle}' style = 'margin-left: ${indents*2}em;'>${txt.substring(txt.indexOf("- ")+2)}</li>`
     })
@@ -295,17 +303,19 @@ function accents(navigating) {
 
 // Handles moving between pages
 function handlePageMovement(goBack, amount, shouldCreateNewPage) {
-    if (goBack && pgN > 0) {
-        pgN -= amount;
-        accents(true)
-    } else if (!goBack){
-        if(pgN + amount >= book.length && shouldCreateNewPage) {
-            book.push("")
-            pgN += amount;
+    if(!going) {
+        if (goBack && pgN > 0) {
+            pgN -= amount;
             accents(true)
-        } else if (!(pgN+amount >= book.length)) {
-            pgN += amount;
-            accents(true)
+        } else if (!goBack){
+            if(pgN + amount >= book.length && shouldCreateNewPage) {
+                book.push("")
+                pgN += amount;
+                accents(true)
+            } else if (!(pgN+amount >= book.length)) {
+                pgN += amount;
+                accents(true)
+            }
         }
     }
 }
@@ -558,15 +568,16 @@ async function updateAndSaveNotesLocally(navigating) {
     });
     refHandlers = []
     if(navigating) {
-        notesPreviewArea.style.background = "#d8d8d8"
         notesPreviewArea.innerHTML = `<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>`
     }
     asyncInnerHTML((notesTextArea.value), function(fragment){
-        notesPreviewArea.style.background = "whitesmoke"
-        notesPreviewArea.innerHTML = ""
+        while(notesPreviewArea.firstChild) {
+            notesPreviewArea.firstChild.remove()
+        }
         notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
         formatNonText();
-    });
+        going = false;
+    })
     letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
     wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
 }

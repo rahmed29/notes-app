@@ -755,17 +755,12 @@ blockquote p{
 
 .lds-grid {
     display: inline-block;
-    position: fixed;
     width: 80px;
     height: 80px;
-    z-index: 2;
+    position: relative;
     top: 50%;
     left: 50%;
-    transform: translate(50%,-50%);
-}
-
-.lds-grid * {
-    filter: none !important;
+    transform: translate(-50%, 50%);
 }
 
 .lds-grid div {
@@ -773,7 +768,7 @@ blockquote p{
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #000000;
+    background: #636363;
     animation: lds-grid 1.2s linear infinite;
 }
 
