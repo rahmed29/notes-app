@@ -31,7 +31,6 @@ const noteBookFromDb = document.getElementById("noteBookFromDb-ejs");
 const wikipediaBrainAnimation = document.getElementById("wikipediaBrainAnimation")
 const bottomLeftGeneralInfo = document.getElementById("bottomLeftGeneralInfo")
 const generalInfoPageNumberEle = document.getElementById("generalInfoPageNumber")
-const ms = document.getElementById("timeToFormat")
 
 const indentAmount = onMobile ? 2 : 4;
 
@@ -60,7 +59,7 @@ const six = /^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm
 const seven = new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g')
 const eight = new RegExp("__(?! )(.+?)(?<! )__", 'g')
 const nine = new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g')
-const ten = new RegExp("https://(?! )(.+?[^\n ]*)", 'g')
+const ten = new RegExp("https://(?! )(.+?[^\n) ]*)", 'g')
 const eleven = new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g')
 const twelve = new RegExp("==(?! )(.+?)(?<! )==", 'g')
 const thirteen = new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g')
@@ -68,15 +67,8 @@ const fourteen = new RegExp("~~(?! )(.+?)(?<! )~~", 'g')
 const fifteen = new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g')
 const sixteen = /(?:\r\n|\r|\n)/g
 const seventeen = new RegExp("```(.+?)```", 'g')
-
 function format(str) {
     str = str.replace(one, "<pre class = 'userHtml'>$1$2$3</pre>")
-    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
-    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
-    str = str.replace(two, "<h1>$1</h1>")
-    str = str.replace(three, "<h2>$1</h2>")
-    str = str.replace(four, "<h3>$1</h3>")
-
     str = str.replace(five, (txt) => {
         const indents = txt.substring(0,txt.indexOf("- ")).length+1
         let listStyle = ""
@@ -98,11 +90,15 @@ function format(str) {
         let count = txt.substring(0, txt.indexOf(numAsText)).length + 1
         return `<span class = 'order' style = 'margin-left: ${count*indentAmount}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
     })
-
+    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
+    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
+    str = str.replace(two, "<h1>$1</h1>")
+    str = str.replace(three, "<h2>$1</h2>")
+    str = str.replace(four, "<h3>$1</h3>")
     str = str.replace(seven, "<strong>$1</strong>")
     str = str.replace(eight, "<strong>$1</strong>")
     str = str.replace(nine, "<em>$1</em>")
-    str = str.replace(ten, "<a class = 'userLink'>$1</a> ")
+    str = str.replace(ten, "<a class = 'userLink'>$1</a>")
     str = str.replace(eleven, "<img class = 'userImage' src = '$1' loading = 'lazy'>")
     str = str.replace(twelve, "<mark>$1</mark>")
     str = str.replace(thirteen, "<span class ='spoiler'>$1</span>")
@@ -110,49 +106,6 @@ function format(str) {
     str = str.replace(fifteen, "<a class = 'reference' href = '/$1'>$1</a>")
     str = str.replace(sixteen, '<br>')
     str = str.replace(seventeen, "<pre class = 'codeBlock'>$1</pre>")
-    return DOMPurify.sanitize(str)
-}
-
-function formatForTippy(str) {
-    str = str.replace(new RegExp("(<.*?>)(.*?)(</.*?>)", 'g'), "<pre class = 'tippyUserHtml'>$1$2$3</pre>")
-    str = str.replaceAll("[ ]", "<input type='checkbox' disabled='disabled'></input>")
-    str = str.replaceAll("[x]", "<input type='checkbox' disabled='disabled' checked='checked'></input>")
-    str = str.replace(/^(?:# )\s*(.+?)[ \t]*$/gm, "<h1>$1</h1>")
-    str = str.replace(/^(?:## )\s*(.+?)[ \t]*$/gm, "<h2>$1</h2>")
-    str = str.replace(/^(?:### )\s*(.+?)[ \t]*$/gm, "<h3>$1</h3>")
-    str = str.replace(/^(?:\t*- )\s*(.+?)[ \t]*$/gm, (txt) => {
-        const indents = txt.substring(0,txt.indexOf("- ")).split("\t").length
-        let listStyle = ""
-        switch(indents) {
-            case 1:
-                listStyle = ""
-                break;
-            case 2:
-                listStyle = "circle"
-                break;
-            default:
-                listStyle = "square"
-        }
-        return `<li class = 'unorder ${listStyle}' style = 'margin-left: ${indents*2}em;'>${txt.substring(txt.indexOf("- ")+2)}</li>`
-    })
-    str = str.replace(/^(?:\t*([0-9]*)[.] )\s*(.+?)[ \t]*$/gm, (txt) => {
-        const numAsText = txt.substring(0,txt.indexOf(".")).replaceAll("\t", "")
-        const indents = txt.substring(0, txt.indexOf(numAsText)).length + 1
-        return `<span class = 'order' style = 'margin-left: ${indents*2}em;'><span class = 'marked'>${txt.substring(0, txt.indexOf(". "))}. </span>${txt.substring(txt.indexOf(". ")+2)}</span>`
-    })
-    str = str.replace(new RegExp("!!(?! )(.+?)(?<! )!!", 'g'), "<span class = 'red'>$1</span>")
-    str = str.replace(new RegExp("\\*\\*(?! )(.+?)(?<! )\\*\\*", 'g'), "<strong>$1</strong>")
-    str = str.replace(new RegExp("\\*(?! )(.+?)(?<! )\\*", 'g'), "<em>$1</em>")
-    str = str.replace(new RegExp("__(?! )(.+?)(?<! )__", 'g'), "<u>$1</u>")
-    str = str.replace(new RegExp("https://(?! )(.+?[^\n ]*)", 'g'), "<a>$1</a> ")
-    str = str.replace(new RegExp("!\\((?! )(.+?)(?<! )\\)", 'g'), "<img src = '$1' loading = 'lazy'>")
-    str = str.replace(new RegExp("==(?! )(.+?)(?<! )==", 'g'), "<mark>$1</mark>")
-    str = str.replace(new RegExp("\\|\\|(?! )(.+?)(?<! )\\|\\|", 'g'), "<span class ='spoiler'>$1</span>")
-    str = str.replace(new RegExp("~~(?! )(.+?)(?<! )~~", 'g'), "<s>$1</s>")
-    str = str.replace(new RegExp("\\[\\[(?! )(.+?)(?<! )\\]\\]", 'g'), "<a class = 'tippyReference' href = '/$1'>$1</a>")
-    // str = str.replace(new RegExp("\\^(?! )(.+?[^\n )]*)", 'g'), "<sup>$1</sup>")
-    str = str.replace(/(?:\r\n|\r|\n)/g, '<br>')
-    str = str.replace(new RegExp("```(.+?)```", 'g'), "<pre class = 'tippyCodeBlock'>$1</pre>")
     return DOMPurify.sanitize(str)
 }
 
@@ -303,7 +256,6 @@ function accents(navigating) {
 
 // Handles moving between pages
 function handlePageMovement(goBack, amount, shouldCreateNewPage) {
-    if(!going) {
         if (goBack && pgN > 0) {
             pgN -= amount;
             accents(true)
@@ -317,7 +269,6 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage) {
                 accents(true)
             }
         }
-    }
 }
 
 // Jumps to a certain page by calling the handlePageMovement function
@@ -449,7 +400,7 @@ function pagePreviewToolTip(ele) {
     const bry = ele.innerText.trim() - 1;
     lastDynamicTippy = tippy(`#whereTo${bry}`, {
         theme: 'light',
-        content: `<div class = 'pagePreviewContainer'>${formatForTippy(book[bry])}</div>`,
+        content: `<div class = 'pagePreviewContainer'>${marked.parse(book[bry])}</div>`,
         placement: 'right-start',
         interactive: true,
     })[0];
@@ -494,7 +445,7 @@ function referTipWrapper(e) {
 function formatNonText() {
     const blocks = document.getElementsByClassName("codeBlock")
     let str = matchCodeBlocks(notesTextArea.value)
-    for (let i = 0, n = str.length; i < n; i++) {
+    for (let i = 0, n = blocks.length; i < n; i++) {
         blocks[i].innerText = str[i]
     }
     for (const block of document.getElementsByClassName("userHtml")) {
@@ -506,6 +457,7 @@ function formatNonText() {
     }
     for (const link of document.getElementsByClassName("userLink")) {
         link.href = "https://" + link.innerText;
+        link.setAttribute("rel", "noopener noreferrer nofollow")
     }
     for (const ref of document.getElementsByClassName("reference")) {
         ref.addEventListener("mouseover", referTipWrapper);
@@ -550,9 +502,7 @@ function padWithZeroes(str) {
 const letterCount = document.getElementById("letterCount")
 const wordCount = document.getElementById("wordCount")
 
-notesPreviewArea.innerHTML = format(notesTextArea.value)
-formatNonText()
-
+const timer = ms => new Promise(res => setTimeout(res, ms))
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
 async function updateAndSaveNotesLocally(navigating) {
@@ -570,16 +520,31 @@ async function updateAndSaveNotesLocally(navigating) {
     if(navigating) {
         notesPreviewArea.innerHTML = `<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>`
     }
-    asyncInnerHTML((notesTextArea.value), function(fragment){
-        while(notesPreviewArea.firstChild) {
-            notesPreviewArea.firstChild.remove()
+    if(!going) {
+        asyncInnerHTML((notesTextArea.value), function(fragment){
+            while(notesPreviewArea.firstChild) {
+                notesPreviewArea.firstChild.remove()
+            }
+            notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
+            formatNonText();
+            wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
+            going = false;
+        })
+    } else {
+        while(going) {
+            await timer(100)
         }
-        notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
-        formatNonText();
-        going = false;
-    })
+        asyncInnerHTML((notesTextArea.value), function(fragment){
+            while(notesPreviewArea.firstChild) {
+                notesPreviewArea.firstChild.remove()
+            }
+            notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
+            formatNonText();
+            wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
+            going = false;
+        })
+    }
     letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
-    wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
 }
 
 // Store the src of the image that the user is currently hovering over so that it can be deleted
@@ -644,7 +609,7 @@ async function referToolTip(given) {
     })[0];
     let content
     try {
-        content = formatForTippy(JSON.parse(await getAnyBookContent(given.innerText))[0])
+        content = marked.parse(JSON.parse(await getAnyBookContent(given.innerText))[0])
         lastDynamicTippy.setContent(`<div class = 'pagePreviewContainer'>${content}</div>`)
     } catch (err) {
         lastDynamicTippy.destroy()
@@ -909,12 +874,12 @@ const mobileMenu = document.getElementById("mobileMenu")
 const toggleList = !onMobile ? () => {
     if (list.getAttribute("data-pos") === "shown") {
         notesAreaContainer.style.width = "calc(100% - 20px)";
-        bottomLeftGeneralInfo.style.left = "20px"
+        bottomLeftGeneralInfo.style.left = "30px"
         list.style.display = "none"
         list.setAttribute("data-pos", "hidden");
     } else {
-        notesAreaContainer.style.width = "calc(100% - 20px - 250px)";
-        bottomLeftGeneralInfo.style.left = "calc(20px + 250px)"
+        notesAreaContainer.style.width = "calc(100% - 20px - 300px)";
+        bottomLeftGeneralInfo.style.left = "calc(30px + 300px)"
         list.setAttribute("data-pos", "shown");
         list.style.display = "inline"
         if(haveToUpdateList) {

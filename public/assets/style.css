@@ -35,7 +35,7 @@ a {
 }
 
 #notesAreaContainer {
-    width: calc(100% - 20px - 250px);
+    width: calc(100% - 20px - 300px);
     display: flex;
 }
 
@@ -98,6 +98,14 @@ a {
     font-size: 17px;
     overscroll-behavior-y: contain;
     overflow-x: hidden;
+}
+
+.loading h3, .loading h2, .loading h1, .loading mark, .loading span, .loading strong, .loading em, .loading pre, .loading s, .loading input, .loading a {
+    opacity: .25;
+}
+
+.loading .lds-grid {
+    opacity: 1 !important;
 }
 
 #notesPreviewArea h1, #notesPreviewArea h2, #notesPreviewArea h3 {
@@ -204,15 +212,16 @@ a {
     cursor: default;
     z-index: 1;
     bottom: 0%;
-    left: calc(20px + 250px);
+    left: calc(30px + 300px);
     position: fixed;
     padding-right: .5em;
     padding-left: .5em;
     background: rgba(230, 230, 230,.6);
     border-top-right-radius: 12px;
+    border-top-left-radius: 12px;
     backdrop-filter: blur(5px);
     user-select: none;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 #generalInfoPageNumber, #generalInfoViewMode, #letterCount, #wordCount, #spacer {
@@ -283,11 +292,27 @@ a {
 
 .pagePreviewContainer h1, .pagePreviewContainer h2, .pagePreviewContainer h3 {
     margin-top: 0px;
-    margin-bottom: -1em !important;
 }
 
 .pagePreviewContainer a {
     pointer-events: none;
+}
+
+.pagePreviewContainer pre {
+    background: #e7e7e7;
+    border-radius: .5rem;
+    font-size: 1rem;
+    line-height: 1.25em;
+    color: black;
+    padding: .75rem 1rem;
+    font-size: 15px;
+}
+  
+.pagePreviewContainer pre code {
+    font-family: monospace;
+    background: none;
+    color: inherit;
+    padding: 0;
 }
 
 #bookDiffPopup {
@@ -359,7 +384,7 @@ a {
 /* Sidebar */
 #listOfBooks {
     height: 100vh;
-    width: 250px;
+    width: 300px;
     background: rgb(39, 38, 36);
     user-select: none;
     overflow-y: auto;
@@ -428,6 +453,7 @@ a {
     border-left-style: solid;
     border-width: 1px;
     border-color: #585858;
+    font-size: 13px;
 }
 
 .linkWrapper:hover {
@@ -438,7 +464,7 @@ a {
     white-space: nowrap;
     text-overflow: ellipsis;
     display: block;
-    overflow: hidden
+    overflow: hidden;
 }
 
 .item a {
@@ -530,12 +556,12 @@ mark {
     color: red;
 }
 
-.reference, .tippyReference {
+.reference {
     color: rebeccapurple;
     text-decoration: none;
 }
 
-.userImage, .tippy-popper img {
+.userImage {
     user-select: none;
     width: 80%;
     height: auto;
@@ -544,78 +570,26 @@ mark {
 .codeBlock {
     width: 100%;
     height: auto;
-    background: #141414;
-    border-radius: 10px;
+    background: #e7e7e7;
+    border-radius: 3px;
     padding: 1em;
     padding-top: 0px;
-    color: white;
     overflow-x: auto;
     font-family: monospace;
     white-space: pre;
     margin-bottom: -.25em;
-    font-size: 1rem;
+    font-size: 16px;
 }
-
-.tippyCodeBlock {
-    width: 90%;
-    height: auto;
-    background: #141414;
-    border-radius: 10px;
-    padding: 1em;
-    padding-top: 0px;
-    color: white;
-    overflow-x: auto;
-    font-family: monospace;
-    white-space: pre;
-    margin-bottom: -.25em;
-    font-size: 1rem;
-}
-
-/* #notesPreviewArea pre {
-    background: #0d0d0d;
-    border-radius: .5rem;
-    font-size: 1rem;
-    line-height: 1.25em;
-    color: #29df29;
-    padding: .75rem 1rem;
-}
-  
-blockquote p{
-    border-left-style: solid;
-    border-width: 3px;
-    padding-left: .5em;
-    border-color: rgb(153, 148, 148);
-}
-  
-#notesPreviewArea pre code {
-    font-family: monospace;
-    background: none;
-    color: inherit;
-    padding: 0;
-} */
 
 .userHtml {
     width: 100%;
     height: auto;
-    background: #141414;
-    border-radius: 10px;
+    background: #e7e7e7;
+    border-radius: 3px;
     padding: 1em;
-    color: white;
     overflow-x: auto;
     font-family: monospace;
-    font-size: 1rem;
-    margin-bottom: -.25em;
-}
-
-.tippyUserHtml {
-    width: 90%;
-    height: auto;
-    background: black;
-    border-radius: 10px;
-    padding: 1em;
-    color: #2ddd2d;
-    overflow-x: auto;
-    font-family: monospace;
+    font-size: 16px;
     margin-bottom: -.25em;
 }
 
