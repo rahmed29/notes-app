@@ -36,7 +36,6 @@ const indentAmount = onMobile ? 2 : 4;
 
 let going = false;
 function asyncInnerHTML(HTML, callback) {
-    going = true;
     let temp = document.createElement('div')
     let frag = document.createDocumentFragment()
     temp.innerHTML = format(HTML);
@@ -278,9 +277,8 @@ const createList = !onMobile ? async () => {
         }
         if(result[i]["name"] === sendThis) {
             listContainer.prepend(item)
-            item.classList.add("lockedItem")
             item.style.height = item.scrollHeight + "px"
-            item.setAttribute("data-pos", "locked")
+            item.setAttribute("data-pos", "down")
             item.classList.add('itemWithLinks');
         } else {
             listContainer.appendChild(item)
@@ -614,7 +612,9 @@ getColor = () => {
   document.querySelectorAll('#palette div').forEach( elem => {
     elem.style.backgroundColor = generatePastelColor();
   });
-  
+
+let num = 0
+
 const timer = ms => new Promise(res => setTimeout(res, ms))
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
@@ -640,6 +640,7 @@ async function updateAndSaveNotesLocally(navigating) {
             </div>`
     }
     if(!going) {
+        going = true;
         asyncInnerHTML((notesTextArea.value), function(fragment){
             while(notesPreviewArea.firstChild) {
                notesPreviewArea.firstChild.remove()
@@ -651,6 +652,7 @@ async function updateAndSaveNotesLocally(navigating) {
        })
     } else {
         while(going) {
+            console.log(num++)
             await timer(100)
         }
         asyncInnerHTML((notesTextArea.value), function(fragment){

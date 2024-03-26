@@ -481,6 +481,10 @@ a {
     line-height: 2em;
     padding-left: 5%;
     margin-left: -5%;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 .listHeader:hover {
@@ -497,6 +501,8 @@ a {
     margin-top: 2px;
     white-space: nowrap;
     font-size: 13px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
 }
 
 .linkWrapper:hover {
