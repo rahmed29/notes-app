@@ -175,6 +175,10 @@ let book = [""];
 let listHandlers = []
 
 function dropWrapper(e) {
+    e.currentTarget.parentNode.classList.toggle("down")
+}
+
+function mobileDropWrapper(e) {
     handleListDropDowns(e.currentTarget)
 }
 
@@ -182,8 +186,57 @@ function jumpWrapper(e) {
     jumpToDesiredPage(e.currentTarget.getAttribute("data-page"))
 }
 
-// Creates the list of notebooks, keeping the current notebook at the top below the search bar
-async function createList() {
+function mobileJumpWrapper(e) {
+    jumpToDesiredPage(e.currentTarget.getAttribute("data-page"))
+    toggleList();
+}
+
+const createList = !onMobile ? async () => {
+    listHandlers.forEach(({ element, type, listener }) => {
+        element.removeEventListener(type, listener);
+    });
+    listHandlers = []
+    while (listContainer.firstChild) {
+        listContainer.firstChild.remove();
+    }
+    const response = await fetch("/api/get/everything")
+    const json = await response.json();
+    const result = json["data"];
+    for (let i = result.length-1; i >= 0; i--) {
+        const item = document.createElement("div")
+        item.classList.add("item")
+        item.setAttribute("data-bn", result[i]["name"])
+        const header = document.createElement("div")
+        header.addEventListener("click", dropWrapper)
+        listHandlers.push({ element: header, type: 'click', listener: dropWrapper});
+        header.innerText = result[i]["name"]
+        header.classList.add("folderName")
+        item.appendChild(header)
+        const ul = document.createElement("ul")
+        item.appendChild(ul)
+        for (let j = 0, n = result[i]["excerpt"].length; j < n; j++)
+        {   
+            const link = document.createElement("a")
+            link.setAttribute("data-page", j)
+            if(result[i]["name"] === sendThis) {
+                link.addEventListener("click", jumpWrapper)
+                listHandlers.push({ element: link, type: 'click', listener: jumpWrapper});
+            } else {
+                link.href = `/${result[i]["name"]}?${j+1}`
+            }
+            link.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ").replaceAll("#", "")}`
+            const li = document.createElement("li")
+            li.appendChild(link)
+            ul.appendChild(li)
+        }
+        if(result[i]["name"] === sendThis) {
+            listContainer.prepend(item)
+            item.classList.add("down")
+        } else {
+            listContainer.appendChild(item)
+        }
+    }
+} : async () => {
     listHandlers.forEach(({ element, type, listener }) => {
         element.removeEventListener(type, listener);
     });
@@ -199,8 +252,8 @@ async function createList() {
         item.classList.add("item")
         item.setAttribute("data-pos", "up")
         item.setAttribute("data-bn", result[i]["name"])
-        item.addEventListener("click", dropWrapper)
-        listHandlers.push({ element: item, type: 'click', listener: dropWrapper});
+        item.addEventListener("click", mobileDropWrapper)
+        listHandlers.push({ element: item, type: 'click', listener: mobileDropWrapper});
         const header = document.createElement("div")
         header.innerText = result[i]["name"]
         header.classList.add("listHeader")
@@ -212,8 +265,8 @@ async function createList() {
             const linkWrapper = document.createElement("div")
             const bookExcerpt = document.createElement("span")
             if(result[i]["name"] === sendThis) {
-                link.addEventListener("click", jumpWrapper)
-                listHandlers.push({ element: link, type: 'click', listener: jumpWrapper});
+                link.addEventListener("click", mobileJumpWrapper)
+                listHandlers.push({ element: link, type: 'click', listener: mobileJumpWrapper});
             } else {
                 link.href = `/${result[i]["name"]}?${j+1}`
             }
@@ -234,6 +287,53 @@ async function createList() {
         }
     }
 }
+
+// // Creates the list of notebooks, keeping the current notebook at the top below the search bar
+// async function createList() {
+//     listHandlers.forEach(({ element, type, listener }) => {
+//         element.removeEventListener(type, listener);
+//     });
+//     listHandlers = []
+//     while (listContainer.firstChild) {
+//         listContainer.firstChild.remove();
+//     }
+//     const response = await fetch("/api/get/everything")
+//     const json = await response.json();
+//     const result = json["data"];
+//     for (let i = result.length-1; i >= 0; i--) {
+//         const item = document.createElement("div")
+//         item.classList.add("item")
+//         item.setAttribute("data-bn", result[i]["name"])
+//         const header = document.createElement("div")
+//         header.addEventListener("click", dropWrapper)
+//         listHandlers.push({ element: header, type: 'click', listener: dropWrapper});
+//         header.innerText = result[i]["name"]
+//         header.classList.add("folderName")
+//         item.appendChild(header)
+//         const ul = document.createElement("ul")
+//         item.appendChild(ul)
+//         for (let j = 0, n = result[i]["excerpt"].length; j < n; j++)
+//         {   
+//             const link = document.createElement("a")
+//             link.setAttribute("data-page", j)
+//             if(result[i]["name"] === sendThis) {
+//                 link.addEventListener("click", jumpWrapper)
+//                 listHandlers.push({ element: link, type: 'click', listener: jumpWrapper});
+//             } else {
+//                 link.href = `/${result[i]["name"]}?${j+1}`
+//             }
+//             link.innerText = `${result[i]["excerpt"][j].replaceAll("\n", " ").replaceAll("#", "")}`
+//             const li = document.createElement("li")
+//             li.appendChild(link)
+//             ul.appendChild(li)
+//         }
+//         if(result[i]["name"] === sendThis) {
+//             listContainer.prepend(item)
+//         } else {
+//             listContainer.appendChild(item)
+//         }
+//     }
+// }
 
 // handles the search bar in the list of notebooks
 function search(term) {
@@ -256,19 +356,19 @@ function accents(navigating) {
 
 // Handles moving between pages
 function handlePageMovement(goBack, amount, shouldCreateNewPage) {
-        if (goBack && pgN > 0) {
-            pgN -= amount;
+    if (goBack && pgN > 0) {
+         pgN -= amount;
+        accents(true)
+    } else if (!goBack){
+        if(pgN + amount >= book.length && shouldCreateNewPage) {
+            book.push("")
+            pgN += amount;
+                accents(true)
+        } else if (!(pgN+amount >= book.length)) {
+            pgN += amount;
             accents(true)
-        } else if (!goBack){
-            if(pgN + amount >= book.length && shouldCreateNewPage) {
-                book.push("")
-                pgN += amount;
-                accents(true)
-            } else if (!(pgN+amount >= book.length)) {
-                pgN += amount;
-                accents(true)
-            }
         }
+    }
 }
 
 // Jumps to a certain page by calling the handlePageMovement function
@@ -502,6 +602,19 @@ function padWithZeroes(str) {
 const letterCount = document.getElementById("letterCount")
 const wordCount = document.getElementById("wordCount")
 
+getColor = () => {
+    let R = Math.floor((Math.random() * 127) + 127);
+    let G = Math.floor((Math.random() * 127) + 127);
+    let B = Math.floor((Math.random() * 127) + 127);
+    
+    let rgb = (R << 16) + (G << 8) + B;
+    return `#${rgb.toString(16)}`;      
+  }
+  
+  document.querySelectorAll('#palette div').forEach( elem => {
+    elem.style.backgroundColor = generatePastelColor();
+  });
+  
 const timer = ms => new Promise(res => setTimeout(res, ms))
 // format notes for preview area, update word and letter count, format code blocks and images, update the book global variable
 // save notes to local storage and check if notes match with DB. Triggered every time the user types
@@ -518,31 +631,37 @@ async function updateAndSaveNotesLocally(navigating) {
     });
     refHandlers = []
     if(navigating) {
-        notesPreviewArea.innerHTML = `<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>`
+        const color = getColor()
+        notesPreviewArea.innerHTML = `
+            <div class="lds-grid">
+                <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div>
+                <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div>
+                <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div> <div style = 'background: ${color}'></div>
+            </div>`
     }
     if(!going) {
         asyncInnerHTML((notesTextArea.value), function(fragment){
             while(notesPreviewArea.firstChild) {
-                notesPreviewArea.firstChild.remove()
-            }
-            notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
-            formatNonText();
-            wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
-            going = false;
-        })
+               notesPreviewArea.firstChild.remove()
+           }
+           notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
+           formatNonText();
+           wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
+           going = false;
+       })
     } else {
         while(going) {
             await timer(100)
         }
         asyncInnerHTML((notesTextArea.value), function(fragment){
             while(notesPreviewArea.firstChild) {
-                notesPreviewArea.firstChild.remove()
-            }
-            notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
-            formatNonText();
-            wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
-            going = false;
-        })
+               notesPreviewArea.firstChild.remove()
+           }
+           notesPreviewArea.appendChild(fragment); // myTarget should be an element node.
+           formatNonText();
+           wordCount.innerText = padWithZeroes(notesPreviewArea.innerText.replaceAll("\n", " ").replace(/  +/g, ' ').split(" ").length-1);
+           going = false;
+       })
     }
     letterCount.innerText = padWithZeroes(notesTextArea.value.replaceAll(" ", "").replaceAll("\n", "").length);
 }
@@ -932,19 +1051,23 @@ function applyViewPreference() {
 // On mobile the function disallows the split mode
 const cycleViewPreferences = !onMobile ? () => {
     let viewPref = localStorage.getItem("viewPref");
-    if(viewPref === "split") {
-        localStorage.setItem("viewPref", "write");
-    } else if (viewPref === "write") {
-        localStorage.setItem("viewPref", "read");
-    } else if (viewPref === "read") {
-        localStorage.setItem("viewPref", "split");
+    switch (viewPref) {
+        case "split":
+            localStorage.setItem("viewPref", "write");
+            break;
+        case "write":
+            localStorage.setItem("viewPref", "read");
+            break;
+        default:
+            localStorage.setItem("viewPref", "split");
+            break;
     }
     editingWindow(localStorage.getItem("viewPref"))
 } : () => {
     let viewPref = localStorage.getItem("viewPref");
     if (viewPref === "write") {
         localStorage.setItem("viewPref", "read");
-    } else if (viewPref === "read") {
+    } else {
         localStorage.setItem("viewPref", "write");
     }
     editingWindow(localStorage.getItem("viewPref"))
@@ -954,27 +1077,30 @@ const mode = document.getElementById("generalInfoViewMode");
 
 // Handle what the view preference should be
 function editingWindow(choice) {
-    if(choice === "read") {
-        mode.innerText = "R";
-        notesTextArea.readOnly = true;
-        notesAreaContainer.classList.add("readMode")
-        notesAreaContainer.classList.remove("writeMode")
-        notesAreaContainer.classList.remove("splitMode")
-        localStorage.setItem("viewPref", "read")
-    } else if (choice === "write") {
-        mode.innerText = "W";
-        notesTextArea.readOnly = false;
-        notesAreaContainer.classList.remove("readMode")
-        notesAreaContainer.classList.add("writeMode")
-        notesAreaContainer.classList.remove("splitMode")
-        localStorage.setItem("viewPref", "write")
-    } else {
-        mode.innerText = "S";
-        notesTextArea.readOnly = false;
-        notesAreaContainer.classList.remove("readMode")
-        notesAreaContainer.classList.remove("writeMode")
-        notesAreaContainer.classList.add("splitMode")
-        localStorage.setItem("viewPref", "split")
+    switch(choice) {
+        case "read":
+            mode.innerText = "R";
+            notesTextArea.readOnly = true;
+            notesAreaContainer.classList.add("readMode")
+            notesAreaContainer.classList.remove("writeMode")
+            notesAreaContainer.classList.remove("splitMode")
+            localStorage.setItem("viewPref", "read")
+            break;
+        case "write":
+            mode.innerText = "W";
+            notesTextArea.readOnly = false;
+            notesAreaContainer.classList.remove("readMode")
+            notesAreaContainer.classList.add("writeMode")
+            notesAreaContainer.classList.remove("splitMode")
+            localStorage.setItem("viewPref", "write")
+            break;
+        default: 
+            mode.innerText = "S";
+            notesTextArea.readOnly = false;
+            notesAreaContainer.classList.remove("readMode")
+            notesAreaContainer.classList.remove("writeMode")
+            notesAreaContainer.classList.add("splitMode")
+            localStorage.setItem("viewPref", "split")
     }
     notesPreviewArea.scrollTop = 0;
     notesTextArea.scrollTop = 0;
@@ -984,6 +1110,16 @@ function editingWindow(choice) {
 
 // When the page loads, grab the notes, appy the users choice of textarea visibility, create the list and create the page numbers
 // Also, parse the emojis in the top menu and if the current page that the user is on is null, go to page one.
+function checkStart() {
+    if(pageIsNull(pgN) && !going) {
+        pgN = 0;
+        initializeNotes()
+        accents();
+    } else if (pageIsNull(pgN) && going) {
+        checkStart();
+    }
+}
+
 initializeNotes();
 applyViewPreference();
 if(!onMobile) {
@@ -992,11 +1128,7 @@ if(!onMobile) {
 createPageNumbers();
 fluentemoji.parse("#toolBar");
 fluentemoji.parse("#bookDiffPopup")
-if(pageIsNull(pgN)) {
-    pgN = 0;
-    initializeNotes()
-    accents();
-}
+checkStart()
 
 // Display the home screen when the user is at the /home path
 if (atHome) {

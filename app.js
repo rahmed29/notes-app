@@ -108,7 +108,7 @@ app.get("/api/get/everything", async (req, res) => {
     if(result[i]["name"] !== "sticky__notes") {
       let excerpts = [];
       for(let j = 0; j < JSON.parse(result[i]["content"]).length; j++) {
-        excerpts.push(JSON.parse(result[i]["content"])[j].substring(0,30));
+        excerpts.push(JSON.parse(result[i]["content"])[j]);
       }
       data.push({
         name: result[i]["name"],
