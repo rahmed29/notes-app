@@ -1,0 +1,2942 @@
+import morphdom from "morphdom";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light.css";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css";
+import Dropzone from "dropzone";
+import AirDatepicker from "air-datepicker";
+import "air-datepicker/air-datepicker.css";
+import { Calendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+import { micromark } from "micromark";
+import { math, mathHtml } from "micromark-extension-math";
+import { gfm, gfmHtml } from "micromark-extension-gfm";
+import { mark, markHTML } from "./micromark-extension-mark/dev/index.js";
+import { directive, directiveHtml } from "micromark-extension-directive";
+import DOMPurify from "dompurify";
+import "./node_modules/command-pal/public/build/bundle.js";
+
+// micromark directives
+function cal(d) {
+  if (d.type !== "textDirective") return false;
+
+  this.tag("<div");
+  this.tag(' class="note-calendar-wrapper"');
+
+  const calEv = events.find((e) => e.id == d.label) || {
+    allDay: true,
+    title: "404",
+    start: "1337-04-20",
+    id: "404",
+    extendedProps: {
+      category: "404",
+    },
+  };
+
+  this.tag(">");
+  this.raw(
+    DOMPurify.sanitize(`
+    <div class = "note-calendar-event">
+      <b>📅 ${calEv.start}</b>
+      <span>${calEv.title}</span>
+      <i>${calEv.extendedProps.category}</i>
+    </div>
+  `)
+  );
+  this.tag("</div>");
+}
+
+function ref(d) {
+  if (d.type !== "textDirective") return false;
+
+  this.tag("<span");
+  this.tag(' class="reference"');
+
+  this.tag(">");
+  this.raw(d.label || "");
+  this.tag("</span>");
+}
+
+// ace editor
+const editor = ace.edit("editor");
+editor.setTheme("ace/theme/chrome");
+editor.setOptions({
+  maxLines: Infinity,
+});
+editor.renderer.setShowGutter(false);
+editor.setOption("showPrintMargin", false);
+
+const notesTextArea = document.getElementById("notesTextArea");
+const notesPreviewArea = document.getElementById("notesPreviewArea");
+const notesAreaContainer = document.getElementById("notesAreaContainer");
+const mainContainer = document.getElementById("mainContainer");
+const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
+const areNotesSavedIcon = document.getElementById("areNotesSavedIcon");
+const list = document.getElementById("listOfBooks");
+const listContainer = document.getElementById("listContainer");
+const wikipediaBrainAnimation = document.getElementById(
+  "wikipediaBrainAnimation"
+);
+const bottomLeftGeneralInfo = document.getElementById("bottomLeftGeneralInfo");
+const generalInfoPageNumberEle = document.getElementById(
+  "generalInfoPageNumber"
+);
+const uploadFolder = document.getElementById("yourUploads");
+const morePages = document.getElementById("morePages");
+const toolBar = document.getElementById("toolBar");
+const brain = document.getElementById("icon8");
+const border = document.getElementById("border");
+const stickyNotesTextArea = document.getElementById("stickyNotesTextArea");
+const stickyNotes = document.getElementById("stickyNotes");
+const workspace = document.getElementById("workspace");
+const tabs = document.getElementById("tabs");
+const openCalendar = document.getElementById("openCalendar");
+const myForm = document.getElementById("myForm");
+const letterCount = document.getElementById("letterCount");
+const wordCount = document.getElementById("wordCount");
+const mode = document.getElementById("generalInfoViewMode");
+const previewContent = document.getElementById("fill");
+
+function wrap(el, wrapper) {
+  if (el && el.parentNode) {
+    el.parentNode.insertBefore(wrapper, el);
+    wrapper.appendChild(el);
+  }
+}
+
+// Text formatting stuff
+// https://github.com/stiang/remove-markdown/blob/main/index.js
+function removeMD(md, options) {
+  options = options || {};
+  options.listUnicodeChar = options.hasOwnProperty("listUnicodeChar")
+    ? options.listUnicodeChar
+    : false;
+  options.stripListLeaders = options.hasOwnProperty("stripListLeaders")
+    ? options.stripListLeaders
+    : true;
+  options.gfm = options.hasOwnProperty("gfm") ? options.gfm : true;
+  options.useImgAltText = options.hasOwnProperty("useImgAltText")
+    ? options.useImgAltText
+    : true;
+  options.abbr = options.hasOwnProperty("abbr") ? options.abbr : false;
+  options.replaceLinksWithURL = options.hasOwnProperty("replaceLinksWithURL")
+    ? options.replaceLinksWithURL
+    : false;
+  options.htmlTagsToSkip = options.hasOwnProperty("htmlTagsToSkip")
+    ? options.htmlTagsToSkip
+    : [];
+
+  var output = md || "";
+
+  // Remove horizontal rules (stripListHeaders conflict with this rule, which is why it has been moved to the top)
+  output = output.replace(/^(-\s*?|\*\s*?|_\s*?){3,}\s*/gm, "");
+
+  try {
+    if (options.stripListLeaders) {
+      if (options.listUnicodeChar)
+        output = output.replace(
+          /^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm,
+          options.listUnicodeChar + " $1"
+        );
+      else output = output.replace(/^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm, "$1");
+    }
+    if (options.gfm) {
+      output = output
+        // Header
+        .replace(/\n={2,}/g, "\n")
+        // Fenced codeblocks
+        .replace(/~{3}.*\n/g, "")
+        // Strikethrough
+        .replace(/~~/g, "")
+        // Fenced codeblocks
+        .replace(/`{3}.*\n/g, "");
+    }
+    if (options.abbr) {
+      // Remove abbreviations
+      output = output.replace(/\*\[.*\]:.*\n/, "");
+    }
+    output = output
+      // Remove HTML tags
+      .replace(/<[^>]*>/g, "");
+
+    var htmlReplaceRegex = new RegExp("<[^>]*>", "g");
+    if (options.htmlTagsToSkip.length > 0) {
+      // Using negative lookahead. Eg. (?!sup|sub) will not match 'sup' and 'sub' tags.
+      var joinedHtmlTagsToSkip = "(?!" + options.htmlTagsToSkip.join("|") + ")";
+
+      // Adding the lookahead literal with the default regex for html. Eg./<(?!sup|sub)[^>]*>/ig
+      htmlReplaceRegex = new RegExp(
+        "<" + joinedHtmlTagsToSkip + "[^>]*>",
+        "ig"
+      );
+    }
+
+    output = output
+      // Remove HTML tags
+      .replace(htmlReplaceRegex, "")
+      // Remove setext-style headers
+      .replace(/^[=\-]{2,}\s*$/g, "")
+      // Remove footnotes?
+      .replace(/\[\^.+?\](\: .*?$)?/g, "")
+      .replace(/\s{0,2}\[.*?\]: .*?$/g, "")
+      // Remove images
+      .replace(/\!\[(.*?)\][\[\(].*?[\]\)]/g, options.useImgAltText ? "$1" : "")
+      // Remove inline links
+      .replace(
+        /\[([^\]]*?)\][\[\(].*?[\]\)]/g,
+        options.replaceLinksWithURL ? "$2" : "$1"
+      )
+      // Remove blockquotes
+      .replace(/^(\n)?\s{0,3}>\s?/gm, "$1")
+      // .replace(/(^|\n)\s{0,3}>\s?/g, '\n\n')
+      // Remove reference-style links?
+      .replace(/^\s{1,2}\[(.*?)\]: (\S+)( ".*?")?\s*$/g, "")
+      // Remove atx-style headers
+      .replace(
+        /^(\n)?\s{0,}#{1,6}\s*( (.+))? +#+$|^(\n)?\s{0,}#{1,6}\s*( (.+))?$/gm,
+        "$1$3$4$6"
+      )
+      // Remove * emphasis
+      .replace(/([\*]+)(\S)(.*?\S)??\1/g, "$2$3")
+      // Remove _ emphasis. Unlike *, _ emphasis gets rendered only if
+      //   1. Either there is a whitespace character before opening _ and after closing _.
+      //   2. Or _ is at the start/end of the string.
+      .replace(/(^|\W)([_]+)(\S)(.*?\S)??\2($|\W)/g, "$1$3$4$5")
+      // Remove code blocks
+      .replace(/(`{3,})(.*?)\1/gm, "$2")
+      // Remove inline code
+      .replace(/`(.+?)`/g, "$1")
+      // // Replace two or more newlines with exactly two? Not entirely sure this belongs here...
+      // .replace(/\n{2,}/g, '\n\n')
+      // // Remove newlines in a paragraph
+      // .replace(/(\S+)\n\s*(\S+)/g, '$1 $2')
+      // Replace strike through
+      .replace(/~(.*?)~/g, "$1");
+  } catch (e) {
+    console.error(e);
+    return md;
+  }
+  return output;
+}
+
+function format(str) {
+  return micromark(str, {
+    extensions: [gfm(), math(), mark(), directive()],
+    htmlExtensions: [
+      gfmHtml(),
+      mathHtml(),
+      markHTML(),
+      directiveHtml({ ref, cal }),
+    ],
+  });
+}
+
+// tooltips
+const wikipediaTippy = tippy([brain], {
+  arrow: false,
+  content: `<div id = 'brain' style = 'width: auto;'>Info on highlighted text will appear here</div>`,
+  interactive: true,
+  allowHTML: true,
+  maxWidth: "500px",
+  placement: "bottom-end",
+})[0];
+
+const synced = tippy("#areNotesSavedIcon", {
+  arrow: false,
+  content: "Notes are saved",
+  placement: "bottom-end",
+})[0];
+
+const editingMode = tippy("#generalInfoViewMode", {
+  arrow: false,
+  content: localStorage.getItem("/viewPref"),
+  placement: "top",
+})[0];
+
+const generalInfoPageNumber = tippy("#generalInfoPageNumber", {
+  arrow: false,
+  content: "Loading",
+  placement: "top",
+})[0];
+
+const toolBarTips = [
+  "Save (Ctrl + S)",
+  "Open",
+  "Delete",
+  "Insert Image",
+  "Switch View (Ctrl + E)",
+  "Prev Page",
+  "Next Page",
+];
+
+for (let i = 0; i < 7; i++) {
+  tippy(`#icon${i + 1}`, {
+    arrow: false,
+    content: toolBarTips[i],
+    placement: "bottom-end",
+  });
+}
+
+tippy("#stickyNotesEmoji", {
+  theme: "dark",
+  content: "Cycle (Right-Click)",
+  placement: "left",
+  arrow: false,
+})[0];
+
+tippy("#wordCount", {
+  arrow: false,
+  content: "Word Count",
+});
+
+tippy("#letterCount", {
+  arrow: false,
+  content: "Character Count",
+});
+
+function insertStickyNote() {
+  editor.insert(stickyNotesTextArea.value);
+  updateAndSaveNotesLocally();
+}
+
+// Image stuff
+new Dropzone(document.body, {
+  url: "/api/save/images",
+  paramName: "avatar",
+  clickable: false,
+  acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
+  error: function () {
+    notyf.error("An error occurred when saving an image.");
+  },
+  success: function (file, response) {
+    file.previewElement.remove();
+    editor.insert(`![](${response})`);
+    updateAndSaveNotesLocally();
+    saveNoteBookToDb();
+  },
+});
+
+async function insertAndSaveImage() {
+  if (!reservedNames.includes(note.name)) {
+    const formData = new FormData(myForm);
+    const imageUploadStatus = await fetch("/api/save/images", {
+      method: "POST",
+      body: formData,
+    });
+    if (imageUploadStatus.ok) {
+      const response = await imageUploadStatus.text();
+      editor.insert(`![](${response})`);
+      updateAndSaveNotesLocally();
+      saveNoteBookToDb();
+    } else {
+      notyf.error("An error occurred when saving an image.");
+    }
+  }
+}
+
+async function deleteImageFromDb(image) {
+  // let imageInText = `!(/uploads/${image})`;
+  const imageDelete = await fetch(`/api/delete/images/${image}`, {
+    method: "DELETE",
+  });
+  if (imageDelete.ok) {
+    // editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
+    updateAndSaveNotesLocally();
+    saveNoteBookToDb();
+  } else {
+    notyf.error("An error occurred when deleting an image.");
+  }
+}
+
+function removeImageToolTip(e) {
+  contextMenu(
+    e,
+    [
+      {
+        attr: this.src.substring(this.src.indexOf("/uploads/") + 9),
+        text: "Open Image",
+        click: function () {
+          window.open(`/uploads/${this.getAttribute("data-props")}`, "_blank");
+        },
+        appearance: "ios",
+      },
+      {
+        attr: this.src.substring(this.src.indexOf("/uploads/") + 9),
+        text: "Delete Image",
+        click: function () {
+          this.classList.add("rios");
+          this.innerText = "Confirm";
+          this.addEventListener(
+            "click",
+            () => {
+              deleteImageFromDb(this.getAttribute("data-props"));
+              delContextMenu();
+            },
+            { once: true }
+          );
+        },
+        appearance: "ios",
+      },
+    ],
+    [`${e.clientX}px`, `${e.clientY}px`]
+  );
+}
+
+// tooltip for [[references]] to notebooks
+async function referToolTip() {
+  try {
+    lastDynamicTippy.destroy();
+  } catch (err) {
+    console.log(err);
+  }
+  delContextMenu();
+  const given = this;
+  lastDynamicTippy = tippy([given], {
+    theme: "light",
+    content: "Loading...",
+    allowHTML: true,
+    interactive: true,
+    arrow: false,
+  })[0];
+  try {
+    const page = this.getAttribute("data-page");
+    const content =
+      this.getAttribute("data-bookname") === note.name
+        ? format(note.content[page])
+        : format(
+            JSON.parse(
+              await getAnyBookContent(
+                this.getAttribute("data-bookname"),
+                "content"
+              )
+            )[page]
+          );
+    lastDynamicTippy.setContent(
+      `<div class = 'pagePreviewContainer'>${content}</div>`
+    );
+  } catch (err) {
+    lastDynamicTippy.destroy();
+  }
+}
+
+// toast notifs
+const notyf = new Notyf({
+  position: {
+    y: "bottom",
+  },
+  dismissible: true,
+});
+
+// notebook names that aren't allowed because they are being used for other stuff
+const reservedNames = ["home", "todo__list", "sticky__notes", "AI-Summary"];
+
+// active and completed events for todo
+let events;
+let pastEvents;
+
+// flashcards
+let flashcards = [];
+let currCard = null;
+
+// wikiSearch enabled
+let wikiEnabled = true;
+
+// variable for the tree list state
+let haveToUpdateList = false;
+let nestedBooks = null;
+const droppedFolders = new Set(
+  JSON.parse(localStorage.getItem("/fileStructure")) || []
+);
+const root = {
+  name: "_root",
+  children: [],
+  excerpt: [],
+  parents: [],
+};
+
+// event listeners and stuff we need to destroy on repaints
+let tabTippys = {};
+let lastDynamicTippy = null;
+let pageHandlers = [];
+let listHandlers = [];
+let previewHandlers = [];
+
+// instance of fullcalendar, air date picker and command pal for later destruction
+let calendar;
+let datePicker;
+let c;
+
+// Re-Instantiate the command palette
+async function defineCmd() {
+  try {
+    c.destroy();
+  } catch (err) {
+    console.log(err);
+  }
+
+  const cmdPgs = note.content.map((e, i) => {
+    const name = e.indexOf("\n") === -1 ? e : e.substring(0, e.indexOf("\n"));
+    return {
+      name: `📄 ${removeMD(name)}`,
+      handler: () => jumpToDesiredPage(i),
+    };
+  });
+
+  const family = await getFamily(note.name);
+  const list = await fetch("/api/get/list");
+  const json = await list.json();
+  const cmdList = json.data.map((e) => ({
+    name: `📗 ${e.name}`,
+    handler: () => switchNote(e.name),
+  }));
+
+  const cmdNest = json.data.reduce((arr, e) => {
+    if (e.name !== note.name && !family.includes(e.name)) {
+      arr.push({
+        name: `📗 ${e.name}`,
+        handler: () => nestNote(note.name, e.name),
+      });
+    }
+    return arr;
+  }, []);
+
+  const cmdRel = JSON.parse(await getAnyBookContent(note.name, "parents")).map(
+    (parent) => ({
+      name: `📗 ${parent}`,
+      handler: () => relinquishNote(note.name, parent),
+    })
+  );
+
+  let commands = [
+    {
+      name: "📃 New Page",
+      handler: () => jumpToDesiredPage(note.content.length),
+    },
+    {
+      name: "🚶 Go to Page",
+      children: cmdPgs,
+    },
+    {
+      name: "📖 Open Notebook",
+      children: cmdList,
+    },
+    {
+      name: "💾 Save Notebook",
+      handler: () => saveNoteBookToDb(),
+    },
+    {
+      name: "🖼️ Insert Image",
+      handler: () => document.getElementById("getFile1").click(),
+    },
+    {
+      name: "📂 Nest Notebook",
+      children: cmdNest,
+    },
+    {
+      name: "🫗 Relinquish Notebook",
+      children: cmdRel,
+    },
+    {
+      name: "🔎 Compare Local Notes to DB",
+      handler: () => showBookDiffPopup(),
+    },
+    {
+      name: "✨ AI Summary",
+      handler: () => AISUmmary(),
+    },
+    {
+      name: "🃏 Flashcard Mode",
+      handler: () => flashcardMode(),
+    },
+    {
+      name: "🗑️ Delete This Page",
+      children: [
+        {
+          name: "❓ Confirm",
+          handler: () => deletePage(),
+        },
+      ],
+    },
+    {
+      name: "🗑️ Delete Notebook",
+      children: [
+        {
+          name: "❓ Confirm",
+          handler: () => deleteNoteBookFromDb(),
+        },
+      ],
+    },
+    {
+      name: "🪠 Force Update Notebook",
+      children: [
+        {
+          name: "❓ Confirm",
+          handler: () => forceUpdateNotes(),
+        },
+      ],
+    },
+    {
+      name: "📅 Open Calendar",
+      handler: () => showTodo(false),
+    },
+    {
+      name: "📝 Open Sticky Note",
+      handler: () => showStickyNotes(),
+    },
+    {
+      name: "✈️ Import Sticky Note",
+      handler: () => {
+        insertStickyNote();
+      },
+    },
+    {
+      name: "✈️ Insert Calendar Event",
+      handler: () => {
+        showTodo(true);
+      },
+    },
+    {
+      name: "⌨️ Toggle Vim Mode",
+      handler: () => {
+        if (notesTextArea.getAttribute("data-vim") === "true") {
+          editor.setKeyboardHandler("ace/keyboard/vscode");
+          notesTextArea.setAttribute("data-vim", "false");
+        } else {
+          editor.setKeyboardHandler("ace/keyboard/vim");
+          notesTextArea.setAttribute("data-vim", "true");
+        }
+      },
+    },
+    {
+      name: "👁️ Switch View",
+      children: [
+        {
+          name: "🌗 Split",
+          handler: () => {
+            localStorage.setItem("/viewPref", "split");
+            editingWindow("split", true);
+          },
+        },
+        {
+          name: "🌑 Read",
+          handler: () => {
+            localStorage.setItem("/viewPref", "read");
+            editingWindow("read", true);
+          },
+        },
+        {
+          name: "🌕 Write",
+          handler: () => {
+            localStorage.setItem("/viewPref", "write");
+            editingWindow("write", true);
+          },
+        },
+      ],
+    },
+    {
+      name: "🧠 Toggle Wikipedia Search",
+      handler: () => toggleWikiSearch(),
+    },
+    {
+      name: "🌴 Toggle List",
+      handler: () => toggleList(),
+    },
+  ];
+
+  c = new CommandPal({
+    hotkey: "ctrl+space",
+    placeholder: `Search...`,
+    commands: commands,
+  });
+  c.start();
+}
+
+// note stuff
+const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
+let library = new Map();
+let lastNote = null;
+let note = null;
+const homeData = {
+  data: {
+    _id: "661233b9de0bfc91bd8c16e7",
+    name: "testing",
+    content: `["# 👋 Welcome Home!\\n\\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"]`,
+    children: "[]",
+    parents: "[]",
+    saved: "unsaved",
+    __v: 0,
+  },
+};
+
+// note class holding all details about a notebook
+class Note {
+  constructor() {}
+}
+
+// helper function for dealing with blank page
+function pageIsNull(page) {
+  if (page == null || page === "" || page === "undefined") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function getWrittenPages(arr) {
+  const response = arr.reduce((arr, e) => {
+    if (!pageIsNull(e)) {
+      arr.push(e);
+    }
+    return arr;
+  }, []);
+  if (response.length === 0) {
+    response.push("");
+  }
+  return response;
+}
+
+// formatting things once you have selected a note and want to move around in it
+// jumpToDesiredPage -> handlePageMovement -> accents -> updateAndSaveNotesLocally -> syncStatus -> recursiveSetStuff or setStuff -> formatNonText
+function jumpWrapper() {
+  jumpToDesiredPage(this.getAttribute("data-page"));
+}
+
+function jumpToDesiredPage(desired) {
+  if (desired < note.pgN) {
+    handlePageMovement(true, note.pgN - desired, true);
+  } else if (desired > note.pgN) {
+    handlePageMovement(false, desired - note.pgN, true);
+  }
+}
+
+function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
+  if (goBack && note.pgN > 0) {
+    note.pgN -= amount;
+    accents();
+  } else if (!goBack) {
+    if (
+      note.pgN + amount >= note.content.length &&
+      shouldCreateNewPage &&
+      !reservedNames.includes(note.name)
+    ) {
+      note.content.push("");
+      note.pgN += amount;
+      accents();
+      defineCmd();
+    } else if (
+      note.pgN + amount >= note.content.length &&
+      !shouldCreateNewPage
+    ) {
+      contextMenu(e, [
+        {
+          text: "New Page",
+          click: (e) => {
+            e.stopPropagation();
+            handlePageMovement(false, 1, true);
+            delContextMenu();
+          },
+          appearance: "ios",
+        },
+      ]);
+    } else if (!(note.pgN + amount >= note.content.length)) {
+      note.pgN += amount;
+      accents();
+    }
+  }
+}
+
+function accents() {
+  if (note.aceSessions[note.pgN] == null) {
+    const newSession = ace.createEditSession(note.content[note.pgN]);
+    editor.setSession(newSession);
+    editor.session.setUseWrapMode(true);
+    editor.session.setMode("ace/mode/markdown");
+    editor.session.on("change", () => {
+      updateAndSaveNotesLocally();
+    });
+    note.aceSessions[note.pgN] = newSession;
+    editor.setSession(note.aceSessions[note.pgN]);
+  } else {
+    editor.setSession(note.aceSessions[note.pgN]);
+  }
+  // editor.session.setValue(note.content[note.pgN]);
+  window.history.replaceState({}, "", `${note.name}?${note.pgN + 1}`);
+  updateAndSaveNotesLocally();
+  createPageNumbers();
+  editor.focus();
+}
+
+async function updateAndSaveNotesLocally() {
+  note.content[note.pgN] = editor.getValue();
+  if (!reservedNames.includes(note.name)) {
+    localStorage.setItem(note.name, JSON.stringify(note.content));
+  }
+  syncStatus(note.dbSave);
+  previewHandlers.forEach(({ element, type, listener }) => {
+    element.removeEventListener(type, listener);
+  });
+  previewHandlers = [];
+  const v = document.createElement("div");
+  v.innerHTML = format(editor.getValue());
+  v.id = "fill";
+  morphdom(previewContent, v);
+  formatNonText(previewContent);
+  letterCount.innerText = editor
+    .getValue()
+    .replaceAll(" ", "")
+    .replaceAll("\n", "")
+    .length.toString()
+    .padStart(5, "0");
+  wordCount.innerText = (
+    notesPreviewArea.innerText
+      .replaceAll("\n", " ")
+      .replace(/  +/g, " ")
+      .split(" ").length - 1
+  )
+    .toString()
+    .padStart(5, "0");
+}
+
+function syncStatus(dbSave) {
+  if (note.saved === "unsaved") {
+    synced.setContent(`Notes are not saved`);
+    areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
+    document.title = `${note.name} *`;
+    try {
+      document.getElementById(`book__${note.name}`).innerText =
+        "* " + note.name;
+    } catch (err) {
+      console.log(err);
+    }
+  } else {
+    let writtenPages = getWrittenPages(note.content);
+    if (JSON.stringify(writtenPages) === JSON.stringify(dbSave)) {
+      areNotesSavedIcon.style.filter = "none";
+      synced.setContent(`Notes were saved at ${note.timeOfSave}`),
+        (document.title = note.name);
+      try {
+        document.getElementById(`book__${note.name}`).innerText = note.name;
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      areNotesSavedIcon.style.filter = "grayscale(1)";
+      synced.setContent(
+        `Notes shown differ from saved notes by ${Math.abs(
+          JSON.stringify(note.content).length - JSON.stringify(dbSave).length
+        )} chars`
+      );
+      document.title = "* " + note.name;
+      try {
+        document.getElementById(`book__${note.name}`).innerText =
+          "* " + note.name;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
+}
+
+function formatNonText(ele) {
+  for (const node of ele.querySelectorAll(".reference")) {
+    node.setAttribute("data-bookname", node.innerText);
+    node.setAttribute("data-page", 0);
+    node.addEventListener("click", switchWrapper);
+    previewHandlers.push({
+      element: node,
+      type: "click",
+      listener: switchWrapper,
+    });
+    node.addEventListener("mouseover", referToolTip);
+    previewHandlers.push({
+      element: node,
+      type: "mouseover",
+      listener: referToolTip,
+    });
+  }
+  for (const node of notesPreviewArea.querySelectorAll("img")) {
+    node.addEventListener("contextmenu", removeImageToolTip);
+    previewHandlers.push({
+      element: node,
+      type: "contextmenu",
+      listener: removeImageToolTip,
+    });
+  }
+}
+
+// loading workspace from last session
+function addCloseTab(div) {
+  div.addEventListener("click", switchTab);
+  div.addEventListener(
+    "contextmenu",
+    function (e) {
+      e.preventDefault();
+      const temp = this.getAttribute("data-bookname");
+      library.delete(temp);
+      tabTippys[temp].destroy();
+      tabTippys[temp] = null;
+      savedWS.delete(temp);
+      localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+      this.removeEventListener("click", switchTab);
+      this.remove();
+      if (savedWS.size === 0) {
+        switchNote("home");
+      } else if (temp === note.name) {
+        switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
+      }
+    },
+    { once: true }
+  );
+}
+
+function createWorkspace() {
+  Array.from(savedWS).forEach((note) => {
+    const div = document.createElement("div");
+    const txt = note;
+    div.innerText = txt;
+    div.classList.add("tab");
+    div.id = `book__${txt}`;
+    div.setAttribute("data-bookname", txt);
+    div.addEventListener("click", switchTab);
+    addCloseTab(div);
+    tabTippys[note] = tippy([div], {
+      theme: "dark",
+      placement: "bottom-end",
+      content: txt,
+      arrow: false,
+    })[0];
+    tabs.prepend(div);
+  });
+}
+
+// for tabs
+function switchTab() {
+  switchNote(this.getAttribute("data-bookname"));
+}
+
+// for list
+function switchWrapper() {
+  switchNote(
+    this.getAttribute("data-bookname"),
+    parseInt(this.getAttribute("data-page"))
+  );
+}
+
+// function to switch between notes.
+// in essense we are trying to mimic the DB schema in memory using the 'library' hashmap
+async function switchNote(noteName, page) {
+  if (page == null) {
+    try {
+      page = library.get(noteName).pgN;
+    } catch (err) {
+      page = 0;
+    }
+  }
+  if (
+    note &&
+    noteName === note.name &&
+    page === note.pgN &&
+    !reservedNames.includes(note.name)
+  ) {
+    return 1;
+  }
+  try {
+    document.getElementById(`book__${note.name}`).classList.remove("openTab");
+  } catch (err) {
+    console.log(err);
+  }
+  lastNote = note;
+  note = new Note();
+  const data = (await getAnyBookContent(noteName, "_data")) || {
+    name: noteName,
+    content: '[""]',
+    children: "[]",
+    parents: "[]",
+    saved: "unsaved",
+  };
+  note.name = noteName.replaceAll("/", "");
+  note.content =
+    JSON.parse(localStorage.getItem(noteName)) || JSON.parse(data.content);
+  note.pgN = page < note.content.length ? page : note.content.length - 1;
+  try {
+    note.dbSave = JSON.parse(data.dbSave);
+  } catch (err) {
+    note.dbSave = JSON.parse(data.content);
+  }
+  note.children = JSON.parse(data.children);
+  note.parents = JSON.parse(data.parents);
+  note.family = await getFamily(noteName);
+  note.timeOfSave = data.date;
+  note.saved = data.saved;
+  note.aceSessions = data.aceSessions || [];
+  if (pageIsNull(note.pgN)) {
+    note.pgN = 0;
+    note.content = getWrittenPages(note.content);
+  }
+  try {
+    document.getElementById(`book__${note.name}`).classList.add("openTab");
+  } catch (err) {
+    const div = document.createElement("div");
+    const txt = note.name;
+    div.innerText = txt;
+    div.classList.add("tab");
+    div.classList.add("openTab");
+    div.id = `book__${txt}`;
+    div.setAttribute("data-bookname", txt);
+    addCloseTab(div);
+    tabTippys[noteName] = tippy([div], {
+      theme: "dark",
+      placement: "bottom-end",
+      content: txt,
+      arrow: false,
+    })[0];
+    tabs.prepend(div);
+  }
+  if (reservedNames.includes(note.name)) {
+    toolBar.classList.add("homeToolBar");
+    note.readOnly = true;
+    editor.setReadOnly(true);
+  } else {
+    toolBar.classList.remove("homeToolBar");
+    note.readOnly = false;
+    editor.setReadOnly(false);
+  }
+  library.set(note.name, note);
+  accents();
+  if (lastNote == null || lastNote.name !== note.name) {
+    defineCmd();
+  }
+  savedWS.add(noteName);
+  localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+}
+
+// creating the tree list
+function dropWrapper(e) {
+  e.stopPropagation();
+  if (this.getAttribute("data-pos") === "down") {
+    droppedFolders.delete(this.parentNode.getAttribute("data-bookname"));
+    this.nextElementSibling.style.display = "none";
+    this.classList.remove("down");
+    this.setAttribute("data-pos", "up");
+  } else {
+    droppedFolders.add(this.parentNode.getAttribute("data-bookname"));
+    this.nextElementSibling.style.display = "flex";
+    this.classList.add("down");
+    this.setAttribute("data-pos", "down");
+  }
+  const arrayFromSet = Array.from(droppedFolders);
+  localStorage.setItem("/fileStructure", JSON.stringify(arrayFromSet));
+}
+
+async function createList() {
+  nestedBooks = new Set();
+  listHandlers.forEach(({ element, type, listener }) => {
+    element.removeEventListener(type, listener);
+  });
+  listHandlers = [];
+  const response = await fetch("/api/get/list");
+  if (!response.ok) {
+    notyf.error("An error occurred when creating the tree list");
+    return 0;
+  }
+  const json = await response.json();
+  const result = json["data"];
+  root.children = [];
+  result.forEach((obj) => {
+    root.children.push(obj.name);
+  });
+  const gigaFolder = nestedList(root, result).childNodes[1];
+  gigaFolder.classList.add("gigaFolder");
+  while (listContainer.firstChild) {
+    listContainer.firstChild.remove();
+  }
+  listContainer.appendChild(gigaFolder);
+  appendUploads();
+
+  // TODO: look at this
+  nestedBooks.forEach(() => {
+    for (const node of gigaFolder.childNodes) {
+      if (nestedBooks.has(node.firstChild.getAttribute("data-bookname"))) {
+        node.remove();
+        break;
+      }
+    }
+  });
+}
+
+function updateList() {
+  if (list.getAttribute("data-pos") === "hidden") {
+    haveToUpdateList = true;
+  } else {
+    createList();
+  }
+  defineCmd();
+}
+
+function nestedList(obj, allNotes) {
+  if (obj.parents[0]) {
+    nestedBooks.add(obj.name);
+  }
+  const folder = document.createElement("div");
+  folder.setAttribute("data-bookname", obj.name);
+  folder.setAttribute("data-searchValue", `${obj.name}`);
+  folder.classList.add("item");
+  const folderName = document.createElement("div");
+  folderName.classList.add("folderName");
+  folderName.addEventListener("click", dropWrapper);
+  listHandlers.push({
+    element: folderName,
+    type: "click",
+    listener: dropWrapper,
+  });
+  folderName.innerText = obj.name;
+  folder.appendChild(folderName);
+  const ul = document.createElement("ul");
+  folder.appendChild(ul);
+  for (let i = 0, n = obj.excerpt.length; i < n; i++) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.setAttribute("data-page", i);
+    a.setAttribute("data-bookname", obj.name);
+    a.addEventListener("click", switchWrapper);
+    listHandlers.push({ element: a, type: "click", listener: switchWrapper });
+    // }
+    if (removeMD(obj.excerpt[i]) === "") {
+      a.innerHTML = "<i>Empty Page</i>";
+    } else {
+      a.innerText = removeMD(obj.excerpt[i]);
+    }
+    a.addEventListener("contextmenu", showPagePreview);
+    listHandlers.push({
+      element: a,
+      type: "contextmenu",
+      listener: showPagePreview,
+    });
+    li.appendChild(a);
+    ul.appendChild(li);
+  }
+  if (obj.children[0]) {
+    obj.children.forEach((childName) => {
+      folder.setAttribute(
+        "data-searchValue",
+        `${folder.getAttribute("data-searchValue")}-${obj.children.join("-")}`
+      );
+      const li = document.createElement("li");
+      try {
+        li.appendChild(
+          nestedList(
+            allNotes.find((obj) => obj.name === childName),
+            allNotes,
+            false
+          )
+        );
+        ul.prepend(li);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+  }
+  if (droppedFolders.has(obj.name)) {
+    folderName.setAttribute("data-pos", "down");
+    ul.style.display = "flex";
+    folderName.classList.add("down");
+  } else {
+    folderName.setAttribute("data-pos", "up");
+  }
+  folder.appendChild(ul);
+  return folder;
+}
+
+async function appendUploads() {
+  const images = await fetch("/api/get/image-list");
+  if (!images.ok) {
+    notyf.error("An error occurred when creating the image-list");
+    return 0;
+  }
+  const json2 = await images.json();
+  const result2 = json2["data"];
+  const ul = uploadFolder.nextSibling.nextSibling;
+  uploadFolder.setAttribute("data-children", result2.length);
+  while (ul.firstChild) {
+    ul.firstChild.remove();
+  }
+  result2.forEach((file) => {
+    const a = document.createElement("a");
+    a.href = `/uploads/${file}`;
+    a.setAttribute("target", "_blank");
+    a.innerText = file;
+    const li = document.createElement("li");
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+}
+
+function search(term) {
+  for (const item of listContainer.firstChild.childNodes) {
+    const folder = item.firstChild;
+    folder.style.display = "inline-block";
+    const terms = folder.getAttribute("data-searchValue");
+    if (!terms.toLowerCase().includes(term.toLowerCase())) {
+      folder.style.display = "none";
+    }
+  }
+}
+
+function resizeList(e) {
+  border.style.background = "rgb(10,132,255)";
+  document.body.style.cursor = "w-resize";
+  if (e.clientX <= 600 && e.clientX >= 300) {
+    list.style.width = `${e.clientX - 16}px`;
+    workspace.style.width = `calc(100% - 25px - ${e.clientX - 16}px)`;
+    bottomLeftGeneralInfo.style.left = `${e.clientX - 16 + 25}px`;
+  }
+}
+
+function hideList() {
+  bottomLeftGeneralInfo.style.left = "25px";
+  list.style.display = "none";
+  list.setAttribute("data-pos", "hidden");
+  border.style.display = "none";
+  tabs.style.marginLeft = "0px";
+  localStorage.setItem("/listShown", "false");
+}
+
+function showList() {
+  bottomLeftGeneralInfo.style.left =
+    parseInt(localStorage.getItem("/listSize") || 300) + 25 + "px";
+  list.setAttribute("data-pos", "shown");
+  list.style.display = "flex";
+  if (haveToUpdateList) {
+    createList();
+    haveToUpdateList = false;
+  }
+  border.style.display = "inline";
+  tabs.style.marginLeft = "-5px";
+  localStorage.setItem("/listShown", "true");
+}
+
+function toggleList() {
+  if (list.getAttribute("data-pos") === "shown") {
+    hideList();
+  } else {
+    showList();
+  }
+}
+
+// page numbers on the left
+function createPageNumbers() {
+  pageHandlers.forEach(({ element, type, listener }) => {
+    element.removeEventListener(type, listener);
+  });
+  pageHandlers = [];
+  while (topLeftPageNumber.firstChild) {
+    topLeftPageNumber.firstChild.remove();
+  }
+  generalInfoPageNumberEle.innerText = note.pgN + 1;
+  generalInfoPageNumber.setContent(`Page ${note.pgN + 1}`);
+  const timesToGo = note.content.length <= 9 ? note.content.length : 9;
+  for (let i = 0, n = timesToGo; i < n; i++) {
+    const box = document.createElement("div");
+    box.id = `whereTo${i}`;
+    box.classList.add("whereTo");
+    box.setAttribute("data-bookname", note.name);
+    box.setAttribute("data-page", i);
+    box.addEventListener("mouseover", showPagePreview);
+    pageHandlers.push({
+      element: box,
+      type: "mouseover",
+      listener: showPagePreview,
+    });
+    box.addEventListener("mouseleave", delContextMenu);
+    pageHandlers.push({
+      element: box,
+      type: "mouseleave",
+      listener: delContextMenu,
+    });
+    box.addEventListener("click", jumpWrapper);
+    pageHandlers.push({ element: box, type: "click", listener: jumpWrapper });
+    box.addEventListener("wheel", scrollCM);
+    pageHandlers.push({ element: box, type: "wheel", listener: scrollCM });
+    box.innerText = i + 1;
+    topLeftPageNumber.appendChild(box);
+  }
+  if (note.content.length > 9) {
+    morePages.style.display = "inline";
+    morePages.setAttribute("data-page", note.content.length - 1);
+  } else {
+    morePages.style.display = "none";
+  }
+  morePages.classList.remove("currPage");
+  const currPage = document.getElementById(`whereTo${note.pgN}`) || morePages;
+  currPage.classList.add("currPage");
+}
+
+async function showMorePages(e) {
+  const buttons = note.content.reduce((arr, e, i) => {
+    if (i >= 9) {
+      const app = i === note.pgN ? "currPage" : "random";
+      arr.push({
+        text: `Page ${i}`,
+        click: (e) => {
+          jumpToDesiredPage(i);
+          showMorePages(e);
+        },
+        appearance: app,
+      });
+    }
+    return arr;
+  }, []);
+  contextMenu(e, buttons, ["21px", `${topLeftPageNumber.scrollHeight + 5}px`]);
+}
+
+// note creation and deletion stuff
+async function getAnyBookContent(bookName, desiredInfo) {
+  if (bookName === "home") {
+    if (desiredInfo === "_data") {
+      return homeData["data"];
+    }
+    return homeData["data"][desiredInfo];
+  }
+  if (library.get(bookName)) {
+    const cBook = library.get(bookName);
+    const cachedData = {
+      data: {
+        name: cBook.name,
+        date: cBook.timeOfSave,
+        content: JSON.stringify(cBook.content),
+        dbSave: JSON.stringify(cBook.dbSave),
+        children: JSON.stringify(cBook.children),
+        parents: JSON.stringify(cBook.parents),
+        saved: cBook.saved,
+        aceSessions: cBook.aceSessions,
+      },
+    };
+    if (desiredInfo === "_data") {
+      return cachedData["data"];
+    }
+    return cachedData["data"][desiredInfo];
+  }
+  const response = await fetch(`/api/get/notebooks/${bookName}`, {});
+  if (response.ok) {
+    let json = await response.json();
+    if (desiredInfo === "_data") {
+      return json["data"];
+    }
+    return json["data"][desiredInfo];
+  } else {
+    return null;
+  }
+}
+
+async function forceUpdateNotes() {
+  const name = note.name;
+  try {
+    document.getElementById(`book__${note.name}`).remove();
+    document
+      .getElementById(`book__${note.name}`)
+      .removeEventListener("click", switchTab);
+  } catch (err) {
+    console.log(err);
+  }
+  const pg = note.pgN;
+  note = null;
+  localStorage.removeItem(name);
+  library.delete(name);
+  switchNote(name, pg);
+  notyf.success("Notes were pulled from database");
+}
+
+async function copyBook(newName) {
+  const existingItem = await fetch(`/api/get/notebooks/${newName}`);
+  if (existingItem.status === 404 && newName) {
+    const thisItem = await fetch(`/api/get/notebooks/${note.name}`);
+    const save = await fetch("/api/save/notebooks/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: newName,
+        content: localStorage.getItem(note.name),
+        date: new Date().toLocaleString(),
+      }),
+    });
+    if (save.ok) {
+      localStorage.setItem(newName, localStorage.getItem(note.name)),
+        updateList();
+      switchNote(newName, 0);
+    } else {
+      notyf.error("An error occurred when saving a notebook");
+    }
+  }
+}
+
+function deletePage() {
+  if (note.pgN !== 0) {
+    note.content.splice(note.pgN, 1);
+    note.pgN = note.content.length - 1;
+    accents(false);
+    defineCmd();
+  }
+}
+
+async function saveNoteBookToDb() {
+  if (note.name.includes("%") || reservedNames.includes(note.name)) {
+    notyf.error("Something went wrong");
+    return 0;
+  }
+  note.content[note.pgN] = editor.getValue();
+  note.content = getWrittenPages(note.content);
+  localStorage.setItem(note.name, JSON.stringify(note.content));
+
+  const saveStatus = await fetch("/api/save/notebooks/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: note.name,
+      content: localStorage.getItem(note.name),
+      date: new Date().toLocaleString(),
+    }),
+  });
+  if (saveStatus.ok) {
+    areNotesSavedIcon.classList.add("saved");
+    note.dbSave = [...note.content];
+    if (note.pgN > note.content.length - 1) {
+      jumpToDesiredPage(note.content.length - 1);
+    } else {
+      accents(false);
+    }
+    note.saved = "saved";
+    note.timeOfSave = new Date().toLocaleString();
+    syncStatus(note.dbSave);
+  } else {
+    notyf.error("An error occurred when saving a notebook");
+  }
+  updateList();
+}
+
+async function deleteNoteBookFromDb() {
+  const noteDeleteStatus = await fetch(`/api/delete/notebooks/${note.name}`, {
+    method: "DELETE",
+  });
+  if (noteDeleteStatus.ok) {
+    notyf.success(`Notebook has been deleted from the database`);
+
+    library.get(note.name).parents.forEach((parent) => {
+      try {
+        library.get(parent).children = library
+          .get(parents)
+          .children.filter((e) => e !== note.name);
+        library.get(parent).family = library
+          .get(parent)
+          .family.filter((e) => e !== note.name);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    library.get(note.name).children.forEach((child) => {
+      try {
+        library.get(child).parents = library
+          .get(child)
+          .parents.filter((e) => e !== note.name);
+        library.get(child).family = library
+          .get(child)
+          .family.filter((e) => e !== note.name);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    note.dbSave = [];
+    note.saved = "unsaved";
+    note.children = [];
+    note.parents = [];
+    note.family = [];
+    syncStatus(note.dbSave);
+  } else {
+    notyf.error("An error occurred when deleting a notebook");
+  }
+  updateList();
+}
+
+// context menu
+// takes in an event object, an array of objects representing items in the context menu, and optionally an array representing a x and y coordinate for the context menu to be located
+function delContextMenu() {
+  try {
+    document.getElementById("contextMenu").remove();
+  } catch (err) {}
+}
+
+function contextMenu(e, button, position) {
+  e.preventDefault();
+  e.stopPropagation();
+  delContextMenu();
+  const menu = document.createElement("div");
+  menu.id = "contextMenu";
+  if (position) {
+    menu.style.left = position[0];
+    menu.style.top = position[1];
+  } else {
+    menu.style.left = `${e.clientX - 160}px`;
+    menu.style.top = `75px`;
+  }
+  button.forEach((option) => {
+    const item = document.createElement("div");
+    if (option.attr) {
+      item.setAttribute("data-props", option.attr);
+    }
+    item.classList.add("contextMenuItem");
+    item.innerText = option.text;
+    item.addEventListener("click", option.click);
+    item.classList.add(option.appearance);
+    menu.appendChild(item);
+  });
+  if (menu.firstChild) {
+    mainContainer.after(menu);
+  } else {
+    return 0;
+  }
+}
+
+// page preview
+async function showPagePreview(e, oneLine) {
+  e.preventDefault();
+  e.stopPropagation();
+  delContextMenu();
+  const leftAmount =
+    this.id.substring(0, "whereTo".length) === "whereTo"
+      ? 30
+      : parseInt(list.style.width.replace("px", "")) + 30;
+  const page = this.getAttribute("data-page");
+  const menu = document.createElement("div");
+  menu.id = "contextMenu";
+  menu.classList.add("listPreview");
+  menu.style.left = `${leftAmount}px`;
+  menu.style.top =
+    e.clientY + 340 <= window.innerHeight
+      ? `${e.clientY}px`
+      : "calc(100vh - 340px)";
+  const preview = document.createElement("div");
+  preview.classList.add("pagePreviewContainer");
+  if (oneLine) {
+    preview.innerHTML = format(oneLine);
+  } else {
+    preview.innerHTML =
+      this.getAttribute("data-bookname") === note.name
+        ? format(note.content[page])
+        : format(
+            JSON.parse(
+              await getAnyBookContent(
+                this.getAttribute("data-bookname"),
+                "content"
+              )
+            )[page]
+          );
+  }
+  menu.appendChild(preview);
+  mainContainer.after(menu);
+}
+
+function scrollCM(e) {
+  document.getElementById("contextMenu").firstChild.scroll({
+    top: document.getElementById("contextMenu").firstChild.scrollTop + e.deltaY,
+  });
+}
+
+// book diff popup
+function getDiff(one, other) {
+  let span = null;
+
+  const diff = Diff.diffChars(one, other);
+  const fragment = document.createDocumentFragment();
+
+  diff.forEach((part) => {
+    const color = part.added
+      ? ["#33ff96", "black"]
+      : part.removed
+      ? ["#ff5e5e", "black"]
+      : ["rgba(0,0,0,0)", "black"];
+    span = document.createElement("span");
+    span.style.background = color[0];
+    span.style.color = color[1];
+    span.appendChild(document.createTextNode(part.value));
+    fragment.appendChild(span);
+  });
+  return fragment;
+}
+
+function hideBookDiffPopup() {
+  try {
+    document.getElementById("bookDiffPopup").remove();
+  } catch (err) {
+    console.log(err);
+  }
+  try {
+    calendar.destroy();
+  } catch (err) {
+    console.log(err);
+  }
+  try {
+    datePicker.destroy();
+  } catch (err) {
+    console.log(err);
+  }
+  mainContainer.removeEventListener("click", hideBookDiffPopup);
+}
+
+function showBookDiffPopup() {
+  hideBookDiffPopup();
+  /*
+    <div id = "bookDiffPopup">
+        <div id = "bookDiffHeader">
+            <div id = "bookDiffExit">&nbsp;</div>
+        </div>
+        <div id = "bookDiffContent" class = "dragscroll"></div>
+    </div>
+    */
+  const bookDiffPopup = document.createElement("div");
+  bookDiffPopup.addEventListener("click", () => {
+    delContextMenu();
+    hideStickyNotes();
+  });
+  bookDiffPopup.id = "bookDiffPopup";
+  const bookDiffHeader = document.createElement("div");
+  bookDiffHeader.id = "bookDiffHeader";
+  const bookDiffExitContainer = document.createElement("div");
+  bookDiffExitContainer.id = "bookDiffExitContainer";
+  const bookDiffExit = document.createElement("div");
+  bookDiffExit.id = "bookDiffExit";
+  bookDiffExitContainer.appendChild(bookDiffExit);
+  bookDiffHeader.appendChild(bookDiffExitContainer);
+  bookDiffPopup.appendChild(bookDiffHeader);
+  const bookDiffContent = document.createElement("div");
+  bookDiffContent.id = "bookDiffContent";
+  bookDiffPopup.appendChild(bookDiffContent);
+  const timesToRepeat =
+    note.dbSave.length > note.content.length
+      ? note.dbSave.length
+      : note.content.length;
+  const missingPage =
+    timesToRepeat === note.dbSave.length ? note.dbSave : note.content;
+  const colorIndicator =
+    timesToRepeat === note.dbSave.length
+      ? ["#ff5e5e", "black"]
+      : ["#33ff96", "black"];
+  for (let i = 0, n = timesToRepeat; i < n; i++) {
+    const pageDiff = document.createElement("div");
+    const h2 = document.createElement("h2");
+    h2.innerText = `Page ${i + 1}`;
+    h2.addEventListener("click", function () {
+      this.scrollIntoView();
+    });
+    h2.addEventListener("contextmenu", (e) => {
+      contextMenu(
+        e,
+        [
+          {
+            text: `Go to Page ${i + 1}`,
+            click: () => {
+              jumpToDesiredPage(i);
+              hideBookDiffPopup();
+              delContextMenu();
+            },
+            appearance: "ios",
+          },
+        ],
+        [`${e.clientX}px`, `${e.clientY}px`]
+      );
+    });
+    pageDiff.appendChild(h2);
+    pageDiff.classList.add("pageDiff");
+    try {
+      pageDiff.appendChild(getDiff(note.dbSave[i], note.content[i]));
+    } catch (err) {
+      const fragment = document.createDocumentFragment();
+      const span = document.createElement("span");
+      span.style.background = colorIndicator[0];
+      span.style.color = colorIndicator[1];
+      span.appendChild(document.createTextNode(missingPage[i]));
+      fragment.appendChild(span);
+      pageDiff.appendChild(fragment);
+    }
+    bookDiffContent.appendChild(pageDiff);
+  }
+
+  mainContainer.after(bookDiffPopup);
+  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
+    once: true,
+  });
+
+  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
+  // document.addEventListener("keydown", hidePopups)
+}
+
+// sticky note
+async function saveStickyNotes() {
+  const saveStatus = await fetch("/api/save/notebooks/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "sticky__notes",
+      content: JSON.stringify([stickyNotesTextArea.value]),
+    }),
+  });
+  if (!saveStatus.ok) {
+    notyf.error("An error occurred when saving the sticky note");
+  }
+}
+
+function showStickyNotes() {
+  hideBookDiffPopup();
+  stickyNotes.classList.remove("gone");
+  openCalendar.classList.add("gone");
+  stickyNotes.classList.add("snOpen");
+  mainContainer.addEventListener("click", hideStickyNotes, { once: true });
+  stickyNotesTextArea.focus();
+}
+
+function hideStickyNotes() {
+  stickyNotes.classList.remove("snOpen");
+  stickyNotes.addEventListener("click", showStickyNotes, { once: true });
+  mainContainer.removeEventListener("click", hideStickyNotes);
+}
+
+async function retrieveStickyNotes() {
+  const text =
+    JSON.parse(await getAnyBookContent("sticky__notes", "content"))[0] || "";
+  stickyNotesTextArea.value = text;
+}
+
+// flashcards
+function fcPop(e) {
+  currCard.innerText = e.target.innerText;
+}
+
+// flashcards
+function flashcardMode() {
+  hideBookDiffPopup();
+  leaveFlashcardMode();
+  document.body.classList.add("flashcardMode");
+  const alert = document.createElement("div");
+  hideList();
+  alert.id = "fcAlert";
+  alert.innerText =
+    "You are in flashcard mode. Click some text to add it to the focused side of the card";
+  mainContainer.after(alert);
+  wikiEnabled = false;
+  brain.classList.add("grayscale");
+  const fcArea = document.createElement("div");
+  fcArea.id = "fcArea";
+  const cardFront = document.createElement("div");
+  cardFront.classList.add("currCard");
+  cardFront.contentEditable = true;
+  cardFront.spellcheck = false;
+  cardFront.focus();
+  currCard = cardFront;
+  cardFront.classList.add("cardFront");
+  const buttons = document.createElement("div");
+  buttons.classList.add("fcButtons");
+  const save = document.createElement("button");
+  save.innerText = "💾 Save";
+  save.addEventListener(
+    "click",
+    (e) => {
+      if (cardFront.innerText && cardBack.innerText) {
+        flashcards.push({
+          subject: note.name,
+          front: cardFront.innerText,
+          back: cardBack.innerText,
+          id: Date.now(),
+          learning: "unattempted",
+        });
+        moneyAnimation(e, "✔️");
+        flashcardMode();
+      } else {
+        notyf.error("Both sides of flashcard must be populated");
+        flashcardMode();
+      }
+    },
+    { once: true }
+  );
+  const exit = document.createElement("button");
+  exit.innerText = "❌ Exit";
+  exit.addEventListener(
+    "click",
+    () => {
+      leaveFlashcardMode();
+    },
+    { once: true }
+  );
+  buttons.appendChild(save);
+  buttons.appendChild(exit);
+  cardFront.addEventListener("focus", function () {
+    currCard.classList.remove("currCard");
+    this.classList.add("currCard");
+    currCard = this;
+  });
+
+  const cardBack = document.createElement("div");
+  cardBack.contentEditable = true;
+  cardBack.spellcheck = false;
+  cardBack.addEventListener("focus", function () {
+    currCard.classList.remove("currCard");
+    this.classList.add("currCard");
+    currCard = this;
+  });
+  cardBack.classList.add("cardBack");
+  fcArea.appendChild(cardFront);
+  fcArea.appendChild(cardBack);
+  fcArea.appendChild(buttons);
+  mainContainer.after(fcArea);
+  notesPreviewArea.addEventListener("click", fcPop);
+}
+
+function leaveFlashcardMode() {
+  notesPreviewArea.removeEventListener("click", fcPop);
+  document.body.classList.remove("flashcardMode");
+  toggleWikiSearch();
+  showList();
+  try {
+    document.getElementById("fcAlert").remove();
+  } catch (err) {
+    console.log(err);
+  }
+  try {
+    document.getElementById("fcArea").remove();
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+window.flashcards = flashcards;
+window.leaveFlashcardMode = leaveFlashcardMode;
+window.flashcardMode = flashcardMode;
+
+// Todo stuff
+async function initializeTodo() {
+  // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
+  const data = await getAnyBookContent("todo__list", "_data");
+  events = JSON.parse(data.content) || [];
+  pastEvents = JSON.parse(data.date) || [];
+}
+
+function saveTodo() {
+  const response = fetch("/api/save/notebooks/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "todo__list",
+      content: JSON.stringify(events),
+      date: JSON.stringify(pastEvents),
+    }),
+  });
+  if (!response.ok) {
+    notyf.error("An error occurred when saving the to-do list");
+  }
+}
+
+function renderTaskList(lookingAtPast, taskList, constraint) {
+  while (taskList.firstChild) {
+    taskList.firstChild.remove();
+  }
+  if (lookingAtPast) {
+    document.getElementById("seePast").setAttribute("data-enabled", "true");
+    document.getElementById("seePast").value = "View Active Tasks";
+  } else {
+    document.getElementById("seePast").setAttribute("data-enabled", "false");
+    document.getElementById("seePast").value = "View Completed Tasks";
+  }
+  const lookAt = lookingAtPast ? pastEvents : events;
+  const arr = !constraint
+    ? lookAt
+    : lookAt.filter((e) => e.extendedProps.category === constraint);
+  if (!lookingAtPast) {
+    arr.sort((a, b) => {
+      const date1 = a.start;
+      const date2 = b.start;
+      if (date1 < date2) {
+        return 1;
+      }
+      if (date1 > date1) {
+        return -1;
+      }
+      // names must be equal
+      return 0;
+    });
+  }
+  arr.forEach((task) => {
+    const event = document.createElement("div");
+    event.classList.add("task");
+    event.id = `task__${task.id}`;
+
+    if (lookingAtPast) {
+      event.addEventListener("contextmenu", (e) => {
+        contextMenu(
+          e,
+          [
+            {
+              text: `Delete Event`,
+              click: function () {
+                this.innerText = "Confirm";
+                this.classList.add("rios");
+                this.addEventListener(
+                  "click",
+                  function () {
+                    events = events.filter((e) => e.id !== task.id);
+                    pastEvents = pastEvents.filter((e) => e.id !== task.id);
+                    saveTodo();
+                    document.getElementById(`task__${task.id}`).remove();
+                    delContextMenu();
+                  },
+                  { once: true }
+                );
+              },
+              appearance: "ios",
+            },
+          ],
+          [`${e.clientX}px`, `${e.clientY}px`]
+        );
+      });
+    }
+
+    const eventTop = document.createElement("div");
+
+    const checkbox = document.createElement("input");
+    checkbox.setAttribute("type", "checkbox");
+    if (lookingAtPast) {
+      checkbox.setAttribute("checked", "checked");
+    }
+    checkbox.setAttribute("data-id", task.id);
+    if (lookingAtPast) {
+      checkbox.addEventListener(
+        "change",
+        function () {
+          this.parentElement.parentElement.remove();
+          calendar.addEvent(task);
+          events.push(pastEvents.filter((e) => e.id === task.id)[0]);
+          pastEvents = pastEvents.filter((e) => e.id !== task.id);
+          saveTodo();
+        },
+        { once: true }
+      );
+    } else {
+      checkbox.addEventListener(
+        "change",
+        function () {
+          const audio = new Audio("/assets/ding.mp3");
+          audio.play();
+          checkbox.classList.add("fade");
+          checkbox.addEventListener("animationend", function () {
+            this.parentElement.parentElement.remove();
+            calendar.getEventById(task.id).remove();
+            pastEvents.push(events.filter((e) => e.id === task.id)[0]);
+            events = events.filter((e) => e.id !== task.id);
+            saveTodo();
+          });
+        },
+        { once: true }
+      );
+    }
+    const label = document.createElement("span");
+    label.innerText = `${task.title}`;
+
+    eventTop.appendChild(checkbox);
+    eventTop.appendChild(label);
+
+    const eventBottom = document.createElement("div");
+    let dueDate;
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, "0");
+    var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+    var yyyy = today.getFullYear();
+    today = `${yyyy}-${mm}-${dd}`;
+
+    if (task.start === today) {
+      dueDate = `<b style = 'color: whitesmoke;'>${task.start}</b>`;
+    } else if (task.start < today) {
+      dueDate = `<b style = 'color: rgb(255,69,58)'>${task.start}</b>`;
+    } else {
+      dueDate = task.start;
+    }
+    eventBottom.innerHTML = `${task.extendedProps.category} - Due ${dueDate}`;
+    eventBottom.classList.add("eventBottom");
+    if (lookingAtPast) {
+      eventBottom.addEventListener(
+        "click",
+        () => {
+          renderTaskList(true, taskList, task.extendedProps.category);
+        },
+        { once: true }
+      );
+    } else {
+      eventBottom.addEventListener(
+        "click",
+        () => {
+          renderTaskList(false, taskList, task.extendedProps.category);
+        },
+        { once: true }
+      );
+    }
+    event.appendChild(eventTop);
+    event.appendChild(eventBottom);
+
+    taskList.prepend(event);
+  });
+  if (constraint) {
+    const div = document.createElement("s");
+    div.classList.add("filter");
+    div.innerText = `Filter: ${constraint}`;
+    taskList.prepend(div);
+    if (lookingAtPast) {
+      div.addEventListener(
+        "click",
+        () => {
+          renderTaskList(true, taskList);
+        },
+        { once: true }
+      );
+    } else {
+      div.addEventListener(
+        "click",
+        () => {
+          renderTaskList(false, taskList);
+        },
+        { once: true }
+      );
+    }
+  }
+}
+
+function showTodo(hereForInsertion) {
+  hideBookDiffPopup();
+  /*
+    <div id = "bookDiffPopup">
+        <div id = "bookDiffHeader">
+            <div id = "bookDiffExit">&nbsp;</div>
+        </div>
+        <div id = "bookDiffContent" class = "dragscroll"></div>
+    </div>
+    */
+  const bookDiffPopup = document.createElement("div");
+  bookDiffPopup.addEventListener("click", () => {
+    delContextMenu();
+    hideStickyNotes();
+  });
+  bookDiffPopup.id = "bookDiffPopup";
+  const bookDiffHeader = document.createElement("div");
+  bookDiffHeader.id = "bookDiffHeader";
+  const bookDiffExitContainer = document.createElement("div");
+  bookDiffExitContainer.id = "bookDiffExitContainer";
+  const bookDiffExit = document.createElement("div");
+  bookDiffExit.id = "bookDiffExit";
+  bookDiffExitContainer.appendChild(bookDiffExit);
+  bookDiffHeader.appendChild(bookDiffExitContainer);
+  bookDiffPopup.appendChild(bookDiffHeader);
+  const bookDiffContent = document.createElement("div");
+  bookDiffContent.id = "bookDiffContent";
+  bookDiffPopup.appendChild(bookDiffContent);
+  mainContainer.after(bookDiffPopup);
+
+  const todoContainer = document.createElement("div");
+  todoContainer.id = "todoContainer";
+
+  const addTaskContainer = document.createElement("div");
+  addTaskContainer.id = "addTaskContainer";
+  todoContainer.appendChild(addTaskContainer);
+
+  const calendarContainer = document.createElement("div");
+  todoContainer.appendChild(calendarContainer);
+
+  if (hereForInsertion) {
+    calendar = new Calendar(calendarContainer, {
+      plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
+      initialView: "dayGridMonth",
+      events: events,
+      eventClick: (info) => {
+        editor.insert(`:cal[${info.event.id}]`);
+        updateAndSaveNotesLocally();
+        hideBookDiffPopup();
+      },
+    });
+  } else {
+    calendar = new Calendar(calendarContainer, {
+      plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
+      initialView: "dayGridMonth",
+      events: events,
+      eventClick: (info) => {
+        try {
+          const evInList = document.getElementById(`task__${info.event.id}`);
+          evInList.addEventListener(
+            "animationend",
+            () => {
+              evInList.classList.remove("getHighlighted");
+            },
+            {
+              once: true,
+            }
+          );
+          evInList.classList.add("getHighlighted"); // Add the class that animates
+          evInList.scrollIntoView();
+        } catch (err) {
+          console.log(err);
+        }
+      },
+    });
+  }
+
+  const taskName = document.createElement("input");
+  taskName.placeholder = "Task Name";
+  addTaskContainer.appendChild(taskName);
+  const taskCategory = document.createElement("input");
+  taskCategory.placeholder = "Task Category";
+  addTaskContainer.appendChild(taskCategory);
+
+  const dp = document.createElement("input");
+  dp.id = "datePicker";
+  dp.readOnly = true;
+  dp.placeholder = "Due Date";
+  addTaskContainer.appendChild(dp);
+
+  const submit = document.createElement("input");
+  submit.setAttribute("type", "button");
+  submit.id = "addTask";
+  submit.value = "+ Add Task";
+  submit.addEventListener("click", () => {
+    if (dp.value && taskName.value) {
+      const exactDate = Date.now();
+      const eventObj = {
+        id: exactDate,
+        title: taskName.value,
+        start: dp.value,
+        extendedProps: {
+          category: taskCategory.value || "misc",
+        },
+      };
+      calendar.addEvent(eventObj);
+      events.push(eventObj);
+      saveTodo();
+
+      // taskName.value = ""
+      // taskCategory.value = ""
+      // dp.value = ""
+
+      renderTaskList(false, taskList);
+    }
+  });
+
+  addTaskContainer.appendChild(submit);
+
+  const taskList = document.createElement("div");
+  taskList.id = "taskList";
+  addTaskContainer.appendChild(taskList);
+
+  const seePast = document.createElement("input");
+  seePast.id = "seePast";
+  seePast.setAttribute("type", "button");
+  seePast.setAttribute("data-enabled", "false");
+  seePast.value = "View Completed Tasks";
+  seePast.addEventListener("click", function () {
+    if (this.getAttribute("data-enabled") === "false") {
+      renderTaskList(true, taskList);
+    } else {
+      renderTaskList(false, taskList);
+    }
+    taskName.focus();
+  });
+
+  addTaskContainer.appendChild(seePast);
+
+  bookDiffContent.appendChild(todoContainer);
+
+  datePicker = new AirDatepicker("#datePicker", {
+    locale: {
+      days: [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+      months: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ],
+      monthsShort: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      today: "Today",
+      clear: "Clear",
+      dateFormat: "yyyy-MM-dd",
+      timeFormat: "hh:mm aa",
+      firstDay: 0,
+    },
+  });
+  calendar.render();
+  renderTaskList(false, taskList);
+
+  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
+    once: true,
+  });
+  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
+  // document.addEventListener("keydown", hidePopups)
+}
+
+// Wikipedia
+function toggleWikiSearch() {
+  wikiEnabled = !wikiEnabled;
+  brain.classList.toggle("grayscale");
+}
+
+async function wikiSearch(event) {
+  let selection = window.getSelection().toString();
+  if (!(selection.includes("\n") || selection.length === 0) && wikiEnabled) {
+    let wiki = selection.trim().replace(/ /g, "_").toLowerCase();
+    document.body.style.cursor = "wait";
+    const response = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}?redirect=true`,
+      {
+        cache: "default",
+      }
+    );
+    if (response.ok) {
+      const result = await response.json();
+      let summary = `<b>${selection.trim()}</b>:<br>${DOMPurify.sanitize(
+        result["extract_html"]
+      )}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`;
+      wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
+      moneyAnimation(event, "🧠");
+    }
+    document.body.style.cursor = "inherit";
+  }
+}
+
+function moneyAnimation(e, symbol) {
+  wikipediaBrainAnimation.style.top = `${e.clientY}px`;
+  wikipediaBrainAnimation.style.left = `${e.clientX}px`;
+  // https://stackoverflow.com/a/69970674
+  const moneyAnimation = document.createElement("p");
+  moneyAnimation.innerHTML = symbol;
+  wikipediaBrainAnimation.appendChild(moneyAnimation);
+  moneyAnimation.classList.add("wikipediaBrainAnimation"); // Add the class that animates
+  moneyAnimation.addEventListener("animationend", moneyAnimation.remove, {
+    once: true,
+  });
+}
+
+// 'Editing window'
+function cycleViewPreferences() {
+  let viewPref = localStorage.getItem("/viewPref");
+  switch (viewPref) {
+    case "split":
+      localStorage.setItem("/viewPref", "write");
+      break;
+    case "write":
+      localStorage.setItem("/viewPref", "read");
+      break;
+    default:
+      localStorage.setItem("/viewPref", "split");
+      break;
+  }
+  editingWindow(localStorage.getItem("/viewPref"), true);
+}
+
+function editingWindow(choice, shouldRemember) {
+  switch (choice) {
+    case "read":
+      mode.innerText = "R";
+      editor.setReadOnly(true);
+      notesAreaContainer.classList.add("readMode");
+      notesAreaContainer.classList.remove("writeMode");
+      notesAreaContainer.classList.remove("splitMode");
+      if (shouldRemember) {
+        localStorage.setItem("/viewPref", "read");
+      }
+      break;
+    case "write":
+      mode.innerText = "W";
+      editor.setReadOnly(note.readOnly ? true : false);
+      notesAreaContainer.classList.remove("readMode");
+      notesAreaContainer.classList.add("writeMode");
+      notesAreaContainer.classList.remove("splitMode");
+      if (shouldRemember) {
+        localStorage.setItem("/viewPref", "write");
+      }
+      break;
+    default:
+      mode.innerText = "S";
+      editor.setReadOnly(note.readOnly ? true : false);
+      notesAreaContainer.classList.remove("readMode");
+      notesAreaContainer.classList.remove("writeMode");
+      notesAreaContainer.classList.add("splitMode");
+      if (shouldRemember) {
+        localStorage.setItem("/viewPref", "split");
+      }
+  }
+  notesPreviewArea.scrollTop = 0;
+  notesTextArea.scrollTop = 0;
+  editor.focus();
+  editingMode.setContent(`View Mode: ${choice}`);
+}
+
+// 'hierarchy' stuff
+async function getAncestors(bookName) {
+  let response = new Set();
+  const parents =
+    JSON.parse(await getAnyBookContent(bookName, "parents")) || [];
+
+  if (!parents[0]) {
+    return response;
+  }
+
+  parents.forEach(async (parent) => {
+    response.add(parent);
+    response = new Set([...response, ...(await getAncestors(parent))]);
+  });
+
+  return response;
+}
+
+async function getDescendants(bookName) {
+  let response = new Set();
+  const children =
+    JSON.parse(await getAnyBookContent(bookName, "children")) || [];
+
+  if (!children[0]) {
+    return response;
+  }
+
+  children.forEach(async (child) => {
+    response.add(child);
+    response = new Set([...response, ...(await getDescendants(child))]);
+  });
+
+  return response;
+}
+
+async function getFamily(bookName) {
+  try {
+    return library.get(bookName)["family"];
+  } catch (err) {
+    const ancestors = await getAncestors(bookName);
+    const descendants = await getDescendants(bookName);
+    const response = Array.from(ancestors).concat(Array.from(descendants));
+    return response;
+  }
+}
+
+async function createChild(parent, child) {
+  const existingItem = await fetch(`/api/get/notebooks/${child}`);
+  if (
+    existingItem.status === 404 &&
+    child &&
+    parent &&
+    !reservedNames.includes(parent)
+  ) {
+    const saveStatus = await fetch("/api/save/notebooks/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: `${child}`,
+        content: '[""]',
+        date: new Date().toLocaleString(),
+      }),
+    });
+    if (saveStatus.ok) {
+      await nestNote(child, parent);
+      notyf.success(`${child} was created as a child of ${note.name}`);
+    } else {
+      notyf.error("An error occurred when saving a notebook");
+    }
+  } else {
+    notyf.error("Something went wrong");
+  }
+}
+
+async function nestNote(child, parent) {
+  if (child && parent && !reservedNames.includes(child)) {
+    const result = await fetch(`/api/nest/${child}/${parent}`, {
+      method: "POST",
+    });
+    if (result.ok) {
+      try {
+        library.get(child)["parents"].push(parent);
+        library.get(child)["family"].push(parent);
+      } catch (err) {
+        console.log(err);
+      }
+
+      try {
+        library.get(parent)["children"].push(child);
+        library.get(parent)["family"].push(child);
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateList();
+    } else {
+      notyf.error("An error occurred when nesting a notebook");
+    }
+  }
+}
+
+async function relinquishNote(child, parent) {
+  if (child && parent) {
+    const result = await fetch(`/api/relinquish/${child}/${parent}`, {
+      method: "POST",
+    });
+    if (result.ok) {
+      try {
+        library.get(child)["parents"] = library
+          .get(child)
+          ["parents"].filter((e) => e !== parent);
+        library.get(child)["family"] = library
+          .get(child)
+          ["family"].filter((e) => e !== parent);
+      } catch (err) {
+        console.log(err);
+      }
+
+      try {
+        library.get(parent)["children"] = library
+          .get(parent)
+          ["children"].filter((e) => e !== child);
+        library.get(parent)["family"] = library
+          .get(parent)
+          ["family"].filter((e) => e !== child);
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateList();
+    } else {
+      notyf.error("An error occurred when relinquishing a notebook");
+    }
+  }
+}
+
+async function chatGPT(content) {
+  const response = await fetch("/api/chatGPT", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content,
+    }),
+  });
+  if (response.ok) {
+    const json = await response.json();
+    return json.data;
+  } else {
+    return `Error code ${response.status}.`;
+  }
+}
+
+async function AISUmmary() {
+  const name = note.name;
+  const pg = note.pgN + 1;
+  mainContainer.style.pointerEvents = "none";
+  const AI = await chatGPT(editor.getValue());
+  await switchNote("AI-Summary");
+  editor.session.setValue(
+    `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI}`
+  );
+  updateAndSaveNotesLocally();
+  mainContainer.style.pointerEvents = "inherit";
+}
+
+// Event listeners
+// doc
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+    e.preventDefault();
+    saveNoteBookToDb();
+  } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
+    e.preventDefault();
+    cycleViewPreferences();
+  }
+});
+
+// main note area
+mainContainer.addEventListener("click", delContextMenu);
+mainContainer.addEventListener("contextmenu", delContextMenu);
+notesPreviewArea.addEventListener("click", (e) => {
+  wikiSearch(e);
+});
+
+// toolbar
+document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
+document.getElementById("icon2").addEventListener("click", (e) => {
+  e.preventDefault();
+  contextMenu(e, [
+    {
+      text: "Open Notebook",
+      click: function () {
+        let hasTyped = false;
+        const storeHTML = this.innerHTML;
+        this.style.background = "rgb(10,132,255)";
+        this.style.fontStyle = "italic";
+        this.innerText = "Enter book name";
+        this.style.color = "silver";
+        this.contentEditable = true;
+        this.focus();
+        this.addEventListener(
+          "beforeinput",
+          function () {
+            hasTyped = true;
+            this.innerText = "";
+            this.style.color = "whitesmoke";
+          },
+          { once: true }
+        );
+        this.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (hasTyped) {
+              switchNote(this.innerText.replaceAll("/", ""));
+              delContextMenu();
+            } else {
+              delContextMenu();
+            }
+          }
+        });
+        this.addEventListener(
+          "blur",
+          function () {
+            this.contentEditable = false;
+            this.innerHTML = storeHTML;
+            this.style.background = "inherit";
+            this.style.fontStyle = "inherit";
+            this.innerText = "Open Notebook";
+            this.style.color = "whitesmoke";
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Relinquish Notebook",
+      click: async (e) => {
+        const buttons = JSON.parse(
+          await getAnyBookContent(note.name, "parents")
+        ).map((parent) => {
+          return {
+            text: parent,
+            click: () => {
+              relinquishNote(note.name, parent);
+              delContextMenu();
+            },
+            appearance: "ios",
+          };
+        });
+        contextMenu(e, buttons, [
+          document.getElementById("contextMenu").style.left,
+          document.getElementById("contextMenu").style.top,
+        ]);
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Nest Notebook",
+      click: async (e) => {
+        const family = await getFamily(note.name);
+        const list = await fetch("/api/get/list");
+        const json = await list.json();
+        const buttons = json.data.reduce((arr, e) => {
+          if (e.name !== note.name && !family.includes(e.name)) {
+            arr.push({
+              text: e.name,
+              click: () => {
+                nestNote(note.name, e.name);
+                delContextMenu();
+              },
+              appearance: "ios",
+            });
+          }
+          return arr;
+        }, []);
+        contextMenu(e, buttons, [
+          document.getElementById("contextMenu").style.left,
+          document.getElementById("contextMenu").style.top,
+        ]);
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Create Child",
+      click: function () {
+        let hasTyped = false;
+        const storeHTML = this.innerHTML;
+        this.style.background = "rgb(10,132,255)";
+        this.style.fontStyle = "italic";
+        this.innerText = "Enter child name";
+        this.style.color = "silver";
+        this.contentEditable = true;
+        this.focus();
+        this.addEventListener(
+          "beforeinput",
+          function () {
+            this.innerText = "";
+            this.style.color = "whitesmoke";
+            hasTyped = true;
+          },
+          { once: true }
+        );
+        this.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (hasTyped) {
+              createChild(note.name, this.innerText.replaceAll("/", ""));
+              delContextMenu();
+            } else {
+              delContextMenu();
+            }
+          }
+        });
+        this.addEventListener(
+          "blur",
+          function () {
+            this.contentEditable = false;
+            this.innerHTML = storeHTML;
+            this.style.background = "inherit";
+            this.style.fontStyle = "inherit";
+            this.innerText = "Copy Notebook";
+            this.style.color = "whitesmoke";
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Copy Notebook",
+      click: function () {
+        let hasTyped = false;
+        const storeHTML = this.innerHTML;
+        this.style.background = "rgb(10,132,255)";
+        this.style.fontStyle = "italic";
+        this.innerText = "Enter copy name";
+        this.style.color = "silver";
+        this.contentEditable = true;
+        this.focus();
+        this.addEventListener(
+          "beforeinput",
+          function () {
+            this.innerText = "";
+            this.style.color = "whitesmoke";
+            hasTyped = true;
+          },
+          { once: true }
+        );
+        this.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (hasTyped) {
+              copyBook(this.innerText.replaceAll("/", ""));
+            } else {
+              delContextMenu();
+            }
+          }
+        });
+        this.addEventListener(
+          "blur",
+          function () {
+            this.contentEditable = false;
+            this.innerHTML = storeHTML;
+            this.style.background = "inherit";
+            this.style.fontStyle = "inherit";
+            this.innerText = "Copy Notebook";
+            this.style.color = "whitesmoke";
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+  ]);
+});
+document.getElementById("icon3").addEventListener("click", (e) => {
+  contextMenu(e, [
+    {
+      text: "Delete Notebook",
+      click: function () {
+        this.classList.add("rios");
+        this.innerText = "Confirm";
+        this.addEventListener(
+          "click",
+          () => {
+            deleteNoteBookFromDb();
+            delContextMenu();
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Delete This Page",
+      click: function () {
+        this.classList.add("rios");
+        this.innerText = "Confirm";
+        this.addEventListener(
+          "click",
+          () => {
+            deletePage();
+            delContextMenu();
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+  ]);
+});
+document
+  .getElementById("getFile1")
+  .addEventListener("change", insertAndSaveImage);
+document.getElementById("icon5").addEventListener("click", (e) => {
+  contextMenu(e, [
+    {
+      text: "◨ Split",
+      click: () => {
+        localStorage.setItem("/viewPref", "split");
+        editingWindow("split", true);
+      },
+      appearance: "ios",
+    },
+    {
+      text: "◼ Read",
+      click: () => {
+        localStorage.setItem("/viewPref", "read");
+        editingWindow("read", true);
+      },
+      appearance: "ios",
+    },
+    {
+      text: "◻ Write",
+      click: () => {
+        localStorage.setItem("/viewPref", "write");
+        editingWindow("write", true);
+      },
+      appearance: "ios",
+    },
+  ]);
+});
+document.getElementById("icon6").addEventListener("click", () => {
+  handlePageMovement(true, 1, false);
+});
+document.getElementById("icon7").addEventListener("click", (e) => {
+  handlePageMovement(false, 1, false, e);
+});
+brain.addEventListener("click", (e) => {
+  contextMenu(e, [
+    {
+      text: "Toggle Wiki Search",
+      click: () => {
+        toggleWikiSearch();
+      },
+      appearance: "ios",
+    },
+    {
+      text: "AI Summary",
+      click: async function () {
+        this.innerText = "Loading...";
+        await AISUmmary();
+        this.style.pointerEvents = "inherit";
+        this.innerText = "AI Summary";
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Insert Sticky Note",
+      click: () => {
+        insertStickyNote();
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Insert Calendar Event",
+      click: () => {
+        showTodo(true);
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Create Flashcards",
+      click: () => {
+        flashcardMode();
+        delContextMenu();
+      },
+      appearance: "ios",
+    },
+  ]);
+});
+areNotesSavedIcon.addEventListener("animationend", function () {
+  this.classList.remove("saved");
+});
+areNotesSavedIcon.addEventListener("click", (e) => {
+  contextMenu(e, [
+    {
+      text: "More Details",
+      click: () => {
+        showBookDiffPopup();
+        delContextMenu();
+      },
+      appearance: "ios",
+    },
+    {
+      text: "Force Update",
+      click: function () {
+        this.innerText = "Confirm";
+        this.classList.add("rios");
+        this.addEventListener(
+          "click",
+          function () {
+            forceUpdateNotes();
+            delContextMenu();
+          },
+          { once: true }
+        );
+      },
+      appearance: "ios",
+    },
+  ]);
+});
+toolBar.addEventListener("click", delContextMenu);
+toolBar.addEventListener("contextmenu", delContextMenu);
+toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// side bar and list
+document
+  .getElementById("leftMostSideBar")
+  .addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+document
+  .getElementById("sideBarRetractList")
+  .addEventListener("click", toggleList);
+document.getElementById("newPage").addEventListener("click", () => {
+  jumpToDesiredPage(note.content.length);
+});
+morePages.addEventListener("click", (e) => {
+  showMorePages(e);
+});
+document.getElementById("goHome").addEventListener("click", () => {
+  switchNote("home", 0);
+});
+list.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
+document
+  .getElementById("searchItem")
+  .children[0].addEventListener("input", function () {
+    search(this.value);
+  });
+uploadFolder.addEventListener("click", function () {
+  this.parentNode.classList.toggle("down");
+});
+border.addEventListener("mousedown", () => {
+  delContextMenu();
+  mainContainer.style.userSelect = "none";
+  document.addEventListener("mousemove", resizeList);
+  document.addEventListener(
+    "mouseup",
+    () => {
+      localStorage.setItem("/listSize", list.style.width.replace("px", ""));
+      border.style.background = "none";
+      document.body.style.cursor = "inherit";
+      mainContainer.style.userSelect = "inherit";
+      document.removeEventListener("mousemove", resizeList);
+    },
+    { once: true }
+  );
+});
+
+// stickynote and calendar
+stickyNotes.addEventListener("click", showStickyNotes, { once: true });
+stickyNotes.children[1].addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  stickyNotes.classList.toggle("gone");
+  openCalendar.classList.toggle("gone");
+});
+stickyNotesTextArea.addEventListener("input", saveStickyNotes);
+stickyNotesTextArea.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    hideStickyNotes();
+  }
+});
+openCalendar.addEventListener("click", () => {
+  showTodo(false);
+});
+openCalendar.children[0].addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  stickyNotes.classList.toggle("gone");
+  document.getElementById("openCalendar").classList.toggle("gone");
+});
+
+// onload functions
+window.addEventListener(
+  "load",
+  () => {
+    switchNote(
+      location.pathname.substring(1),
+      parseInt(location.search.substring(1) || 1) - 1
+    );
+    createWorkspace();
+    initializeTodo();
+    editingWindow(localStorage.getItem("/viewPref") || "read", true);
+    workspace.style.width = `calc(100% - 25px - ${
+      localStorage.getItem("/listSize") || 300
+    }px)`;
+    list.style.width = `${parseInt(
+      localStorage.getItem("/listSize") || 300
+    )}px`;
+    if (localStorage.getItem("/listShown") === "false") {
+      hideList();
+    } else {
+      showList();
+    }
+    retrieveStickyNotes();
+    createList();
+  },
+  { once: true }
+);
