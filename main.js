@@ -2,6 +2,7 @@ import morphdom from "morphdom";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
+import 'tippy.js/animations/shift-toward-subtle.css';
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import Dropzone from "dropzone";
@@ -58,6 +59,20 @@ function ref(d) {
   this.tag(">");
   this.raw(d.label || "");
   this.tag("</span>");
+}
+
+function warn(d) {
+  if (d.type !== "textDirective" || d.attributes == null) return false;
+
+  this.tag("<div");
+  this.tag(` class="warning-container"`);
+  this.tag(">");
+  this.raw(`
+    <div class="warning" data-title="⚠️ ${d.attributes.title || "Warning"}">
+      ${d.label || ""}
+    </div>
+  `);
+  this.tag("</div>");
 }
 
 // ace editor
@@ -225,13 +240,14 @@ function format(str) {
       gfmHtml(),
       mathHtml(),
       markHTML(),
-      directiveHtml({ ref, cal }),
+      directiveHtml({ ref, cal, warn }),
     ],
   });
 }
 
 // tooltips
 const wikipediaTippy = tippy([brain], {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: `<div id = 'brain' style = 'width: auto;'>Info on highlighted text will appear here</div>`,
   interactive: true,
@@ -241,18 +257,21 @@ const wikipediaTippy = tippy([brain], {
 })[0];
 
 const synced = tippy("#areNotesSavedIcon", {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: "Notes are saved",
   placement: "bottom-end",
 })[0];
 
 const editingMode = tippy("#generalInfoViewMode", {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: localStorage.getItem("/viewPref"),
   placement: "top",
 })[0];
 
 const generalInfoPageNumber = tippy("#generalInfoPageNumber", {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: "Loading",
   placement: "top",
@@ -271,17 +290,20 @@ const toolBarTips = [
 for (let i = 0; i < 7; i++) {
   tippy(`#icon${i + 1}`, {
     arrow: false,
+    animation: 'shift-toward-subtle',
     content: toolBarTips[i],
     placement: "bottom-end",
   });
 }
 
 tippy("#wordCount", {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: "Word Count",
 });
 
 tippy("#letterCount", {
+  animation: "shift-toward-subtle",
   arrow: false,
   content: "Character Count",
 });
@@ -385,6 +407,7 @@ async function referToolTip() {
   const given = this;
   lastDynamicTippy = tippy([given], {
     theme: "light",
+    animation: "shift-toward-subtle",
     content: "Loading...",
     allowHTML: true,
     interactive: true,
@@ -418,6 +441,9 @@ const notyf = new Notyf({
   },
   dismissible: true,
 });
+
+// debounce when switching notes
+let switching = false;
 
 // notebook names that aren't allowed because they are being used for other stuff
 const reservedNames = ["home", "todo__list", "sticky__notes", "flash__cards", "AI-Summary"];
@@ -893,6 +919,7 @@ function createWorkspace() {
     addCloseTab(div);
     tabTippys[note] = tippy([div], {
       theme: "dark",
+      animation: "shift-toward-subtle",
       placement: "bottom-end",
       content: txt,
       arrow: false,
@@ -932,6 +959,11 @@ async function switchNote(noteName, page) {
   ) {
     return 1;
   }
+  if (switching) {
+    notyf.error("Note switch debounce")
+    return 0;
+  }
+  switching = true;
   try {
     document.getElementById(`book__${note.name}`).classList.remove("openTab");
   } catch (err) {
@@ -939,7 +971,7 @@ async function switchNote(noteName, page) {
   }
   lastNote = note;
   note = new Note();
-  const data = (await getAnyBookContent(noteName, "_data")) || {
+  const data = await getAnyBookContent(noteName, "_data") || {
     name: noteName,
     content: '[""]',
     children: "[]",
@@ -978,6 +1010,7 @@ async function switchNote(noteName, page) {
     addCloseTab(div);
     tabTippys[noteName] = tippy([div], {
       theme: "dark",
+      animation: "shift-toward-subtle",
       placement: "bottom-end",
       content: txt,
       arrow: false,
@@ -1000,6 +1033,7 @@ async function switchNote(noteName, page) {
   }
   savedWS.add(noteName);
   localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+  switching = false;
 }
 
 // creating the tree list
@@ -1704,13 +1738,8 @@ async function retrieveStickyNotes() {
 
 // flashcards
 async function initializeFlashcards() {
-  const data = await getAnyBookContent("flash__cards", "content");
-  try {
-    flashcards = JSON.parse(data);
-  } catch (err) {
-    console.log(err)
-    flashcards = [];
-  }
+  const data = await getAnyBookContent("flash__cards", "content") || "[]";
+  flashcards = JSON.parse(data);
 }
 
 async function saveFlashcards() {
@@ -1851,13 +1880,12 @@ function showFlashcards(noAnimation) {
   }, [[],[],[]]);
   const reset = document.createElement("div");
   reset.classList.add("reset")
-  reset.innerText = "Reset"
+  reset.innerText = "🔁 Reset"
   reset.addEventListener("click", () => {
     flashcards = flashcards.map((e) => {
       e.learning = "unattempted";
       return e;
     })
-    console.log(flashcards)
     saveFlashcards();
     showFlashcards(true);
   })
@@ -1895,6 +1923,22 @@ function showFlashcards(noAnimation) {
         contextMenu(
           e,
           [
+            {
+              attr: card.id,
+              text: `Reset Card`,
+              click: function () {
+                    flashcards = flashcards.map((e) => {
+                      if (e.id == this.getAttribute("data-props")) {
+                        e.learning = "unattempted";
+                      }
+                      return e;
+                    });
+                    saveFlashcards();
+                    delContextMenu();
+                    showFlashcards(true);
+              },
+              appearance: "ios",
+            },
             {
               attr: card.id,
               text: `Delete Card`,
@@ -1999,17 +2043,9 @@ function study(cardObj, allCards, bookDiffContent) {
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
-  const data = await getAnyBookContent("todo__list", "_data");
-  try {
-    events = JSON.parse(data.content)
-  } catch (err) {
-    events = [];
-  }
-  try {
-    pastEvents = JSON.parse(data.date)
-  } catch (err) {
-    pastEvents = []
-  }
+  const data = await getAnyBookContent("todo__list", "_data") || {content: "[]", date: "[]"};
+  events = JSON.parse(data.content)
+  pastEvents = JSON.parse(data.date)
 }
 
 async function saveTodo() {
@@ -2634,7 +2670,7 @@ async function AISUmmary() {
   const AI = await chatGPT(editor.getValue());
   await switchNote("AI-Summary");
   editor.session.setValue(
-    `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI}`
+    `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI}]`
   );
   updateAndSaveNotesLocally();
   mainContainer.style.pointerEvents = "inherit";
