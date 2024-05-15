@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Reddit+Mono:wght@200..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Reddit+Mono:wght@200..900&display=swap");
 
 /* padding: 0 2 3 4 */
 /* top | right | bottom | left */
-
 
 body {
   margin: 0px;
@@ -34,7 +33,7 @@ a {
 }
 
 #notesAreaContainer {
-  height: calc(100% - 35px);;
+  height: calc(100% - 35px);
   width: 100%;
   display: flex;
 }
@@ -68,7 +67,8 @@ a {
   border-top-left-radius: 12px;
 }
 
-.splitMode #notesPreviewArea, .splitMode #notesTextArea {
+.splitMode #notesPreviewArea,
+.splitMode #notesTextArea {
   width: 50%;
   padding-left: 5%;
   padding-right: 5%;
@@ -117,20 +117,21 @@ a {
   flex-grow: 1;
   height: 2em;
   align-items: center;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: .25rem;
+  border-radius: 0.25rem;
   box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
   box-sizing: border-box;
   color: rgba(0, 0, 0, 0.85);
   cursor: pointer;
   display: inline-flex;
-  font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
   font-size: 16px;
   font-weight: 600;
   justify-content: center;
   margin: 0;
-  padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+  padding: calc(0.875rem - 1px) calc(1.5rem - 1px);
   position: relative;
   text-decoration: none;
   transition: all 250ms;
@@ -153,7 +154,7 @@ a {
 }
 
 .fcButtons button:active {
-  background-color: #F0F0F1;
+  background-color: #f0f0f1;
   border-color: rgba(0, 0, 0, 0.15);
   box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
   color: rgba(0, 0, 0, 0.65);
@@ -161,7 +162,8 @@ a {
 }
 
 #fcAlert {
-  height: calc(1em - 3px);
+  box-sizing: border-box;
+  height: 17px;
   bottom: 0%;
   position: absolute;
   width: 100vw;
@@ -170,12 +172,12 @@ a {
   justify-content: center;
   align-items: center;
   color: white;
-  font-size: calc(1em - 3px);
+  font-size: 13px;
   padding: 3px;
 }
 
 .flashcardMode #mainContainer {
-  height: calc(100vh - 1em);
+  height: calc(100vh - 17px);
   width: 80vw;
   cursor: default;
 }
@@ -184,7 +186,12 @@ a {
   height: 100%;
 }
 
-.flashcardMode #leftMostSideBar, .flashcardMode #listOfBooks, .flashcardMode #tabs, .flashcardMode #toolBar, .flashcardMode #stickyNotes, .flashcardMode #openCalendar, .flashcardMode #bottomLeftGeneralInfo {
+.flashcardMode #leftMostSideBar,
+.flashcardMode #listOfBooks,
+.flashcardMode #tabs,
+.flashcardMode #toolBar,
+.flashcardMode #bottomRightTools,
+.flashcardMode #bottomLeftGeneralInfo {
   display: none !important;
 }
 
@@ -202,7 +209,8 @@ a {
   gap: 2%;
 }
 
-.cardFront, .cardBack {
+.cardFront,
+.cardBack {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -214,21 +222,154 @@ a {
   height: 30%;
   outline: none;
   background: rgb(35, 35, 43);
-  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
 
-.cardFront::before {
+.cardFront::before, .cardBack::before {
   content: "Front";
   background: black;
   border-radius: 3px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
 .cardBack::before {
   content: "Back";
-  background: black;
-  border-radius: 3px;
+}
+
+.studyContainer {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1%;
+}
+
+.studyContainer .fcButtons {
+  width: 50%;
+}
+
+/* studying flip cards */
+.quizlet {
+  width: 50%;
+  height: 50%;
+  box-sizing: border-box;
+  animation: slide .25s ease;
+}
+
+@keyframes slide {
+  from {margin-left: 100px;}
+  to {margin-left: 0;}
+}
+
+.qContent {
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  transition: transform .5s;
+  transform-style: preserve-3d;
+}
+
+
+.quizletActive .qContent {
+  transform: rotateX( 180deg ) ;
+  transition: transform 0.5s;
+}
+
+.qFront,
+.qBack {
+  box-sizing: border-box;
+  padding: 5px;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: rgb(94, 94, 245);
+  color: white;
+  font-size: 20px;
+  border-radius: 6px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.qFront::before, .qBack::before {
+  content: "Front";
+  width: 100%;
   text-align: center;
+  border-radius: 4px;
+  background: rgb(74, 74, 245);
+  margin-bottom: 10px;
+}
+
+.qBack::before {
+  content: "Back";
+}
+
+.qBack {
+  transform: rotateX( 180deg );
+}
+/**/
+
+.fcGroup {
+  width: 100%;
+  height: 33%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fcGroupInfo {
+  height: 10%;
+  width: 100%;
+  display: flex;
+  background: rgb(236, 236, 236);
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: white;
+  border-radius: 6px;
+}
+
+.reset {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.fcCardList {
+  box-shadow: rgba(212, 212, 212, 0.35) 0px -50px 36px -28px inset;
+  /* background: rgb(223, 223, 223); */
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 1%;
+  gap: 5px;
+  overflow-x: auto;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.fcCardList:hover {
+  background: rgb(233, 233, 233);
+}
+
+.fcCardList .cardFront {
+  background: rgb(94, 94, 245);
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  box-shadow: none;
+}
+
+.fcCardList .cardFront::before {
+  background: rgb(74, 74, 245);
 }
 
 #notesTextArea {
@@ -314,7 +455,7 @@ a {
   background: #e7e7e7;
   /* backdrop-filter: blur(5px); */
   display: flex;
-  margin-right: 8px;
+  margin-right: 16px;
   z-index: 1;
   color: rgb(136, 136, 136);
   box-sizing: border-box;
@@ -324,9 +465,28 @@ a {
   padding-bottom: 6px;
 }
 
-#extraIcons {
-  display: flex;
-  gap: 0.25em;
+#toolBar::before {
+  content: "";
+  position: absolute;
+  background-color: transparent;
+  bottom: 0px;
+  left: -24px;
+  height: 48px;
+  width: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -24px 0 0 #e7e7e7;
+}
+
+#toolBar::after {
+  content: "";
+  position: absolute;
+  background-color: transparent;
+  bottom: 0px;
+  right: -24px;
+  height: 48px;
+  width: 24px;
+  border-top-left-radius: 24px;
+  box-shadow: 0 -24px 0 0 #e7e7e7;
 }
 
 .homeToolBar #icon1,
@@ -412,6 +572,7 @@ a {
 }
 
 #tabs {
+  z-index: 1;
   box-sizing: border-box;
   width: 100%;
   height: 35px;
@@ -448,7 +609,8 @@ a {
   cursor: pointer;
   animation: tabIn 0.07s ease-out;
   user-select: none;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgb(211, 215, 218) 0px 0px 0px 1px inset;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
+    rgb(211, 215, 218) 0px 0px 0px 1px inset;
 }
 
 @keyframes tabIn {
@@ -471,24 +633,57 @@ a {
   border-radius: 0 !important;
 }
 
-#stickyNotes,
-#openCalendar {
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+#bottomRightTools {
+  display: flex;
+  position: fixed;
   z-index: 1;
+  bottom: 0%;
+  right: 0%;
+  margin-right: 16px;
+  margin-bottom: 8px;
+  gap: 6px;
+}
+
+#brDots {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.dot {
+  border-style: solid;
+  border-width: 2px;
+  border-color: white;
+  cursor: pointer;
+  height: 0.67em;
+  width: 0.67em;
+  background-color: lightslategray;
+  border-radius: 50%;
+  display: inline-block;
+  transition: 0.25s;
+}
+
+.dot:hover {
+  border-color: silver;
+}
+
+.dot.currPage:hover {
+  border-color: rgb(10, 132, 255);
+}
+
+#stickyNotes,
+#openCalendar,
+#flashcardsPrac {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   height: 3.5em;
   width: 3.5em;
-  border-radius: 50%;
-  right: 0%;
-  bottom: 0%;
-  position: fixed;
-  background: rgb(250, 242, 150);
+  border-radius: 25%;
+  background: #8692a8;
   line-height: 3.5em;
   text-align: center;
   font-size: 1em;
   transition: 0.25s;
   user-select: none;
-  margin-bottom: 0.75em;
-  margin-right: 0.75em;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -497,7 +692,8 @@ a {
 }
 
 #stickyNotesEmoji,
-#openCalendarEmoji {
+#openCalendarEmoji,
+#flashcardsPracEmoji {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -509,13 +705,15 @@ a {
 }
 
 #stickyNotes:hover .emoji,
-#openCalendar:hover .emoji {
+#openCalendar:hover .emoji,
+#flashcardsPracEmoji:hover .emoji {
   scale: 1.2;
   transform: rotate(15deg);
 }
 
 #stickyNotes .emoji,
-#openCalendar .emoji {
+#openCalendar .emoji,
+#flashcardsPracEmoji .emoji {
   transition: 0.25s;
   width: 2em;
   height: 2em;
@@ -538,7 +736,8 @@ a {
   outline: none;
   border: none;
   resize: none;
-  background: rgb(250, 242, 150);
+  color: white;
+  background: #8692a8;
   display: inline !important;
 }
 
@@ -605,7 +804,8 @@ a {
   font-size: 15px;
 }
 
-.pagePreviewContainer pre, #notesPreviewArea pre {
+.pagePreviewContainer pre,
+#notesPreviewArea pre {
   background: rgb(236, 236, 236);
   border-radius: 0.5rem;
   font-size: 1rem;
@@ -615,7 +815,8 @@ a {
   overflow-x: auto;
 }
 
-.pagePreviewContainer pre code, #notesPreviewArea pre code {
+.pagePreviewContainer pre code,
+#notesPreviewArea pre code {
   font-family: monospace;
   background: none;
   padding: 0;
@@ -763,12 +964,16 @@ blockquote {
   padding-right: 10%;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   flex-grow: 1;
   white-space: pre-wrap;
   background: whitesmoke;
   overscroll-behavior-y: contain;
   scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 #bookDiffContent h2 {
@@ -1203,7 +1408,8 @@ mark {
   background: rgb(99, 99, 102);
 }
 
-#notesPreviewArea img, .pagePreviewContainer img {
+#notesPreviewArea img,
+.pagePreviewContainer img {
   border-style: solid;
   border-width: 1px;
   border-color: rgba(0, 0, 0, 0);
@@ -1211,7 +1417,7 @@ mark {
   max-width: 80%;
   height: auto;
   border-radius: 12px;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 #notesPreviewArea img:hover {

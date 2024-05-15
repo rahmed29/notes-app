@@ -164,7 +164,7 @@ app.get("/api/get/list/", async (req, res) => {
   let data = [];
   const result = await Item.find();
   result.forEach((notebook) => {
-    if (notebook.name !== "sticky__notes" && notebook.name !== "todo__list") {
+    if (notebook.name !== "sticky__notes" && notebook.name !== "todo__list" && notebook.name !== "flash__cards") {
       let excerpts = [];
       JSON.parse(notebook.content).forEach((page) => {
         const name =
@@ -328,6 +328,12 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
         childBook.parents = JSON.stringify(parents);
         await childBook.save();
       });
+
+      const flashcards = await Item.findOne({ name: "flash__cards" });
+      const fContent = JSON.parse(flashcards.content)
+      flashcards.content = JSON.stringify(fContent.filter((e) => e.subject !== name))
+      await flashcards.save();
+
       await Item.deleteOne({ name }).exec();
       res.status(204).json({ status: "Removed" });
     }

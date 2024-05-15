@@ -94,18 +94,14 @@ const stickyNotes = document.getElementById("stickyNotes");
 const workspace = document.getElementById("workspace");
 const tabs = document.getElementById("tabs");
 const openCalendar = document.getElementById("openCalendar");
+const flashcardPrac = document.getElementById("flashcardsPrac");
 const myForm = document.getElementById("myForm");
 const letterCount = document.getElementById("letterCount");
 const wordCount = document.getElementById("wordCount");
 const mode = document.getElementById("generalInfoViewMode");
 const previewContent = document.getElementById("fill");
-
-function wrap(el, wrapper) {
-  if (el && el.parentNode) {
-    el.parentNode.insertBefore(wrapper, el);
-    wrapper.appendChild(el);
-  }
-}
+const brDots = document.getElementById("brDots");
+const yellowButtons = document.getElementById("yellowButtons");
 
 // Text formatting stuff
 // https://github.com/stiang/remove-markdown/blob/main/index.js
@@ -280,13 +276,6 @@ for (let i = 0; i < 7; i++) {
   });
 }
 
-tippy("#stickyNotesEmoji", {
-  theme: "dark",
-  content: "Cycle (Right-Click)",
-  placement: "left",
-  arrow: false,
-})[0];
-
 tippy("#wordCount", {
   arrow: false,
   content: "Word Count",
@@ -390,7 +379,7 @@ async function referToolTip() {
   try {
     lastDynamicTippy.destroy();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   delContextMenu();
   const given = this;
@@ -431,7 +420,7 @@ const notyf = new Notyf({
 });
 
 // notebook names that aren't allowed because they are being used for other stuff
-const reservedNames = ["home", "todo__list", "sticky__notes", "AI-Summary"];
+const reservedNames = ["home", "todo__list", "sticky__notes", "flash__cards", "AI-Summary"];
 
 // active and completed events for todo
 let events;
@@ -474,7 +463,7 @@ async function defineCmd() {
   try {
     c.destroy();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   const cmdPgs = note.content.map((e, i) => {
@@ -809,7 +798,7 @@ function syncStatus(dbSave) {
       document.getElementById(`book__${note.name}`).innerText =
         "* " + note.name;
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   } else {
     let writtenPages = getWrittenPages(note.content);
@@ -820,7 +809,7 @@ function syncStatus(dbSave) {
       try {
         document.getElementById(`book__${note.name}`).innerText = note.name;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     } else {
       areNotesSavedIcon.style.filter = "grayscale(1)";
@@ -834,7 +823,7 @@ function syncStatus(dbSave) {
         document.getElementById(`book__${note.name}`).innerText =
           "* " + note.name;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     }
   }
@@ -946,7 +935,7 @@ async function switchNote(noteName, page) {
   try {
     document.getElementById(`book__${note.name}`).classList.remove("openTab");
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   lastNote = note;
   note = new Note();
@@ -1135,7 +1124,7 @@ function nestedList(obj, allNotes) {
         );
         ul.prepend(li);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     });
   }
@@ -1339,7 +1328,7 @@ async function forceUpdateNotes() {
       .getElementById(`book__${note.name}`)
       .removeEventListener("click", switchTab);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   const pg = note.pgN;
   note = null;
@@ -1436,7 +1425,7 @@ async function deleteNoteBookFromDb() {
           .get(parent)
           .family.filter((e) => e !== note.name);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     });
 
@@ -1449,7 +1438,7 @@ async function deleteNoteBookFromDb() {
           .get(child)
           .family.filter((e) => e !== note.name);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     });
 
@@ -1458,6 +1447,7 @@ async function deleteNoteBookFromDb() {
     note.children = [];
     note.parents = [];
     note.family = [];
+    flashcards = flashcards.filter((e) => e.subject !== note.name)
     syncStatus(note.dbSave);
   } else {
     notyf.error("An error occurred when deleting a notebook");
@@ -1549,6 +1539,34 @@ function scrollCM(e) {
   });
 }
 
+// popup ui
+function createPopupWindow() {
+  hideBookDiffPopup();
+  const bookDiffPopup = document.createElement("div");
+  bookDiffPopup.addEventListener("click", () => {
+    delContextMenu();
+    hideStickyNotes();
+  });
+  bookDiffPopup.id = "bookDiffPopup";
+  const bookDiffHeader = document.createElement("div");
+  bookDiffHeader.id = "bookDiffHeader";
+  const bookDiffExitContainer = document.createElement("div");
+  bookDiffExitContainer.id = "bookDiffExitContainer";
+  const bookDiffExit = document.createElement("div");
+  bookDiffExit.id = "bookDiffExit";
+  bookDiffExitContainer.appendChild(bookDiffExit);
+  bookDiffHeader.appendChild(bookDiffExitContainer);
+  bookDiffPopup.appendChild(bookDiffHeader);
+  const bookDiffContent = document.createElement("div");
+  bookDiffContent.id = "bookDiffContent";
+  bookDiffPopup.appendChild(bookDiffContent);
+  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
+    once: true,
+  });
+  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
+  return { bookDiffPopup, bookDiffContent };
+}
+
 // book diff popup
 function getDiff(one, other) {
   let span = null;
@@ -1575,49 +1593,23 @@ function hideBookDiffPopup() {
   try {
     document.getElementById("bookDiffPopup").remove();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   try {
     calendar.destroy();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   try {
     datePicker.destroy();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   mainContainer.removeEventListener("click", hideBookDiffPopup);
 }
 
 function showBookDiffPopup() {
-  hideBookDiffPopup();
-  /*
-    <div id = "bookDiffPopup">
-        <div id = "bookDiffHeader">
-            <div id = "bookDiffExit">&nbsp;</div>
-        </div>
-        <div id = "bookDiffContent" class = "dragscroll"></div>
-    </div>
-    */
-  const bookDiffPopup = document.createElement("div");
-  bookDiffPopup.addEventListener("click", () => {
-    delContextMenu();
-    hideStickyNotes();
-  });
-  bookDiffPopup.id = "bookDiffPopup";
-  const bookDiffHeader = document.createElement("div");
-  bookDiffHeader.id = "bookDiffHeader";
-  const bookDiffExitContainer = document.createElement("div");
-  bookDiffExitContainer.id = "bookDiffExitContainer";
-  const bookDiffExit = document.createElement("div");
-  bookDiffExit.id = "bookDiffExit";
-  bookDiffExitContainer.appendChild(bookDiffExit);
-  bookDiffHeader.appendChild(bookDiffExitContainer);
-  bookDiffPopup.appendChild(bookDiffHeader);
-  const bookDiffContent = document.createElement("div");
-  bookDiffContent.id = "bookDiffContent";
-  bookDiffPopup.appendChild(bookDiffContent);
+  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
   const timesToRepeat =
     note.dbSave.length > note.content.length
       ? note.dbSave.length
@@ -1667,14 +1659,7 @@ function showBookDiffPopup() {
     }
     bookDiffContent.appendChild(pageDiff);
   }
-
   mainContainer.after(bookDiffPopup);
-  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
-    once: true,
-  });
-
-  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
-  // document.addEventListener("keydown", hidePopups)
 }
 
 // sticky note
@@ -1701,12 +1686,14 @@ function showStickyNotes() {
   stickyNotes.classList.add("snOpen");
   mainContainer.addEventListener("click", hideStickyNotes, { once: true });
   stickyNotesTextArea.focus();
+  brDots.style.display = "none";
 }
 
 function hideStickyNotes() {
   stickyNotes.classList.remove("snOpen");
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });
   mainContainer.removeEventListener("click", hideStickyNotes);
+  brDots.style.display = "flex";
 }
 
 async function retrieveStickyNotes() {
@@ -1716,11 +1703,37 @@ async function retrieveStickyNotes() {
 }
 
 // flashcards
+async function initializeFlashcards() {
+  const data = await getAnyBookContent("flash__cards", "content");
+  try {
+    flashcards = JSON.parse(data);
+  } catch (err) {
+    console.log(err)
+    flashcards = [];
+  }
+}
+
+async function saveFlashcards() {
+  const response = await fetch("/api/save/notebooks/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "flash__cards",
+      content: JSON.stringify(flashcards),
+      date: new Date().toLocaleString(),
+    }),
+  });
+  if (!response.ok) {
+    notyf.error("An error occurred when saving the flashcards");
+  }
+}
+
 function fcPop(e) {
   currCard.innerText = e.target.innerText;
 }
 
-// flashcards
 function flashcardMode() {
   hideBookDiffPopup();
   leaveFlashcardMode();
@@ -1759,6 +1772,7 @@ function flashcardMode() {
         });
         moneyAnimation(e, "✔️");
         flashcardMode();
+        saveFlashcards();
       } else {
         notyf.error("Both sides of flashcard must be populated");
         flashcardMode();
@@ -1807,29 +1821,199 @@ function leaveFlashcardMode() {
   try {
     document.getElementById("fcAlert").remove();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
   try {
     document.getElementById("fcArea").remove();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 }
 
-window.flashcards = flashcards;
-window.leaveFlashcardMode = leaveFlashcardMode;
-window.flashcardMode = flashcardMode;
+function showFlashcards(noAnimation) {
+  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
+  if (noAnimation != null && noAnimation) {
+   bookDiffPopup.style.animation = "none"; 
+  }
+  const organized = flashcards.filter((e) => e.subject === note.name).reduce((obj, e) => {
+    switch (e.learning) {
+      case "unattempted":
+        obj[0].push(e);
+        break;
+      case "know":
+        obj[1].push(e);
+        break;
+      case "dontKnow":
+        obj[2].push(e);
+        break;
+    }
+    return obj;
+  }, [[],[],[]]);
+  const reset = document.createElement("div");
+  reset.classList.add("reset")
+  reset.innerText = "Reset"
+  reset.addEventListener("click", () => {
+    flashcards = flashcards.map((e) => {
+      e.learning = "unattempted";
+      return e;
+    })
+    console.log(flashcards)
+    saveFlashcards();
+    showFlashcards(true);
+  })
+  bookDiffContent.appendChild(reset)
+  organized.map((e, i) => {
+    const wrapper = document.createElement("div");
+    const info = document.createElement("div");
+    info.classList.add("fcGroupInfo");
+    const num = document.createElement("span")
+    num.innerText = "0";
+    switch (i) {
+      case 0: 
+      info.innerText = "Unattempted - ";
+        break;
+      case 1: 
+      info.innerText = "Know - ";
+      info.style.background = "lightgreen"
+        break;
+      case 2: 
+      info.innerText = "Don't Know - ";
+      info.style.background = "lightcoral"
+        break;
+    }
+    info.appendChild(num)
+    const cards = document.createElement("div");
+    cards.addEventListener("click", () => {
+      study(e.shift(), e, bookDiffContent);
+    })
+    cards.classList.add("fcCardList");
+
+    e.forEach((card) => {
+      num.innerText = parseInt(num.innerText) + 1
+      const cardFront = document.createElement("div")
+      cardFront.addEventListener("contextmenu", function (e) {
+        contextMenu(
+          e,
+          [
+            {
+              attr: card.id,
+              text: `Delete Card`,
+              click: function () {
+                this.innerText = "Confirm";
+                this.classList.add("rios");
+                this.addEventListener(
+                  "click",
+                  function () {
+                    flashcards = flashcards.filter((e) => e.id != this.getAttribute("data-props"));
+                    saveFlashcards();
+                    delContextMenu();
+                    showFlashcards(true)
+                  },
+                  { once: true }
+                );
+              },
+              appearance: "ios",
+            },
+          ],
+          [`${e.clientX}px`, `${e.clientY}px`]
+        );
+      })
+      cardFront.classList.add("cardFront")
+      cardFront.innerText = card.front;
+      cards.appendChild(cardFront)
+    })
+
+    wrapper.appendChild(info);
+    wrapper.appendChild(cards);
+    wrapper.classList.add("fcGroup");
+    bookDiffContent.appendChild(wrapper)
+  })
+
+  mainContainer.after(bookDiffPopup);
+}
+
+function study(cardObj, allCards, bookDiffContent) {
+  if(!cardObj) {
+    showFlashcards(true);
+    return;
+  }
+  while (bookDiffContent.firstChild) {
+    bookDiffContent.firstChild.remove();
+  }
+  const container = document.createElement("div")
+  container.classList.add("studyContainer")
+  bookDiffContent.appendChild(container)
+
+  const cardContainer = document.createElement("div")
+  cardContainer.classList.add("quizlet")
+  cardContainer.addEventListener("click", function () {
+    this.classList.toggle("quizletActive")
+  })
+  const cardContent = document.createElement("div")
+  cardContent.classList.add("qContent")
+
+  cardContainer.appendChild(cardContent)
+
+  const frontCard = document.createElement("div")
+  frontCard.classList.add("qFront")
+  frontCard.innerText = cardObj.front;
+  container.appendChild(frontCard)
+
+  const backCard = document.createElement("div")
+  backCard.classList.add("qBack")
+  backCard.innerText = cardObj.back;
+  container.appendChild(backCard)
+
+  cardContent.appendChild(frontCard)
+  cardContent.appendChild(backCard)
+
+  container.appendChild(cardContainer)
+
+  const buttonContainer = document.createElement("div")
+  buttonContainer.classList.add("fcButtons")
+  const check = document.createElement("button")
+  check.innerText = "✅ Know"
+  if (cardObj.learning === "know") {
+    check.style.background = "lightgreen"
+  } 
+  check.addEventListener("click", () => {
+    cardObj.learning = "know";
+    saveFlashcards();
+    study(allCards.shift(), allCards, bookDiffContent)
+  })
+  const x = document.createElement("button")
+  x.addEventListener("click", () => {
+    cardObj.learning = "dontKnow";
+    saveFlashcards();
+    study(allCards.shift(), allCards, bookDiffContent)
+  })
+  x.innerText = "❌ Don't Know"
+  if (cardObj.learning === "dontKnow") {
+    x.style.background = "lightcoral"
+  } 
+  buttonContainer.appendChild(check)
+  buttonContainer.appendChild(x)
+  container.appendChild(buttonContainer)
+}
 
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
   const data = await getAnyBookContent("todo__list", "_data");
-  events = JSON.parse(data.content) || [];
-  pastEvents = JSON.parse(data.date) || [];
+  try {
+    events = JSON.parse(data.content)
+  } catch (err) {
+    events = [];
+  }
+  try {
+    pastEvents = JSON.parse(data.date)
+  } catch (err) {
+    pastEvents = []
+  }
 }
 
-function saveTodo() {
-  const response = fetch("/api/save/notebooks/", {
+async function saveTodo() {
+  const response = await fetch("/api/save/notebooks/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2018,33 +2202,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 }
 
 function showTodo(hereForInsertion) {
-  hideBookDiffPopup();
-  /*
-    <div id = "bookDiffPopup">
-        <div id = "bookDiffHeader">
-            <div id = "bookDiffExit">&nbsp;</div>
-        </div>
-        <div id = "bookDiffContent" class = "dragscroll"></div>
-    </div>
-    */
-  const bookDiffPopup = document.createElement("div");
-  bookDiffPopup.addEventListener("click", () => {
-    delContextMenu();
-    hideStickyNotes();
-  });
-  bookDiffPopup.id = "bookDiffPopup";
-  const bookDiffHeader = document.createElement("div");
-  bookDiffHeader.id = "bookDiffHeader";
-  const bookDiffExitContainer = document.createElement("div");
-  bookDiffExitContainer.id = "bookDiffExitContainer";
-  const bookDiffExit = document.createElement("div");
-  bookDiffExit.id = "bookDiffExit";
-  bookDiffExitContainer.appendChild(bookDiffExit);
-  bookDiffHeader.appendChild(bookDiffExitContainer);
-  bookDiffPopup.appendChild(bookDiffHeader);
-  const bookDiffContent = document.createElement("div");
-  bookDiffContent.id = "bookDiffContent";
-  bookDiffPopup.appendChild(bookDiffContent);
+  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
   mainContainer.after(bookDiffPopup);
 
   const todoContainer = document.createElement("div");
@@ -2088,7 +2246,7 @@ function showTodo(hereForInsertion) {
           evInList.classList.add("getHighlighted"); // Add the class that animates
           evInList.scrollIntoView();
         } catch (err) {
-          console.log(err);
+          // console.log(err);
         }
       },
     });
@@ -2399,14 +2557,14 @@ async function nestNote(child, parent) {
         library.get(child)["parents"].push(parent);
         library.get(child)["family"].push(parent);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       try {
         library.get(parent)["children"].push(child);
         library.get(parent)["family"].push(child);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       updateList();
@@ -2430,7 +2588,7 @@ async function relinquishNote(child, parent) {
           .get(child)
           ["family"].filter((e) => e !== parent);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       try {
@@ -2441,7 +2599,7 @@ async function relinquishNote(child, parent) {
           .get(parent)
           ["family"].filter((e) => e !== child);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       updateList();
@@ -2890,13 +3048,8 @@ border.addEventListener("mousedown", () => {
   );
 });
 
-// stickynote and calendar
+// bottom right buttons
 stickyNotes.addEventListener("click", showStickyNotes, { once: true });
-stickyNotes.children[1].addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-  stickyNotes.classList.toggle("gone");
-  openCalendar.classList.toggle("gone");
-});
 stickyNotesTextArea.addEventListener("input", saveStickyNotes);
 stickyNotesTextArea.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
@@ -2907,11 +3060,20 @@ stickyNotesTextArea.addEventListener("keydown", (e) => {
 openCalendar.addEventListener("click", () => {
   showTodo(false);
 });
-openCalendar.children[0].addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-  stickyNotes.classList.toggle("gone");
-  document.getElementById("openCalendar").classList.toggle("gone");
+flashcardPrac.addEventListener("click", () => {
+  showFlashcards();
 });
+
+for (let i = 0, n = brDots.children.length; i < n; i++) {
+  brDots.children[i].addEventListener("click", function () {
+    for (let j = 0, n = yellowButtons.children.length; j < n; j++) {
+      yellowButtons.children[j].classList.add("gone");
+      brDots.children[j].classList.remove("currPage");
+    }
+    yellowButtons.children[i].classList.remove("gone");
+    brDots.children[i].classList.add("currPage");
+  });
+}
 
 // onload functions
 window.addEventListener(
@@ -2923,6 +3085,7 @@ window.addEventListener(
     );
     createWorkspace();
     initializeTodo();
+    initializeFlashcards() 
     editingWindow(localStorage.getItem("/viewPref") || "read", true);
     workspace.style.width = `calc(100% - 25px - ${
       localStorage.getItem("/listSize") || 300
