@@ -2,7 +2,7 @@ import morphdom from "morphdom";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
-import 'tippy.js/animations/shift-toward-subtle.css';
+import "tippy.js/animations/shift-toward-subtle.css";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import Dropzone from "dropzone";
@@ -19,6 +19,19 @@ import { mark, markHTML } from "./micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
+
+const style = document.createElement("style");
+document.head.appendChild(style);
+
+function changeAccentColor(color) {
+  style.innerText = `
+  :root {
+    --main-accent: ${color === "default" ? "rgb(10, 132, 255)" : color};
+  }
+`;
+}
+
+window.changeAccentColor = changeAccentColor;
 
 // micromark directives
 function cal(d) {
@@ -290,7 +303,7 @@ const toolBarTips = [
 for (let i = 0; i < 7; i++) {
   tippy(`#icon${i + 1}`, {
     arrow: false,
-    animation: 'shift-toward-subtle',
+    animation: "shift-toward-subtle",
     content: toolBarTips[i],
     placement: "bottom-end",
   });
@@ -446,7 +459,13 @@ const notyf = new Notyf({
 let switching = false;
 
 // notebook names that aren't allowed because they are being used for other stuff
-const reservedNames = ["home", "todo__list", "sticky__notes", "flash__cards", "AI-Summary"];
+const reservedNames = [
+  "home",
+  "todo__list",
+  "sticky__notes",
+  "flash__cards",
+  "AI-Summary",
+];
 
 // active and completed events for todo
 let events;
@@ -592,6 +611,10 @@ async function defineCmd() {
           handler: () => forceUpdateNotes(),
         },
       ],
+    },
+    {
+      name: "📇 Open Flashcards",
+      handler: () => showFlashcards(),
     },
     {
       name: "📅 Open Calendar",
@@ -960,7 +983,7 @@ async function switchNote(noteName, page) {
     return 1;
   }
   if (switching) {
-    notyf.error("Note switch debounce")
+    notyf.error("Note switch debounce");
     return 0;
   }
   switching = true;
@@ -971,7 +994,7 @@ async function switchNote(noteName, page) {
   }
   lastNote = note;
   note = new Note();
-  const data = await getAnyBookContent(noteName, "_data") || {
+  const data = (await getAnyBookContent(noteName, "_data")) || {
     name: noteName,
     content: '[""]',
     children: "[]",
@@ -1481,7 +1504,7 @@ async function deleteNoteBookFromDb() {
     note.children = [];
     note.parents = [];
     note.family = [];
-    flashcards = flashcards.filter((e) => e.subject !== note.name)
+    flashcards = flashcards.filter((e) => e.subject !== note.name);
     syncStatus(note.dbSave);
   } else {
     notyf.error("An error occurred when deleting a notebook");
@@ -1730,7 +1753,7 @@ function hideStickyNotes() {
   brDots.style.display = "flex";
 }
 
-async function retrieveStickyNotes() {
+async function initializeStickyNotes() {
   const text =
     JSON.parse(await getAnyBookContent("sticky__notes", "content"))[0] || "";
   stickyNotesTextArea.value = text;
@@ -1738,7 +1761,7 @@ async function retrieveStickyNotes() {
 
 // flashcards
 async function initializeFlashcards() {
-  const data = await getAnyBookContent("flash__cards", "content") || "[]";
+  const data = (await getAnyBookContent("flash__cards", "content")) || "[]";
   flashcards = JSON.parse(data);
 }
 
@@ -1862,63 +1885,95 @@ function leaveFlashcardMode() {
 function showFlashcards(noAnimation) {
   const { bookDiffPopup, bookDiffContent } = createPopupWindow();
   if (noAnimation != null && noAnimation) {
-   bookDiffPopup.style.animation = "none"; 
+    bookDiffPopup.style.animation = "none";
   }
-  const organized = flashcards.filter((e) => e.subject === note.name).reduce((obj, e) => {
-    switch (e.learning) {
-      case "unattempted":
-        obj[0].push(e);
-        break;
-      case "know":
-        obj[1].push(e);
-        break;
-      case "dontKnow":
-        obj[2].push(e);
-        break;
-    }
-    return obj;
-  }, [[],[],[]]);
+  const organized = flashcards
+    .filter((e) => e.subject === note.name)
+    .reduce(
+      (obj, e) => {
+        switch (e.learning) {
+          case "unattempted":
+            obj[0].push(e);
+            break;
+          case "know":
+            obj[1].push(e);
+            break;
+          case "dontKnow":
+            obj[2].push(e);
+            break;
+        }
+        return obj;
+      },
+      [[], [], []]
+    );
+
+  const extra = document.createElement("div")
+  extra.classList.add("extra")
   const reset = document.createElement("div");
-  reset.classList.add("reset")
-  reset.innerText = "🔁 Reset"
-  reset.addEventListener("click", () => {
-    flashcards = flashcards.map((e) => {
-      e.learning = "unattempted";
-      return e;
-    })
-    saveFlashcards();
-    showFlashcards(true);
-  })
-  bookDiffContent.appendChild(reset)
+  reset.classList.add("reset");
+  reset.innerText = "🔁 Reset All";
+  reset.addEventListener(
+    "click",
+    () => {
+      flashcards = flashcards.map((e) => {
+        e.learning = "unattempted";
+        return e;
+      });
+      saveFlashcards();
+      showFlashcards(true);
+    },
+    { once: true }
+  );
+  const pracAll = document.createElement("div");
+  pracAll.classList.add("reset");
+  pracAll.innerText = "🗂️ Practice All";
+  pracAll.addEventListener(
+    "click",
+    () => {
+      const cards = flashcards.filter(e => e.subject === note.name);
+      study([cards.shift()], cards, bookDiffContent);
+    },
+    { once: true }
+  );
+  extra.appendChild(reset);
+  extra.appendChild(pracAll);
+  bookDiffContent.appendChild(extra)
   organized.map((e, i) => {
     const wrapper = document.createElement("div");
     const info = document.createElement("div");
     info.classList.add("fcGroupInfo");
-    const num = document.createElement("span")
+    const num = document.createElement("span");
     num.innerText = "0";
     switch (i) {
-      case 0: 
-      info.innerText = "Unattempted - ";
+      case 0:
+        info.innerText = "Unattempted - ";
         break;
-      case 1: 
-      info.innerText = "Know - ";
-      info.style.background = "lightgreen"
+      case 1:
+        info.innerText = "Know - ";
         break;
-      case 2: 
-      info.innerText = "Don't Know - ";
-      info.style.background = "lightcoral"
+      case 2:
+        info.innerText = "Don't Know - ";
         break;
     }
-    info.appendChild(num)
+    info.appendChild(num);
     const cards = document.createElement("div");
-    cards.addEventListener("click", () => {
-      study(e.shift(), e, bookDiffContent);
-    })
+    cards.addEventListener("wheel", function (e) {
+      this.scroll({
+        left: this.scrollLeft + e.deltaY,
+      });
+    });
+    cards.addEventListener(
+      "click",
+      () => {
+        study([e.shift()], e, bookDiffContent);
+      },
+      { once: true }
+    );
     cards.classList.add("fcCardList");
 
     e.forEach((card) => {
-      num.innerText = parseInt(num.innerText) + 1
-      const cardFront = document.createElement("div")
+      num.innerText = parseInt(num.innerText) + 1;
+      const cardFront = document.createElement("div");
       cardFront.addEventListener("contextmenu", function (e) {
         contextMenu(
           e,
@@ -1927,15 +1982,15 @@ function showFlashcards(noAnimation) {
               attr: card.id,
               text: `Reset Card`,
               click: function () {
-                    flashcards = flashcards.map((e) => {
-                      if (e.id == this.getAttribute("data-props")) {
-                        e.learning = "unattempted";
-                      }
-                      return e;
-                    });
-                    saveFlashcards();
-                    delContextMenu();
-                    showFlashcards(true);
+                flashcards = flashcards.map((e) => {
+                  if (e.id == this.getAttribute("data-props")) {
+                    e.learning = "unattempted";
+                  }
+                  return e;
+                });
+                saveFlashcards();
+                delContextMenu();
+                showFlashcards(true);
               },
               appearance: "ios",
             },
@@ -1948,10 +2003,12 @@ function showFlashcards(noAnimation) {
                 this.addEventListener(
                   "click",
                   function () {
-                    flashcards = flashcards.filter((e) => e.id != this.getAttribute("data-props"));
+                    flashcards = flashcards.filter(
+                      (e) => e.id != this.getAttribute("data-props")
+                    );
                     saveFlashcards();
                     delContextMenu();
-                    showFlashcards(true)
+                    showFlashcards(true);
                   },
                   { once: true }
                 );
@@ -1961,91 +2018,145 @@ function showFlashcards(noAnimation) {
           ],
           [`${e.clientX}px`, `${e.clientY}px`]
         );
-      })
-      cardFront.classList.add("cardFront")
+      });
+      cardFront.classList.add("cardFront");
       cardFront.innerText = card.front;
-      cards.appendChild(cardFront)
-    })
+      cards.appendChild(cardFront);
+    });
 
     wrapper.appendChild(info);
     wrapper.appendChild(cards);
     wrapper.classList.add("fcGroup");
-    bookDiffContent.appendChild(wrapper)
-  })
+    bookDiffContent.appendChild(wrapper);
+  });
 
   mainContainer.after(bookDiffPopup);
 }
 
-function study(cardObj, allCards, bookDiffContent) {
-  if(!cardObj) {
+function study(cardArr, allCards, bookDiffContent) {
+  if (!cardArr[0]) {
     showFlashcards(true);
     return;
   }
+  const cardObj = cardArr[0];
+
   while (bookDiffContent.firstChild) {
     bookDiffContent.firstChild.remove();
   }
-  const container = document.createElement("div")
-  container.classList.add("studyContainer")
-  bookDiffContent.appendChild(container)
+  const container = document.createElement("div");
+  container.classList.add("studyContainer");
+  bookDiffContent.appendChild(container);
 
-  const cardContainer = document.createElement("div")
-  cardContainer.classList.add("quizlet")
+  const options = document.createElement("div");
+  options.classList.add("studyingOptions");
+  container.appendChild(options);
+
+  const leave = document.createElement("div");
+  leave.classList.add("reset");
+  leave.innerText = "❌ Exit";
+  leave.addEventListener("click", () => {
+    showFlashcards(true);
+  });
+  options.appendChild(leave);
+
+  const reset = document.createElement("div");
+  reset.classList.add("reset");
+  reset.innerText = "🔁 Reset Card";
+  reset.addEventListener("click", () => {
+    cardObj.learning = "unattempted";
+    study(cardArr, allCards, bookDiffContent);
+  });
+  options.appendChild(reset);
+
+  const back = document.createElement("div");
+  back.classList.add("reset");
+  back.innerText = "⏪ Back";
+  back.style.opacity = ".5";
+  if (cardArr.length > 1) {
+    back.addEventListener("click", () => {
+      allCards.push(cardArr.shift());
+      study(cardArr, allCards, bookDiffContent);
+    });
+    back.style.opacity = "1";
+  }
+  options.appendChild(back);
+
+  const skip = document.createElement("div");
+  skip.classList.add("reset");
+  skip.innerText = "⏩ Skip";
+  skip.addEventListener("click", () => {
+    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+  });
+  options.appendChild(skip);
+
+  const progress = document.createElement("span");
+  progress.style.fontFamily = "monospace";
+  progress.innerText = `${cardArr.length}/${allCards.length + cardArr.length}`;
+  options.appendChild(progress);
+
+  const cardContainer = document.createElement("div");
+  cardContainer.classList.add("quizlet");
   cardContainer.addEventListener("click", function () {
-    this.classList.toggle("quizletActive")
-  })
-  const cardContent = document.createElement("div")
-  cardContent.classList.add("qContent")
+    this.classList.toggle("quizletActive");
+  });
+  const cardContent = document.createElement("div");
+  cardContent.classList.add("qContent");
 
-  cardContainer.appendChild(cardContent)
+  cardContainer.appendChild(cardContent);
 
-  const frontCard = document.createElement("div")
-  frontCard.classList.add("qFront")
+  const frontCard = document.createElement("div");
+  frontCard.classList.add("qFront");
   frontCard.innerText = cardObj.front;
-  container.appendChild(frontCard)
+  container.appendChild(frontCard);
 
-  const backCard = document.createElement("div")
-  backCard.classList.add("qBack")
+  const backCard = document.createElement("div");
+  backCard.classList.add("qBack");
   backCard.innerText = cardObj.back;
-  container.appendChild(backCard)
+  container.appendChild(backCard);
 
-  cardContent.appendChild(frontCard)
-  cardContent.appendChild(backCard)
+  cardContent.appendChild(frontCard);
+  cardContent.appendChild(backCard);
 
-  container.appendChild(cardContainer)
+  container.appendChild(cardContainer);
 
-  const buttonContainer = document.createElement("div")
-  buttonContainer.classList.add("fcButtons")
-  const check = document.createElement("button")
-  check.innerText = "✅ Know"
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("fcButtons");
+  const check = document.createElement("button");
+  check.innerText = "✅ Know";
   if (cardObj.learning === "know") {
-    check.style.background = "lightgreen"
-  } 
-  check.addEventListener("click", () => {
+    check.style.background = "lightgreen";
+  }
+  check.addEventListener("click", (e) => {
     cardObj.learning = "know";
+    moneyAnimation(e, "😁");
     saveFlashcards();
-    study(allCards.shift(), allCards, bookDiffContent)
-  })
-  const x = document.createElement("button")
-  x.addEventListener("click", () => {
+    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+  });
+  const x = document.createElement("button");
+  x.addEventListener("click", (e) => {
     cardObj.learning = "dontKnow";
+    moneyAnimation(e, "😔");
     saveFlashcards();
-    study(allCards.shift(), allCards, bookDiffContent)
-  })
-  x.innerText = "❌ Don't Know"
+    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+  });
+  x.innerText = "❌ Don't Know";
   if (cardObj.learning === "dontKnow") {
-    x.style.background = "lightcoral"
-  } 
-  buttonContainer.appendChild(check)
-  buttonContainer.appendChild(x)
-  container.appendChild(buttonContainer)
+    x.style.background = "lightcoral";
+  }
+  buttonContainer.appendChild(check);
+  buttonContainer.appendChild(x);
+  container.appendChild(buttonContainer);
 }
 
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
-  const data = await getAnyBookContent("todo__list", "_data") || {content: "[]", date: "[]"};
-  events = JSON.parse(data.content)
-  pastEvents = JSON.parse(data.date)
+  const data = (await getAnyBookContent("todo__list", "_data")) || {
+    content: "[]",
+    date: "[]",
+  };
+  events = JSON.parse(data.content);
+  pastEvents = JSON.parse(data.date);
 }
 
 async function saveTodo() {
@@ -2182,13 +2293,13 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     today = `${yyyy}-${mm}-${dd}`;
 
     if (task.start === today) {
-      dueDate = `<b style = 'color: whitesmoke;'>${task.start}</b>`;
+      dueDate = `<b style = 'color: white;'>Due ${task.start}</b>`;
     } else if (task.start < today) {
-      dueDate = `<b style = 'color: rgb(255,69,58)'>${task.start}</b>`;
+      dueDate = `<b style = 'color: orange'>Due ${task.start}</b>`;
     } else {
-      dueDate = task.start;
+      dueDate = `Due ${task.start}`;
     }
-    eventBottom.innerHTML = `${task.extendedProps.category} - Due ${dueDate}`;
+    eventBottom.innerHTML = `${task.extendedProps.category} ${dueDate}`;
     eventBottom.classList.add("eventBottom");
     if (lookingAtPast) {
       eventBottom.addEventListener(
@@ -2716,7 +2827,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           function () {
             hasTyped = true;
             this.innerText = "";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
           },
           { once: true }
         );
@@ -2739,7 +2850,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.style.background = "inherit";
             this.style.fontStyle = "inherit";
             this.innerText = "Open Notebook";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
           },
           { once: true }
         );
@@ -2809,7 +2920,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           "beforeinput",
           function () {
             this.innerText = "";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
             hasTyped = true;
           },
           { once: true }
@@ -2833,7 +2944,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.style.background = "inherit";
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
           },
           { once: true }
         );
@@ -2855,7 +2966,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           "beforeinput",
           function () {
             this.innerText = "";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
             hasTyped = true;
           },
           { once: true }
@@ -2878,7 +2989,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.style.background = "inherit";
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
-            this.style.color = "whitesmoke";
+            this.style.color = "white";
           },
           { once: true }
         );
@@ -3084,44 +3195,15 @@ border.addEventListener("mousedown", () => {
   );
 });
 
-// bottom right buttons
-stickyNotes.addEventListener("click", showStickyNotes, { once: true });
-stickyNotesTextArea.addEventListener("input", saveStickyNotes);
-stickyNotesTextArea.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    e.preventDefault();
-    hideStickyNotes();
-  }
-});
-openCalendar.addEventListener("click", () => {
-  showTodo(false);
-});
-flashcardPrac.addEventListener("click", () => {
-  showFlashcards();
-});
-
-for (let i = 0, n = brDots.children.length; i < n; i++) {
-  brDots.children[i].addEventListener("click", function () {
-    for (let j = 0, n = yellowButtons.children.length; j < n; j++) {
-      yellowButtons.children[j].classList.add("gone");
-      brDots.children[j].classList.remove("currPage");
-    }
-    yellowButtons.children[i].classList.remove("gone");
-    brDots.children[i].classList.add("currPage");
-  });
-}
-
 // onload functions
 window.addEventListener(
   "load",
-  () => {
-    switchNote(
+  async () => {
+    createWorkspace();
+    await switchNote(
       location.pathname.substring(1),
       parseInt(location.search.substring(1) || 1) - 1
     );
-    createWorkspace();
-    initializeTodo();
-    initializeFlashcards() 
     editingWindow(localStorage.getItem("/viewPref") || "read", true);
     workspace.style.width = `calc(100% - 25px - ${
       localStorage.getItem("/listSize") || 300
@@ -3134,8 +3216,38 @@ window.addEventListener(
     } else {
       showList();
     }
-    retrieveStickyNotes();
-    createList();
+    await createList();
+
+    await initializeFlashcards();
+    await initializeTodo();
+    await initializeStickyNotes();
+
+    // bottom right buttons
+    stickyNotes.addEventListener("click", showStickyNotes, { once: true });
+    stickyNotesTextArea.addEventListener("input", saveStickyNotes);
+    stickyNotesTextArea.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        hideStickyNotes();
+      }
+    });
+    openCalendar.addEventListener("click", () => {
+      showTodo(false);
+    });
+    flashcardPrac.addEventListener("click", () => {
+      showFlashcards();
+    });
+
+    for (let i = 0, n = brDots.children.length; i < n; i++) {
+      brDots.children[i].addEventListener("click", function () {
+        for (let j = 0, n = yellowButtons.children.length; j < n; j++) {
+          yellowButtons.children[j].classList.add("gone");
+          brDots.children[j].classList.remove("currPage");
+        }
+        yellowButtons.children[i].classList.remove("gone");
+        brDots.children[i].classList.add("currPage");
+      });
+    }
   },
   { once: true }
 );
