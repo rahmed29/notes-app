@@ -327,8 +327,8 @@ editor.setOption("showPrintMargin", false);
 
 const notesTextArea = document.getElementById("notesTextArea");
 const notesPreviewArea = document.getElementById("notesPreviewArea");
-const notesAreaContainer = document.getElementById("notesAreaContainer");
 const mainContainer = document.getElementById("mainContainer");
+const notesAreaContainer = document.getElementById("notesAreaContainer");
 const topLeftPageNumber = document.getElementById("topLeftPageNumbers");
 const areNotesSavedIcon = document.getElementById("areNotesSavedIcon");
 const list = document.getElementById("listOfBooks");
@@ -358,8 +358,13 @@ const mode = document.getElementById("generalInfoViewMode");
 const previewContent = document.getElementById("fill");
 const brDots = document.getElementById("brDots");
 const yellowButtons = document.getElementById("yellowButtons");
+const progBar = document.getElementById("progBar");
+
 
 // Text formatting stuff
+// note names must be at least 1 character and cannot include any chars other than numbers, letters, hyphens, or dashes
+var validNoteName = /^[a-zA-Z0-9-_]+$/;
+
 // https://github.com/stiang/remove-markdown/blob/main/index.js
 function removeMD(md, options) {
   options = options || {};
@@ -550,7 +555,7 @@ tippy("#letterCount", {
 });
 
 function insertStickyNote() {
-  if (!reservedNames.some((e) => e.name === note.name)) {
+  if (!reservedNames.some((e) => e.data.name === note.name)) {
     editor.insert(stickyNotesTextArea.value);
     updateAndSaveNotesLocally();
   } else {
@@ -576,7 +581,7 @@ const dropzone = new Dropzone(document.body, {
 });
 
 async function insertAndSaveImage() {
-  if (!reservedNames.some((e) => e.name === note.name)) {
+  if (!reservedNames.some((e) => e.data.name === note.name)) {
     const formData = new FormData(myForm);
     const imageUploadStatus = await fetch("/api/save/images", {
       method: "POST",
@@ -665,14 +670,8 @@ async function referToolTip() {
     const content =
       this.getAttribute("data-bookname") === note.name
         ? format(note.content[page])
-        : format(
-            JSON.parse(
-              await getAnyBookContent(
-                this.getAttribute("data-bookname"),
-                "content"
-              )
-            )[page]
-          );
+        : format((await getAnyBookContent(this.getAttribute("data-bookname"),"content"))[page]
+);
     lastDynamicTippy.setContent(
       `<div class = 'pagePreviewContainer'>${content}</div>`
     );
@@ -698,53 +697,48 @@ const crontab =
 // notebook names that aren't allowed because they are being used for other stuff
 const reservedNames = [
   {
-    name: "home",
     data: {
       name: "home",
-      content: `["# 👋 Welcome Home!\\n\\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"]`,
-      children: "[]",
-      parents: "[]",
-      saved: "unsaved",
+      content: ["# 👋 Welcome Home!\n\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"],
+      children: [],
+      parents: [],
+      saved: false,
     },
   },
   {
-    name: "todo__list",
     data: {
-      name: "home",
-      content: `["This notebook is reserved for storing your calendar events. Sorry!"]`,
-      children: "[]",
-      parents: "[]",
-      saved: "unsaved",
+      name: "todo__list",
+      content: ["This notebook is reserved for storing your calendar events. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
     },
   },
   {
-    name: "sticky__notes",
     data: {
-      name: "home",
-      content: `["This notebook is reserved for storing your sticky note. Sorry!"]`,
-      children: "[]",
-      parents: "[]",
-      saved: "unsaved",
+      name: "sticky__notes",
+      content: ["This notebook is reserved for storing your sticky note. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
     },
   },
   {
-    name: "flash__cards",
     data: {
-      name: "home",
-      content: `["This notebook is reserved for storing your flahscards. Sorry!"]`,
-      children: "[]",
-      parents: "[]",
-      saved: "unsaved",
+      name: "flash__cards",
+      content: ["This notebook is reserved for storing your flahscards. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
     },
   },
   {
-    name: "AI-Summary",
     data: {
-      name: "home",
-      content: `["This notebook name is reserved for AI Summaries. Sorry!"]`,
-      children: "[]",
-      parents: "[]",
-      saved: "unsaved",
+      name: "AI-Summary",
+      content: ["This notebook name is reserved for AI Summaries. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
     },
   },
 ];
@@ -819,7 +813,7 @@ async function defineCmd() {
     return arr;
   }, []);
 
-  const cmdRel = JSON.parse(await getAnyBookContent(note.name, "parents")).map(
+  const cmdRel = (await getAnyBookContent(note.name, "parents")).map(
     (parent) => ({
       name: `📗 ${parent}`,
       handler: () => relinquishNote(note.name, parent),
@@ -1040,7 +1034,7 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
     if (
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
-      !reservedNames.some((e) => e.name === note.name)
+      !reservedNames.some((e) => e.data.name === note.name)
     ) {
       note.content.push("");
       note.pgN += amount;
@@ -1089,7 +1083,7 @@ function accents() {
 
 async function updateAndSaveNotesLocally() {
   note.content[note.pgN] = editor.getValue();
-  if (!reservedNames.some((e) => e.name === note.name)) {
+  if (!reservedNames.some((e) => e.data.name === note.name)) {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus(note.dbSave);
@@ -1119,14 +1113,14 @@ async function updateAndSaveNotesLocally() {
 }
 
 function syncStatus(dbSave) {
-  if (reservedNames.some((e) => e.name === note.name)) {
+  if (reservedNames.some((e) => e.data.name === note.name)) {
     try {
       document.getElementById(`book__${note.name}`).innerText = note.name;
-      document.title = `* ${note.name}`;
+      document.title = note.name;
     } catch (err) {
       // console.log(err);
     }
-  } else if (note.saved === "unsaved") {
+  } else if (!note.saved) {
     synced.setContent(`Notes are not saved`);
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
     document.title = `* ${note.name}`;
@@ -1266,6 +1260,10 @@ function switchWrapper() {
 // function to switch between notes.
 // in essense we are trying to mimic the DB schema in memory using the 'library' hashmap
 async function switchNote(noteName, page) {
+  if (!validNoteName.test(noteName)) {
+    notyf.error("Invalid note name");
+    return 0;
+  }
   hideBookDiffPopup()
   // can't do !page because page can be be 0 and !0 => true
   if (page == null) {
@@ -1279,7 +1277,7 @@ async function switchNote(noteName, page) {
     note &&
     noteName === note.name &&
     page === note.pgN &&
-    !reservedNames.some((e) => e.name === note.name)
+    !reservedNames.some((e) => e.data.name === note.name)
   ) {
     return 1;
   }
@@ -1296,22 +1294,18 @@ async function switchNote(noteName, page) {
   note = new Note();
   const data = (await getAnyBookContent(noteName, "_data")) || {
     name: noteName,
-    content: '[""]',
-    children: "[]",
-    parents: "[]",
-    saved: "unsaved",
+    content: [''],
+    children: [],
+    parents: [],
+    saved: false,
   };
   note.name = noteName.replaceAll("/", "");
   note.content =
-    JSON.parse(localStorage.getItem(noteName)) || JSON.parse(data.content);
+    JSON.parse(localStorage.getItem(noteName)) || data.content;
   note.pgN = page < note.content.length ? page : note.content.length - 1;
-  try {
-    note.dbSave = JSON.parse(data.dbSave);
-  } catch (err) {
-    note.dbSave = JSON.parse(data.content);
-  }
-  note.children = JSON.parse(data.children);
-  note.parents = JSON.parse(data.parents);
+  note.dbSave = data.dbSave || data.content;
+  note.children = data.children;
+  note.parents = data.parents;
   note.family = await getFamily(noteName);
   note.timeOfSave = data.date;
   note.saved = data.saved;
@@ -1340,7 +1334,7 @@ async function switchNote(noteName, page) {
     })[0];
     tabs.prepend(div);
   }
-  if (reservedNames.some((e) => e.name === note.name)) {
+  if (reservedNames.some((e) => e.data.name === note.name)) {
     toolBar.classList.add("homeToolBar");
     note.readOnly = true;
     editor.setReadOnly(true);
@@ -1640,11 +1634,11 @@ async function showMorePages(e) {
 
 // note creation and deletion stuff
 async function getAnyBookContent(bookName, desiredInfo) {
-  if (reservedNames.some((e) => e.name === bookName)) {
+  if (reservedNames.some((e) => e.data.name === bookName)) {
     if (desiredInfo === "_data") {
-      return reservedNames.find((e) => e.name === bookName)["data"];
+      return reservedNames.find((e) => e.data.name === bookName)["data"];
     }
-    return reservedNames.find((e) => e.name === bookName)["data"][desiredInfo];
+    return reservedNames.find((e) => e.data.name === bookName)["data"][desiredInfo];
   }
   if (library.get(bookName)) {
     const cBook = library.get(bookName);
@@ -1652,10 +1646,10 @@ async function getAnyBookContent(bookName, desiredInfo) {
       data: {
         name: cBook.name,
         date: cBook.timeOfSave,
-        content: JSON.stringify(cBook.content),
-        dbSave: JSON.stringify(cBook.dbSave),
-        children: JSON.stringify(cBook.children),
-        parents: JSON.stringify(cBook.parents),
+        content: cBook.content,
+        dbSave: cBook.dbSave,
+        children: cBook.children,
+        parents: cBook.parents,
         saved: cBook.saved,
         aceSessions: cBook.aceSessions,
       },
@@ -1665,7 +1659,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
     }
     return cachedData["data"][desiredInfo];
   }
-  const response = await fetch(`/api/get/notebooks/${bookName}`, {});
+  const response = await fetch(`/api/get/notebooks/${bookName}`);
   if (response.ok) {
     let json = await response.json();
     if (desiredInfo === "_data") {
@@ -1709,13 +1703,13 @@ async function copyBook(newName) {
       },
       body: JSON.stringify({
         name: newName,
-        content: localStorage.getItem(note.name),
+        content: note.content,
         date: new Date().toLocaleString(),
       }),
     });
     if (save.ok) {
-      localStorage.setItem(newName, localStorage.getItem(note.name)),
-        updateList();
+      localStorage.setItem(newName, localStorage.getItem(note.name))
+      updateList();
       switchNote(newName, 0);
     } else {
       notyf.error("An error occurred when saving a notebook");
@@ -1736,7 +1730,7 @@ function deletePage() {
 async function saveNoteBookToDb() {
   if (
     note.name.includes("%") ||
-    reservedNames.some((e) => e.name === note.name)
+    reservedNames.some((e) => e.data.name === note.name)
   ) {
     notyf.error("Something went wrong");
     return 0;
@@ -1752,7 +1746,7 @@ async function saveNoteBookToDb() {
     },
     body: JSON.stringify({
       name: note.name,
-      content: localStorage.getItem(note.name),
+      content: note.content,
       date: new Date().toLocaleString(),
     }),
   });
@@ -1764,7 +1758,7 @@ async function saveNoteBookToDb() {
     } else {
       accents(false);
     }
-    note.saved = "saved";
+    note.saved = true;
     note.timeOfSave = new Date().toLocaleString();
     syncStatus(note.dbSave);
   } else {
@@ -1807,7 +1801,7 @@ async function deleteNoteBookFromDb() {
     });
 
     note.dbSave = [];
-    note.saved = "unsaved";
+    note.saved = false;
     note.children = [];
     note.parents = [];
     note.family = [];
@@ -1881,14 +1875,7 @@ async function showPagePreview(e) {
   preview.innerHTML =
     this.getAttribute("data-bookname") === note.name
       ? format(note.content[page])
-      : format(
-          JSON.parse(
-            await getAnyBookContent(
-              this.getAttribute("data-bookname"),
-              "content"
-            )
-          )[page]
-        );
+      : format((await getAnyBookContent(this.getAttribute("data-bookname"), "content"))[page]);
   menu.appendChild(preview);
   mainContainer.after(menu);
 }
@@ -2062,7 +2049,7 @@ async function initializeStickyNotes() {
   const response = await fetch(`/api/get/notebooks/sticky__notes`);
   if (response.ok) {
     let json = await response.json();
-    stickyNotesTextArea.value = JSON.parse(json["data"]["content"])[0];
+    stickyNotesTextArea.value = json["data"]["content"][0];
   } else if (response.status === 404) {
     stickyNotesTextArea.value = "";
   } else {
@@ -2075,7 +2062,7 @@ async function initializeFlashcards() {
   const response = await fetch(`/api/get/notebooks/flash__cards`);
   if (response.ok) {
     let json = await response.json();
-    flashcards = JSON.parse(json["data"]["content"]);
+    flashcards = JSON.parse(json["data"]["content"][0]);
   } else if (response.status === 404) {
     flashcards = [];
   } else {
@@ -2091,7 +2078,7 @@ async function saveFlashcards() {
     },
     body: JSON.stringify({
       name: "flash__cards",
-      content: JSON.stringify(flashcards),
+      content: [JSON.stringify(flashcards)],
       date: new Date().toLocaleString(),
     }),
   });
@@ -2105,7 +2092,7 @@ function fcPop(e) {
 }
 
 function flashcardMode() {
-  if (note.saved === "unsaved") {
+  if (!note.saved) {
     notyf.error("Flashcards can only be created for saved notebooks")
     return 0;
   }
@@ -2473,7 +2460,7 @@ async function initializeTodo() {
   const response = await fetch(`/api/get/notebooks/todo__list`);
   if (response.ok) {
     let json = await response.json();
-    events = JSON.parse(json["data"]["content"]);
+    events = JSON.parse(json["data"]["content"][0]);
     pastEvents = JSON.parse(json["data"]["date"]);
   } else if (response.status === 404) {
     events = [];
@@ -2491,7 +2478,7 @@ async function saveTodo() {
     },
     body: JSON.stringify({
       name: "todo__list",
-      content: JSON.stringify(events),
+      content: [JSON.stringify(events)],
       date: JSON.stringify(pastEvents),
     }),
   });
@@ -2678,7 +2665,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 }
 
 function showTodo(hereForInsertion) {
-  if (hereForInsertion && reservedNames.some((e) => e.name === note.name)) {
+  if (hereForInsertion && reservedNames.some((e) => e.data.name === note.name)) {
     notyf.error("Reserved notebooks are read only");
     return 0;
   }
@@ -2949,8 +2936,7 @@ function editingWindow(choice) {
 // 'hierarchy' stuff
 async function getAncestors(bookName) {
   let response = new Set();
-  const parents =
-    JSON.parse(await getAnyBookContent(bookName, "parents")) || [];
+  const parents = (await getAnyBookContent(bookName, "parents")) || [];
 
   if (!parents[0]) {
     return response;
@@ -2966,8 +2952,7 @@ async function getAncestors(bookName) {
 
 async function getDescendants(bookName) {
   let response = new Set();
-  const children =
-    JSON.parse(await getAnyBookContent(bookName, "children")) || [];
+  const children = (await getAnyBookContent(bookName, "children")) || [];
 
   if (!children[0]) {
     return response;
@@ -2998,7 +2983,7 @@ async function createChild(parent, child) {
     existingItem.status === 404 &&
     child &&
     parent &&
-    !reservedNames.some((e) => e.name === parent)
+    !reservedNames.some((e) => e.data.name === parent)
   ) {
     const saveStatus = await fetch("/api/save/notebooks/", {
       method: "POST",
@@ -3006,14 +2991,14 @@ async function createChild(parent, child) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: `${child}`,
-        content: '[""]',
+        name: child,
+        content: [""],
         date: new Date().toLocaleString(),
       }),
     });
     if (saveStatus.ok) {
       await nestNote(child, parent);
-      notyf.success(`${child} was created as a child of ${note.name}`);
+      switchNote(newName, 0);
     } else {
       notyf.error("An error occurred when saving a notebook");
     }
@@ -3023,7 +3008,7 @@ async function createChild(parent, child) {
 }
 
 async function nestNote(child, parent) {
-  if (child && parent && !reservedNames.some((e) => e.name === child)) {
+  if (child && parent && !reservedNames.some((e) => e.data.name === child)) {
     const result = await fetch(`/api/nest/${child}/${parent}`, {
       method: "POST",
     });
@@ -3108,7 +3093,7 @@ async function AISUmmary() {
   mainContainer.style.pointerEvents = "none";
   const AI = await chatGPT(editor.getValue());
   reservedNames.find(
-    (e) => e.name === "AI-Summary"
+    (e) => e.data.name === "AI-Summary"
   ).data.content = `["# ✨ AI Summary (:ref[${name}] - pg. ${pg})\\n\\n${AI}]"]`;
   await switchNote("AI-Summary");
   updateAndSaveNotesLocally();
@@ -3188,7 +3173,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
     {
       text: "Relinquish Notebook",
       click: async (e) => {
-        const buttons = JSON.parse(
+        const buttons = (
           await getAnyBookContent(note.name, "parents")
         ).map((parent) => {
           return {
@@ -3524,8 +3509,13 @@ border.addEventListener("mousedown", () => {
     { once: true }
   );
 });
-
-const progBar = document.getElementById("progBar");
+document.getElementById("loading").addEventListener(
+  "animationend",
+  function () {
+    this.remove();
+  },
+  { once: true }
+);
 
 // onload functions
 window.addEventListener(
@@ -3573,14 +3563,8 @@ window.addEventListener(
       });
     }
     progBar.style.width = "420px";
-    document.getElementById("loading").addEventListener(
-      "animationend",
-      function () {
-        this.remove();
-      },
-      { once: true }
-    );
     document.getElementById("loading").classList.add("loaded");
+    console.log("%cWelcome!", "color:yellow;font-weight:bold;"); 
   },
   { once: true }
 );

@@ -67,7 +67,7 @@ var upload = multer({
 
 app.use(express.static("./public"));
 
-const mongoURI = "mongodb://localhost:27017/notes";
+const mongoURI = "mongodb://localhost:27017/rop";
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
@@ -75,15 +75,32 @@ mongoose
 
 const Item = mongoose.model("Item", {
   name: String,
-  content: String,
-  children: String,
-  parents: String,
+  content: [String],
+  children: [String],
+  parents: [String],
   date: String,
-  saved: String,
+  saved: Boolean,
 });
 
 app.use(bodyParser.json());
 app.set("view engine", "ejs");
+
+// app.get("/api/fixdb", async (req, res) => {
+//   try {
+//     const result = await Item.find();
+//     result.forEach(async (notebook) => {
+//       if (notebook.name === "flash__cards") {
+//         notebook.parents = [];
+//         notebook.children = [];
+//         notebook.saved = true;
+//         await notebook.save();
+//       }
+//     })
+//     res.status(500).json({ status: "Complete" });
+//   } catch (err) {
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 app.get("/api/get/notebooks/:name", async (req, res) => {
   const name = req.params.name;
@@ -112,17 +129,17 @@ app.post("/api/save/notebooks", async (req, res) => {
       const newItem = new Item({
         name,
         content,
-        children: "[]",
-        parents: "[]",
+        children: [],
+        parents: [],
         date,
-        saved: "saved",
+        saved: true,
       });
       await newItem.save();
       res.status(201).json({ status: "Created" });
     } else if (existingItem.name === name) {
       existingItem.content = content;
       existingItem.date = date;
-      existingItem.saved = "saved";
+      existingItem.saved = true;
       await existingItem.save();
       res.status(204).json({ status: "Updated" });
     }
@@ -148,25 +165,25 @@ app.get("/api/get/image-list/", async (req, res) => {
   });
 });
 
-app.post(
-  "/api/save/images",
-  upload.single("avatar"),
-  function (req, res) {
-    try {
-      res.send(req.file.path.substring(req.file.path.indexOf("/")));
-    } catch (err) {
-      res.status(500).json({ status: "Internal Server Error" });
-    }
+app.post("/api/save/images", upload.single("avatar"), function (req, res) {
+  try {
+    res.send(req.file.path.substring(req.file.path.indexOf("/")));
+  } catch (err) {
+    res.status(500).json({ status: "Internal Server Error" });
   }
-);
+});
 
 app.get("/api/get/list/", async (req, res) => {
   let data = [];
   const result = await Item.find();
   result.forEach((notebook) => {
-    if (notebook.name !== "sticky__notes" && notebook.name !== "todo__list" && notebook.name !== "flash__cards") {
+    if (
+      notebook.name !== "sticky__notes" &&
+      notebook.name !== "todo__list" &&
+      notebook.name !== "flash__cards"
+    ) {
       let excerpts = [];
-      JSON.parse(notebook.content).forEach((page) => {
+      notebook.content.forEach((page) => {
         const name =
           page.indexOf("\n") === -1
             ? page
@@ -176,8 +193,8 @@ app.get("/api/get/list/", async (req, res) => {
       data.push({
         name: notebook.name,
         excerpt: excerpts,
-        children: JSON.parse(notebook.children),
-        parents: JSON.parse(notebook.parents),
+        children: notebook.children,
+        parents: notebook.parents,
       });
     }
   });
@@ -187,7 +204,7 @@ app.get("/api/get/list/", async (req, res) => {
 async function getAncestors(bookName) {
   let response = new Set();
   const book = await Item.findOne({ name: bookName });
-  const parents = JSON.parse(book.parents);
+  const parents = book.parents;
 
   if (!parents[0]) {
     return response;
@@ -204,7 +221,7 @@ async function getAncestors(bookName) {
 async function getDescendants(bookName) {
   let response = new Set();
   const book = await Item.findOne({ name: bookName });
-  const children = JSON.parse(book.children);
+  const children = book.children;
 
   if (!children[0]) {
     return response;
@@ -241,13 +258,13 @@ app.post("/api/nest/:child/:parent", async (req, res) => {
     } else if (childBook && parentBook) {
       const family = await getFamily(parent);
       if (!family.includes(child)) {
-        const children = JSON.parse(parentBook.children);
+        const children = parentBook.children;
         children.push(child);
-        parentBook.children = JSON.stringify(children);
+        parentBook.children = children;
         await parentBook.save();
-        const parents = JSON.parse(childBook.parents);
+        const parents = childBook.parents;
         parents.push(parent);
-        childBook.parents = JSON.stringify(parents);
+        childBook.parents = parents;
         childBook.save();
         res
           .status(204)
@@ -277,14 +294,12 @@ app.post("/api/relinquish/:child/:parent", async (req, res) => {
     const parentBook = await Item.findOne({ name: parent });
     if (!parentBook) {
       res.status(404).json({ error: "Parent or child not found" });
-    } else if (JSON.parse(parentBook.children).includes(child)) {
-      const children = JSON.parse(parentBook.children).filter(
-        (e) => e !== child
-      );
-      parentBook.children = JSON.stringify(children);
+    } else if (parentBook.children.includes(child)) {
+      const children = parentBook.children.filter((e) => e !== child);
+      parentBook.children = children;
       await parentBook.save();
-      const parents = JSON.parse(childBook.parents).filter((e) => e !== parent);
-      childBook.parents = JSON.stringify(parents);
+      const parents = childBook.parents.filter((e) => e !== parent);
+      childBook.parents = parents;
       await childBook.save();
       res
         .status(204)
@@ -312,26 +327,26 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
     if (!existingItem) {
       res.status(404).json({ error: "Item not found with the given name" });
     } else if (existingItem.name === name) {
-      const parents = JSON.parse(existingItem.parents);
+      const parents = existingItem.parents;
       parents.forEach(async (parent) => {
         const parentBook = await Item.findOne({ name: parent });
-        const family = JSON.parse(parentBook.children).filter(
-          (e) => e !== name
-        );
-        parentBook.children = JSON.stringify(family);
+        const family = parentBook.children.filter((e) => e !== name);
+        parentBook.children = family;
         await parentBook.save();
       });
-      const children = JSON.parse(existingItem.children);
+      const children = existingItem.children;
       children.forEach(async (child) => {
         const childBook = await Item.findOne({ name: child });
-        const parents = JSON.parse(childBook.parents).filter((e) => e !== name);
-        childBook.parents = JSON.stringify(parents);
+        const parents = childBook.parents.filter((e) => e !== name);
+        childBook.parents = parents;
         await childBook.save();
       });
 
       const flashcards = await Item.findOne({ name: "flash__cards" });
-      const fContent = JSON.parse(flashcards.content)
-      flashcards.content = JSON.stringify(fContent.filter((e) => e.subject !== name))
+      const fContent = JSON.parse(flashcards.content[0]);
+      flashcards.content = [
+        JSON.stringify(fContent.filter((e) => e.subject !== name)),
+      ];
       await flashcards.save();
 
       await Item.deleteOne({ name }).exec();
