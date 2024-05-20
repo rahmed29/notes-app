@@ -6,185 +6,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="icon" type="image/x-icon" href="/assets/vite.svg" />
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/microsoft/fluentui-emoji/14053d26005b9afe3ce0e020862ed5ab2335f989/assets/Zzz/Color/zzz_color.svg" />
     <!-- Inter font -->
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <!---->
 
     <!-- Load self hosted libraries -->
-    <script src="/assets/diff.min.js"></script>
-    <script src="/assets/syncscroll.min.js"></script>
+    <script defer src="/assets/diff.min.js"></script>
+    <script defer src="/assets/syncscroll.min.js"></script>
     <!---->
 
     <!-- index.js -->
-    <script type="module" crossorigin src="/main.js"></script>
+    <script defer type="module" crossorigin src="/main.js"></script>
     <link rel="stylesheet" crossorigin href="/style.css" />
   </head>
   <body>
-    <div id="wikipediaBrainAnimation"></div>
-
-    <div id="bottomRightTools">
-      <div id="brDots">
-        <span class="dot currPage"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </div>
-
-      <div id="yellowButtons">
-
-        <div id="flashcardsPrac" data-pos="hidden">
-          <span id="flashcardsPracEmoji">
-            <img draggable="false" class="emoji" src="/icons/card_index_3d.png" />
-          </span>
-        </div>
-
-        <div id="openCalendar" class = "gone" data-pos="hidden" data-text="">
-          <span id="openCalendarEmoji">
-            <img draggable="false" class="emoji" src="/icons/calendar_3d.png" />
-          </span>
-        </div>
-
-        <div id="stickyNotes" class="gone" data-pos="hidden" data-text="">
-          <textarea id="stickyNotesTextArea" autocomplete="false"></textarea>
-          <span id="stickyNotesEmoji">
-            <img draggable="false" class="emoji" src="/icons/memo_3d.png" />
-          </span>
-        </div>
-
-      </div>
-    </div>
-
-    <div id="toolBar">
-      <div id="icons">
-        <span id="icon1">
-          <img
-            alt="save notebook icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/floppy_disk_3d.png"
-          />
-        </span>
-        <span id="icon2">
-          <img
-            alt="manage notebooks icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/open_book_3d.png"
-          />
-        </span>
-        <span id="icon3">
-          <img
-            alt="delete notebook icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/wastebasket_3d.png"
-          />
-        </span>
-        <span id="icon4">
-          <label for="getFile1" id="labelForImage">
-            <img
-              alt="insert image icon"
-              draggable="false"
-              class="emoji"
-              src="/icons/framed_picture_3d.png"
-            />
-          </label>
-          <form id="myForm">
-            <input
-              id="getFile1"
-              type="file"
-              name="avatar"
-              style="display: none"
-            />
-          </form>
-        </span>
-        <span id="icon5">
-          <img
-            alt="switch view icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/eye_3d.png"
-          />
-        </span>
-        <span id="icon6">
-          <img
-            alt="previous page icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/left_arrow_3d.png"
-          />
-        </span>
-        <span id="icon7">
-          <img
-            alt="next page icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/right_arrow_3d.png"
-          />
-        </span>
-        <span id="icon8" data-enabled="true">
-          <img
-            alt="brain icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/brain_3d.png"
-          />
-        </span>
-        <span id="areNotesSavedIcon">
-          <img
-            alt="save status icon"
-            draggable="false"
-            class="emoji"
-            src="/icons/recycling_symbol_3d.png"
-          />
-        </span>
-      </div>
-    </div>
-
-    <div id="bottomLeftGeneralInfo">
-      <span id="generalInfoPageNumber"></span>
-      <span id="generalInfoViewMode"></span>
-      <span id="letterCount">00000</span>
-      <span id="wordCount">00000</span>
-    </div>
-
-    <div id="mainContainer">
-      <div id="leftMostSideBar">
-        <div id="topLeftPageNumbers"></div>
-        <div class="whereTo" id="morePages" data-vis="hidden">...</div>
-        <div class="whereTo" id="newPage">+</div>
-        <div id="sideBarRetractList"></div>
-        <a id="goHome" class="whereTo">/</a>
-      </div>
-      <div id="listOfBooks" data-pos="shown">
-        <div id="searchItem">
-          <input placeholder="Search..." id="searchBar" />
-        </div>
-        <div id="listContainer"></div>
-        <div class="itemUpload">
-          <div id="yourUploads" class="folderName">Your Uploads</div>
-          <ul id="uploads"></ul>
-        </div>
-      </div>
-      <div id="border"></div>
-      <div id="workspace">
-        <div id="tabs"></div>
-        <div id="notesAreaContainer">
-          <div
-            id="notesTextArea"
-            class="syncscroll"
-            name="myElements"
-            data-vim="false"
-          >
-            <pre id="editor"></pre>
-          </div>
-          <div id="notesPreviewArea" class="syncscroll" name="myElements">
-            <div id="fill"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <noscript>This app requires JavaScript to function.</noscript>
     <script
       src="/assets/src-min/ace.js"
       type="text/javascript"

@@ -20,18 +20,260 @@ import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
 
+document.body.innerHTML = `
+    <div id="loading">
+      <div id="progBarContainer">
+        <div id="progBar"></div>
+      </div>
+    </div>
+
+    <div id="wikipediaBrainAnimation"></div>
+
+    <div id="bottomRightTools">
+      <div id="brDots">
+        <span class="dot currPage"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+
+      <div id="yellowButtons">
+        <div id="flashcardsPrac" data-pos="hidden">
+          <span id="flashcardsPracEmoji">
+            <img
+              draggable="false"
+              class="emoji"
+              src="/assets/icons/card_index_3d.png"
+            />
+          </span>
+        </div>
+
+        <div id="openCalendar" class="gone" data-pos="hidden" data-text="">
+          <span id="openCalendarEmoji">
+            <img draggable="false" class="emoji" src="/assets/icons/calendar_3d.png" />
+          </span>
+        </div>
+
+        <div id="stickyNotes" class="gone" data-pos="hidden" data-text="">
+          <textarea id="stickyNotesTextArea" autocomplete="false"></textarea>
+          <span id="stickyNotesEmoji">
+            <img draggable="false" class="emoji" src="/assets/icons/memo_3d.png" />
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div id="toolBar">
+      <div id="icons">
+        <span id="icon1">
+          <img
+            alt="save notebook icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/floppy_disk_3d.png"
+          />
+        </span>
+        <span id="icon2">
+          <img
+            alt="manage notebooks icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/open_book_3d.png"
+          />
+        </span>
+        <span id="icon3">
+          <img
+            alt="delete notebook icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/wastebasket_3d.png"
+          />
+        </span>
+        <span id="icon4">
+          <label for="getFile1" id="labelForImage">
+            <img
+              alt="insert image icon"
+              draggable="false"
+              class="emoji"
+              src="/assets/icons/framed_picture_3d.png"
+            />
+          </label>
+          <form id="myForm">
+            <input
+              id="getFile1"
+              type="file"
+              name="avatar"
+              style="display: none"
+            />
+          </form>
+        </span>
+        <span id="icon5">
+          <img
+            alt="switch view icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/eye_3d.png"
+          />
+        </span>
+        <span id="icon6">
+          <img
+            alt="previous page icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/left_arrow_3d.png"
+          />
+        </span>
+        <span id="icon7">
+          <img
+            alt="next page icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/right_arrow_3d.png"
+          />
+        </span>
+        <span id="icon8" data-enabled="true">
+          <img
+            alt="brain icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/brain_3d.png"
+          />
+        </span>
+        <span id="areNotesSavedIcon">
+          <img
+            alt="save status icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/recycling_symbol_3d.png"
+          />
+        </span>
+      </div>
+    </div>
+
+    <div id="bottomLeftGeneralInfo">
+      <span id="generalInfoPageNumber"></span>
+      <span id="generalInfoViewMode"></span>
+      <span id="letterCount">00000</span>
+      <span id="wordCount">00000</span>
+    </div>
+
+    <div id="mainContainer">
+      <div id="leftMostSideBar">
+        <div id="topLeftPageNumbers"></div>
+        <div class="whereTo" id="morePages" data-vis="hidden">...</div>
+        <div class="whereTo" id="newPage">+</div>
+        <div id="sideBarRetractList"></div>
+        <a id="goHome" class="whereTo">/</a>
+      </div>
+      <div id="listOfBooks" data-pos="shown">
+        <div id="searchItem">
+          <input placeholder="Search..." id="searchBar" />
+        </div>
+        <div id="listContainer"></div>
+        <div class="itemUpload">
+          <div id="yourUploads" class="folderName">Your Uploads</div>
+          <ul id="uploads"></ul>
+        </div>
+      </div>
+      <div id="border"></div>
+      <div id="workspace">
+        <div id="tabs"></div>
+        <div id="notesAreaContainer">
+          <div
+            id="notesTextArea"
+            class="syncscroll"
+            name="myElements"
+            data-vim="false"
+          >
+            <pre id="editor"></pre>
+          </div>
+          <div id="notesPreviewArea" class="syncscroll" name="myElements">
+            <div id="fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+`;
+
 const style = document.createElement("style");
 document.head.appendChild(style);
+/* 
+  --main-accent: rgb(10, 132, 255);
+  --body: #e7e7e7;
+  --main-light-gray: #e7e7e7;
+  --context-menu: rgb(72, 72, 74);
+  --list-accents: rgb(72, 72, 74);
+  --side-bar: rgb(44, 44, 46);
+  --main-dark-gray: rgb(28, 28, 30);
+  --icons: #8692a8;
+  --dropped-folders: rgb(54, 54, 56);
+  --hovers: #b6b7b8;
+  --destructive: rgb(255, 69, 58);
+  --popup-header: rgba(53, 154, 255, 0.7);
+  --popup-exit: rgb(209, 44, 35);
+  --word-count: rgba(252, 252, 252, 0.65);
+  --highlight: rgb(255, 239, 149);
+  --selection: #b5d5ff;
+*/
 
-function changeAccentColor(color) {
+const monokai = {
+  theme_name: "monokai",
+  mainAccent: "#56b0bf",
+  body: "#141414",
+  notesBackground: "#272822",
+  notesColor: "white",
+  contextMenu: "#202020",
+  listAccents: "navy",
+  sideBar: "#2e2e2e",
+  listBackground: "#141414",
+  listColor: "white",
+  icons: "lightblue",
+  droppedFolders: "#202020",
+  hovers: "red",
+  destructive: "red",
+  popupHeaders: "blue",
+  popupExit: "red",
+  wordCount: "navy",
+  highlight: "#e6db74",
+  selection: "lightcoral",
+  code: "#141414",
+};
+
+function changeTheme(obj) {
+  if (!obj) {
+    style.innerText = "";
+    editor.setTheme("ace/theme/chrome");
+    return 1;
+  }
+
   style.innerText = `
   :root {
-    --main-accent: ${color === "default" ? "rgb(10, 132, 255)" : color};
+    --main-accent: ${obj.mainAccent};
+    --body: ${obj.body};
+    --notes-background: ${obj.notesBackground};
+    --notes-color: ${obj.notesColor};
+    --main-light-gray: ${obj.mainLightGray};
+    --context-menu: ${obj.contextMenu};
+    --list-accents: ${obj.listAccents};
+    --side-bar: ${obj.sideBar};
+    --list-background: ${obj.listBackground};
+    --list-color: ${obj.listColor};
+    --icons: ${obj.icons};
+    --dropped-folders: ${obj.droppedFolders};
+    --hovers: ${obj.hovers};
+    --destructive: ${obj.destructive};
+    --popup-header: ${obj.popupHeaders};
+    --popup-exit: ${obj.popupExit};
+    --word-count: ${obj.wordCount};
+    --highlight: ${obj.highlight};
+    --selection: ${obj.selection};
+    --code: ${obj.code};
   }
 `;
+  editor.setTheme(`ace/theme/${obj.theme_name}`);
 }
 
-window.changeAccentColor = changeAccentColor;
+window.changeTheme = changeTheme;
+window.monokai = monokai;
 
 // micromark directives
 function cal(d) {
@@ -72,20 +314,6 @@ function ref(d) {
   this.tag(">");
   this.raw(d.label || "");
   this.tag("</span>");
-}
-
-function warn(d) {
-  if (d.type !== "textDirective" || d.attributes == null) return false;
-
-  this.tag("<div");
-  this.tag(` class="warning-container"`);
-  this.tag(">");
-  this.raw(`
-    <div class="warning" data-title="⚠️ ${d.attributes.title || "Warning"}">
-      ${d.label || ""}
-    </div>
-  `);
-  this.tag("</div>");
 }
 
 // ace editor
@@ -253,7 +481,7 @@ function format(str) {
       gfmHtml(),
       mathHtml(),
       markHTML(),
-      directiveHtml({ ref, cal, warn }),
+      directiveHtml({ ref, cal }),
     ],
   });
 }
@@ -322,20 +550,24 @@ tippy("#letterCount", {
 });
 
 function insertStickyNote() {
-  editor.insert(stickyNotesTextArea.value);
-  updateAndSaveNotesLocally();
+  if (!reservedNames.some((e) => e.name === note.name)) {
+    editor.insert(stickyNotesTextArea.value);
+    updateAndSaveNotesLocally();
+  } else {
+    notyf.error("Reserved notebooks are read only");
+  }
 }
 
 // Image stuff
-new Dropzone(document.body, {
+const dropzone = new Dropzone(document.body, {
   url: "/api/save/images",
   paramName: "avatar",
   clickable: false,
   acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
-  error: function () {
+  error: () => {
     notyf.error("An error occurred when saving an image.");
   },
-  success: function (file, response) {
+  success: (file, response) => {
     file.previewElement.remove();
     editor.insert(`![](${response})`);
     updateAndSaveNotesLocally();
@@ -344,7 +576,7 @@ new Dropzone(document.body, {
 });
 
 async function insertAndSaveImage() {
-  if (!reservedNames.includes(note.name)) {
+  if (!reservedNames.some((e) => e.name === note.name)) {
     const formData = new FormData(myForm);
     const imageUploadStatus = await fetch("/api/save/images", {
       method: "POST",
@@ -358,16 +590,18 @@ async function insertAndSaveImage() {
     } else {
       notyf.error("An error occurred when saving an image.");
     }
+  } else {
+    notyf.error("Reserved notebooks are read only");
   }
 }
 
 async function deleteImageFromDb(image) {
-  // let imageInText = `!(/uploads/${image})`;
+  let imageInText = `![](/uploads/${image})`;
   const imageDelete = await fetch(`/api/delete/images/${image}`, {
     method: "DELETE",
   });
   if (imageDelete.ok) {
-    // editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
+    editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
     updateAndSaveNotesLocally();
     saveNoteBookToDb();
   } else {
@@ -458,13 +692,61 @@ const notyf = new Notyf({
 // debounce when switching notes
 let switching = false;
 
+const crontab =
+  '19 21 * * * cd /home/ryaan/notesBackup && mongodump --uri="mongodb://localhost:27017/notes" && git add . && git commit -m "cron" && git push';
+
 // notebook names that aren't allowed because they are being used for other stuff
 const reservedNames = [
-  "home",
-  "todo__list",
-  "sticky__notes",
-  "flash__cards",
-  "AI-Summary",
+  {
+    name: "home",
+    data: {
+      name: "home",
+      content: `["# 👋 Welcome Home!\\n\\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"]`,
+      children: "[]",
+      parents: "[]",
+      saved: "unsaved",
+    },
+  },
+  {
+    name: "todo__list",
+    data: {
+      name: "home",
+      content: `["This notebook is reserved for storing your calendar events. Sorry!"]`,
+      children: "[]",
+      parents: "[]",
+      saved: "unsaved",
+    },
+  },
+  {
+    name: "sticky__notes",
+    data: {
+      name: "home",
+      content: `["This notebook is reserved for storing your sticky note. Sorry!"]`,
+      children: "[]",
+      parents: "[]",
+      saved: "unsaved",
+    },
+  },
+  {
+    name: "flash__cards",
+    data: {
+      name: "home",
+      content: `["This notebook is reserved for storing your flahscards. Sorry!"]`,
+      children: "[]",
+      parents: "[]",
+      saved: "unsaved",
+    },
+  },
+  {
+    name: "AI-Summary",
+    data: {
+      name: "home",
+      content: `["This notebook name is reserved for AI Summaries. Sorry!"]`,
+      children: "[]",
+      parents: "[]",
+      saved: "unsaved",
+    },
+  },
 ];
 
 // active and completed events for todo
@@ -655,21 +937,21 @@ async function defineCmd() {
           name: "🌗 Split",
           handler: () => {
             localStorage.setItem("/viewPref", "split");
-            editingWindow("split", true);
+            editingWindow("split");
           },
         },
         {
           name: "🌑 Read",
           handler: () => {
             localStorage.setItem("/viewPref", "read");
-            editingWindow("read", true);
+            editingWindow("read");
           },
         },
         {
           name: "🌕 Write",
           handler: () => {
             localStorage.setItem("/viewPref", "write");
-            editingWindow("write", true);
+            editingWindow("write");
           },
         },
       ],
@@ -682,7 +964,18 @@ async function defineCmd() {
       name: "🌴 Toggle List",
       handler: () => toggleList(),
     },
-  ];
+  ].sort((a, b) => {
+    const name1 = a.name.substring(2);
+    const name2 = b.name.substring(2);
+    if (name1 < name2) {
+      return -1;
+    }
+    if (name1 > name2) {
+      return 1;
+    }
+    // names must be equal
+    return 0;
+  });
 
   c = new CommandPal({
     hotkey: "ctrl+space",
@@ -697,17 +990,6 @@ const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
 let library = new Map();
 let lastNote = null;
 let note = null;
-const homeData = {
-  data: {
-    _id: "661233b9de0bfc91bd8c16e7",
-    name: "testing",
-    content: `["# 👋 Welcome Home!\\n\\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"]`,
-    children: "[]",
-    parents: "[]",
-    saved: "unsaved",
-    __v: 0,
-  },
-};
 
 // note class holding all details about a notebook
 class Note {
@@ -716,7 +998,7 @@ class Note {
 
 // helper function for dealing with blank page
 function pageIsNull(page) {
-  if (page == null || page === "" || page === "undefined") {
+  if (!page || page === "undefined") {
     return true;
   } else {
     return false;
@@ -730,7 +1012,7 @@ function getWrittenPages(arr) {
     }
     return arr;
   }, []);
-  if (response.length === 0) {
+  if (!response.length) {
     response.push("");
   }
   return response;
@@ -758,7 +1040,7 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
     if (
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
-      !reservedNames.includes(note.name)
+      !reservedNames.some((e) => e.name === note.name)
     ) {
       note.content.push("");
       note.pgN += amount;
@@ -787,14 +1069,12 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
 }
 
 function accents() {
-  if (note.aceSessions[note.pgN] == null) {
+  if (!note.aceSessions[note.pgN]) {
     const newSession = ace.createEditSession(note.content[note.pgN]);
     editor.setSession(newSession);
     editor.session.setUseWrapMode(true);
     editor.session.setMode("ace/mode/markdown");
-    editor.session.on("change", () => {
-      updateAndSaveNotesLocally();
-    });
+    editor.session.on("change", updateAndSaveNotesLocally);
     note.aceSessions[note.pgN] = newSession;
     editor.setSession(note.aceSessions[note.pgN]);
   } else {
@@ -809,7 +1089,7 @@ function accents() {
 
 async function updateAndSaveNotesLocally() {
   note.content[note.pgN] = editor.getValue();
-  if (!reservedNames.includes(note.name)) {
+  if (!reservedNames.some((e) => e.name === note.name)) {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus(note.dbSave);
@@ -839,13 +1119,21 @@ async function updateAndSaveNotesLocally() {
 }
 
 function syncStatus(dbSave) {
-  if (note.saved === "unsaved") {
+  if (reservedNames.some((e) => e.name === note.name)) {
+    try {
+      document.getElementById(`book__${note.name}`).innerText = note.name;
+      document.title = `* ${note.name}`;
+    } catch (err) {
+      // console.log(err);
+    }
+  } else if (note.saved === "unsaved") {
     synced.setContent(`Notes are not saved`);
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
-    document.title = `${note.name} *`;
+    document.title = `* ${note.name}`;
     try {
-      document.getElementById(`book__${note.name}`).innerText =
-        "* " + note.name;
+      document.getElementById(
+        `book__${note.name}`
+      ).innerText = `* ${note.name}`;
     } catch (err) {
       // console.log(err);
     }
@@ -853,8 +1141,8 @@ function syncStatus(dbSave) {
     let writtenPages = getWrittenPages(note.content);
     if (JSON.stringify(writtenPages) === JSON.stringify(dbSave)) {
       areNotesSavedIcon.style.filter = "none";
-      synced.setContent(`Notes were saved at ${note.timeOfSave}`),
-        (document.title = note.name);
+      synced.setContent(`Notes were saved at ${note.timeOfSave}`);
+      document.title = note.name;
       try {
         document.getElementById(`book__${note.name}`).innerText = note.name;
       } catch (err) {
@@ -867,10 +1155,11 @@ function syncStatus(dbSave) {
           JSON.stringify(note.content).length - JSON.stringify(dbSave).length
         )} chars`
       );
-      document.title = "* " + note.name;
+      document.title = `* ${note.name}`;
       try {
-        document.getElementById(`book__${note.name}`).innerText =
-          "* " + note.name;
+        document.getElementById(
+          `book__${note.name}`
+        ).innerText = `* ${note.name}`;
       } catch (err) {
         // console.log(err);
       }
@@ -906,6 +1195,7 @@ function formatNonText(ele) {
 }
 
 // loading workspace from last session
+// adds event listener for closing tab parameter
 function addCloseTab(div) {
   div.addEventListener("click", switchTab);
   div.addEventListener(
@@ -920,7 +1210,7 @@ function addCloseTab(div) {
       localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
       this.removeEventListener("click", switchTab);
       this.remove();
-      if (savedWS.size === 0) {
+      if (!savedWS.size) {
         switchNote("home");
       } else if (temp === note.name) {
         switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
@@ -949,6 +1239,15 @@ function createWorkspace() {
     })[0];
     tabs.prepend(div);
   });
+  workspace.style.width = `calc(100% - 25px - ${
+    localStorage.getItem("/listSize") || 300
+  }px)`;
+  list.style.width = `${parseInt(localStorage.getItem("/listSize") || 300)}px`;
+  if (localStorage.getItem("/listShown") === "false") {
+    hideList();
+  } else {
+    showList();
+  }
 }
 
 // for tabs
@@ -967,6 +1266,8 @@ function switchWrapper() {
 // function to switch between notes.
 // in essense we are trying to mimic the DB schema in memory using the 'library' hashmap
 async function switchNote(noteName, page) {
+  hideBookDiffPopup()
+  // can't do !page because page can be be 0 and !0 => true
   if (page == null) {
     try {
       page = library.get(noteName).pgN;
@@ -978,12 +1279,11 @@ async function switchNote(noteName, page) {
     note &&
     noteName === note.name &&
     page === note.pgN &&
-    !reservedNames.includes(note.name)
+    !reservedNames.some((e) => e.name === note.name)
   ) {
     return 1;
   }
   if (switching) {
-    notyf.error("Note switch debounce");
     return 0;
   }
   switching = true;
@@ -1040,7 +1340,7 @@ async function switchNote(noteName, page) {
     })[0];
     tabs.prepend(div);
   }
-  if (reservedNames.includes(note.name)) {
+  if (reservedNames.some((e) => e.name === note.name)) {
     toolBar.classList.add("homeToolBar");
     note.readOnly = true;
     editor.setReadOnly(true);
@@ -1051,7 +1351,7 @@ async function switchNote(noteName, page) {
   }
   library.set(note.name, note);
   accents();
-  if (lastNote == null || lastNote.name !== note.name) {
+  if (!lastNote || lastNote.name !== note.name) {
     defineCmd();
   }
   savedWS.add(noteName);
@@ -1150,7 +1450,7 @@ function nestedList(obj, allNotes) {
     a.addEventListener("click", switchWrapper);
     listHandlers.push({ element: a, type: "click", listener: switchWrapper });
     // }
-    if (removeMD(obj.excerpt[i]) === "") {
+    if (!removeMD(obj.excerpt[i])) {
       a.innerHTML = "<i>Empty Page</i>";
     } else {
       a.innerText = removeMD(obj.excerpt[i]);
@@ -1340,11 +1640,11 @@ async function showMorePages(e) {
 
 // note creation and deletion stuff
 async function getAnyBookContent(bookName, desiredInfo) {
-  if (bookName === "home") {
+  if (reservedNames.some((e) => e.name === bookName)) {
     if (desiredInfo === "_data") {
-      return homeData["data"];
+      return reservedNames.find((e) => e.name === bookName)["data"];
     }
-    return homeData["data"][desiredInfo];
+    return reservedNames.find((e) => e.name === bookName)["data"][desiredInfo];
   }
   if (library.get(bookName)) {
     const cBook = library.get(bookName);
@@ -1372,7 +1672,10 @@ async function getAnyBookContent(bookName, desiredInfo) {
       return json["data"];
     }
     return json["data"][desiredInfo];
+  } else if (response.status === 404) {
+    return null;
   } else {
+    notyf.error(`There was an error retrieving notebook: ${bookName}`)
     return null;
   }
 }
@@ -1421,7 +1724,8 @@ async function copyBook(newName) {
 }
 
 function deletePage() {
-  if (note.pgN !== 0) {
+  if (note.content.length > 1) {
+    note.aceSessions[note.pgN] = null;
     note.content.splice(note.pgN, 1);
     note.pgN = note.content.length - 1;
     accents(false);
@@ -1430,7 +1734,10 @@ function deletePage() {
 }
 
 async function saveNoteBookToDb() {
-  if (note.name.includes("%") || reservedNames.includes(note.name)) {
+  if (
+    note.name.includes("%") ||
+    reservedNames.some((e) => e.name === note.name)
+  ) {
     notyf.error("Something went wrong");
     return 0;
   }
@@ -1552,7 +1859,7 @@ function contextMenu(e, button, position) {
 }
 
 // page preview
-async function showPagePreview(e, oneLine) {
+async function showPagePreview(e) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
@@ -1571,21 +1878,17 @@ async function showPagePreview(e, oneLine) {
       : "calc(100vh - 340px)";
   const preview = document.createElement("div");
   preview.classList.add("pagePreviewContainer");
-  if (oneLine) {
-    preview.innerHTML = format(oneLine);
-  } else {
-    preview.innerHTML =
-      this.getAttribute("data-bookname") === note.name
-        ? format(note.content[page])
-        : format(
-            JSON.parse(
-              await getAnyBookContent(
-                this.getAttribute("data-bookname"),
-                "content"
-              )
-            )[page]
-          );
-  }
+  preview.innerHTML =
+    this.getAttribute("data-bookname") === note.name
+      ? format(note.content[page])
+      : format(
+          JSON.parse(
+            await getAnyBookContent(
+              this.getAttribute("data-bookname"),
+              "content"
+            )
+          )[page]
+        );
   menu.appendChild(preview);
   mainContainer.after(menu);
 }
@@ -1621,6 +1924,7 @@ function createPopupWindow() {
     once: true,
   });
   mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
+  editor.session.on("change", hideBookDiffPopup);
   return { bookDiffPopup, bookDiffContent };
 }
 
@@ -1663,6 +1967,7 @@ function hideBookDiffPopup() {
     // console.log(err);
   }
   mainContainer.removeEventListener("click", hideBookDiffPopup);
+  editor.session.off("change", hideBookDiffPopup)
 }
 
 function showBookDiffPopup() {
@@ -1754,15 +2059,28 @@ function hideStickyNotes() {
 }
 
 async function initializeStickyNotes() {
-  const text =
-    JSON.parse(await getAnyBookContent("sticky__notes", "content"))[0] || "";
-  stickyNotesTextArea.value = text;
+  const response = await fetch(`/api/get/notebooks/sticky__notes`);
+  if (response.ok) {
+    let json = await response.json();
+    stickyNotesTextArea.value = JSON.parse(json["data"]["content"])[0];
+  } else if (response.status === 404) {
+    stickyNotesTextArea.value = "";
+  } else {
+    notyf.error("An error occurred when loading your sticky note.");
+  }
 }
 
 // flashcards
 async function initializeFlashcards() {
-  const data = (await getAnyBookContent("flash__cards", "content")) || "[]";
-  flashcards = JSON.parse(data);
+  const response = await fetch(`/api/get/notebooks/flash__cards`);
+  if (response.ok) {
+    let json = await response.json();
+    flashcards = JSON.parse(json["data"]["content"]);
+  } else if (response.status === 404) {
+    flashcards = [];
+  } else {
+    notyf.error("An error occurred when loading your flashcards.");
+  }
 }
 
 async function saveFlashcards() {
@@ -1907,8 +2225,8 @@ function showFlashcards(noAnimation) {
       [[], [], []]
     );
 
-  const extra = document.createElement("div")
-  extra.classList.add("extra")
+  const extra = document.createElement("div");
+  extra.classList.add("extra");
   const reset = document.createElement("div");
   reset.classList.add("reset");
   reset.innerText = "🔁 Reset All";
@@ -1930,14 +2248,14 @@ function showFlashcards(noAnimation) {
   pracAll.addEventListener(
     "click",
     () => {
-      const cards = flashcards.filter(e => e.subject === note.name);
+      const cards = flashcards.filter((e) => e.subject === note.name);
       study([cards.shift()], cards, bookDiffContent);
     },
     { once: true }
   );
   extra.appendChild(reset);
   extra.appendChild(pracAll);
-  bookDiffContent.appendChild(extra)
+  bookDiffContent.appendChild(extra);
   organized.map((e, i) => {
     const wrapper = document.createElement("div");
     const info = document.createElement("div");
@@ -1982,12 +2300,9 @@ function showFlashcards(noAnimation) {
               attr: card.id,
               text: `Reset Card`,
               click: function () {
-                flashcards = flashcards.map((e) => {
-                  if (e.id == this.getAttribute("data-props")) {
-                    e.learning = "unattempted";
-                  }
-                  return e;
-                });
+                flashcards.find(
+                  (e) => e.id == this.getAttribute("data-props")
+                ).learning = "unattempted";
                 saveFlashcards();
                 delContextMenu();
                 showFlashcards(true);
@@ -2128,7 +2443,7 @@ function study(cardArr, allCards, bookDiffContent) {
   }
   check.addEventListener("click", (e) => {
     cardObj.learning = "know";
-    moneyAnimation(e, "😁");
+    moneyAnimation(e, "😊");
     saveFlashcards();
     study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
   });
@@ -2151,12 +2466,17 @@ function study(cardArr, allCards, bookDiffContent) {
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
-  const data = (await getAnyBookContent("todo__list", "_data")) || {
-    content: "[]",
-    date: "[]",
-  };
-  events = JSON.parse(data.content);
-  pastEvents = JSON.parse(data.date);
+  const response = await fetch(`/api/get/notebooks/todo__list`);
+  if (response.ok) {
+    let json = await response.json();
+    events = JSON.parse(json["data"]["content"]);
+    pastEvents = JSON.parse(json["data"]["date"]);
+  } else if (response.status === 404) {
+    events = [];
+    pastEvents = [];
+  } else {
+    notyf.error("An error occurred when loading your calendar events.");
+  }
 }
 
 async function saveTodo() {
@@ -2267,19 +2587,24 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
           const audio = new Audio("/assets/ding.mp3");
           audio.play();
           checkbox.classList.add("fade");
-          checkbox.addEventListener("animationend", function () {
-            this.parentElement.parentElement.remove();
-            calendar.getEventById(task.id).remove();
-            pastEvents.push(events.filter((e) => e.id === task.id)[0]);
-            events = events.filter((e) => e.id !== task.id);
-            saveTodo();
-          });
+          checkbox.addEventListener(
+            "animationend",
+            function () {
+              this.parentElement.parentElement.remove();
+              calendar.getEventById(task.id).remove();
+              pastEvents.push(events.filter((e) => e.id === task.id)[0]);
+              events = events.filter((e) => e.id !== task.id);
+              saveTodo();
+            },
+            { once: true }
+          );
         },
         { once: true }
       );
     }
     const label = document.createElement("span");
-    label.innerText = `${task.title}`;
+    label.innerText = task.title;
+    label.contentEditable = true;
 
     eventTop.appendChild(checkbox);
     eventTop.appendChild(label);
@@ -2349,6 +2674,11 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 }
 
 function showTodo(hereForInsertion) {
+  if (hereForInsertion && reservedNames.some((e) => e.name === note.name)) {
+    notyf.error("Reserved notebooks are read only");
+    return 0;
+  }
+
   const { bookDiffPopup, bookDiffContent } = createPopupWindow();
   mainContainer.after(bookDiffPopup);
 
@@ -2529,7 +2859,7 @@ function toggleWikiSearch() {
 
 async function wikiSearch(event) {
   let selection = window.getSelection().toString();
-  if (!(selection.includes("\n") || selection.length === 0) && wikiEnabled) {
+  if (!(selection.includes("\n") || !selection.length) && wikiEnabled) {
     let wiki = selection.trim().replace(/ /g, "_").toLowerCase();
     document.body.style.cursor = "wait";
     const response = await fetch(
@@ -2577,10 +2907,10 @@ function cycleViewPreferences() {
       localStorage.setItem("/viewPref", "split");
       break;
   }
-  editingWindow(localStorage.getItem("/viewPref"), true);
+  editingWindow(localStorage.getItem("/viewPref"));
 }
 
-function editingWindow(choice, shouldRemember) {
+function editingWindow(choice) {
   switch (choice) {
     case "read":
       mode.innerText = "R";
@@ -2588,9 +2918,7 @@ function editingWindow(choice, shouldRemember) {
       notesAreaContainer.classList.add("readMode");
       notesAreaContainer.classList.remove("writeMode");
       notesAreaContainer.classList.remove("splitMode");
-      if (shouldRemember) {
-        localStorage.setItem("/viewPref", "read");
-      }
+      localStorage.setItem("/viewPref", "read");
       break;
     case "write":
       mode.innerText = "W";
@@ -2598,9 +2926,7 @@ function editingWindow(choice, shouldRemember) {
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.add("writeMode");
       notesAreaContainer.classList.remove("splitMode");
-      if (shouldRemember) {
-        localStorage.setItem("/viewPref", "write");
-      }
+      localStorage.setItem("/viewPref", "write");
       break;
     default:
       mode.innerText = "S";
@@ -2608,9 +2934,7 @@ function editingWindow(choice, shouldRemember) {
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.remove("writeMode");
       notesAreaContainer.classList.add("splitMode");
-      if (shouldRemember) {
-        localStorage.setItem("/viewPref", "split");
-      }
+      localStorage.setItem("/viewPref", "split");
   }
   notesPreviewArea.scrollTop = 0;
   notesTextArea.scrollTop = 0;
@@ -2670,7 +2994,7 @@ async function createChild(parent, child) {
     existingItem.status === 404 &&
     child &&
     parent &&
-    !reservedNames.includes(parent)
+    !reservedNames.some((e) => e.name === parent)
   ) {
     const saveStatus = await fetch("/api/save/notebooks/", {
       method: "POST",
@@ -2695,7 +3019,7 @@ async function createChild(parent, child) {
 }
 
 async function nestNote(child, parent) {
-  if (child && parent && !reservedNames.includes(child)) {
+  if (child && parent && !reservedNames.some((e) => e.name === child)) {
     const result = await fetch(`/api/nest/${child}/${parent}`, {
       method: "POST",
     });
@@ -2779,10 +3103,10 @@ async function AISUmmary() {
   const pg = note.pgN + 1;
   mainContainer.style.pointerEvents = "none";
   const AI = await chatGPT(editor.getValue());
+  reservedNames.find(
+    (e) => e.name === "AI-Summary"
+  ).data.content = `["# ✨ AI Summary (:ref[${name}] - pg. ${pg})\\n\\n${AI}]"]`;
   await switchNote("AI-Summary");
-  editor.session.setValue(
-    `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI}]`
-  );
   updateAndSaveNotesLocally();
   mainContainer.style.pointerEvents = "inherit";
 }
@@ -3043,7 +3367,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       text: "◨ Split",
       click: () => {
         localStorage.setItem("/viewPref", "split");
-        editingWindow("split", true);
+        editingWindow("split");
       },
       appearance: "ios",
     },
@@ -3051,7 +3375,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       text: "◼ Read",
       click: () => {
         localStorage.setItem("/viewPref", "read");
-        editingWindow("read", true);
+        editingWindow("read");
       },
       appearance: "ios",
     },
@@ -3059,7 +3383,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       text: "◻ Write",
       click: () => {
         localStorage.setItem("/viewPref", "write");
-        editingWindow("write", true);
+        editingWindow("write");
       },
       appearance: "ios",
     },
@@ -3094,6 +3418,7 @@ brain.addEventListener("click", (e) => {
       text: "Insert Sticky Note",
       click: () => {
         insertStickyNote();
+        delContextMenu();
       },
       appearance: "ios",
     },
@@ -3101,6 +3426,7 @@ brain.addEventListener("click", (e) => {
       text: "Insert Calendar Event",
       click: () => {
         showTodo(true);
+        delContextMenu();
       },
       appearance: "ios",
     },
@@ -3195,33 +3521,27 @@ border.addEventListener("mousedown", () => {
   );
 });
 
+const progBar = document.getElementById("progBar");
+
 // onload functions
 window.addEventListener(
   "load",
   async () => {
     createWorkspace();
+    await createList();
+    progBar.style.width = "70px";
+    await initializeFlashcards();
+    progBar.style.width = "140px";
+    await initializeTodo();
+    progBar.style.width = "210px";
+    await initializeStickyNotes();
+    progBar.style.width = "280px";
     await switchNote(
       location.pathname.substring(1),
       parseInt(location.search.substring(1) || 1) - 1
     );
-    editingWindow(localStorage.getItem("/viewPref") || "read", true);
-    workspace.style.width = `calc(100% - 25px - ${
-      localStorage.getItem("/listSize") || 300
-    }px)`;
-    list.style.width = `${parseInt(
-      localStorage.getItem("/listSize") || 300
-    )}px`;
-    if (localStorage.getItem("/listShown") === "false") {
-      hideList();
-    } else {
-      showList();
-    }
-    await createList();
-
-    await initializeFlashcards();
-    await initializeTodo();
-    await initializeStickyNotes();
-
+    progBar.style.width = "350px";
+    editingWindow(localStorage.getItem("/viewPref") || "read");
     // bottom right buttons
     stickyNotes.addEventListener("click", showStickyNotes, { once: true });
     stickyNotesTextArea.addEventListener("input", saveStickyNotes);
@@ -3248,6 +3568,15 @@ window.addEventListener(
         brDots.children[i].classList.add("currPage");
       });
     }
+    progBar.style.width = "420px";
+    document.getElementById("loading").addEventListener(
+      "animationend",
+      function () {
+        this.remove();
+      },
+      { once: true }
+    );
+    document.getElementById("loading").classList.add("loaded");
   },
   { once: true }
 );
