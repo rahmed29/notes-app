@@ -2105,6 +2105,10 @@ function fcPop(e) {
 }
 
 function flashcardMode() {
+  if (note.saved === "unsaved") {
+    notyf.error("Flashcards can only be created for saved notebooks")
+    return 0;
+  }
   hideBookDiffPopup();
   leaveFlashcardMode();
   document.body.classList.add("flashcardMode");
