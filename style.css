@@ -6,30 +6,7 @@
 :root {
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
-  /* variables */
-  --quizlet-purple: rgb(94, 94, 245);
-  --quizlet-purple-accents: rgb(74, 74, 245);
-  --main-accent: rgb(10, 132, 255);
-  --body: #e7e7e7;
   --notes-background: white;
-  --notes-color: black;
-  --code: #e7e7e7;
-  --main-light-gray: #e7e7e7;
-  --context-menu: rgb(72, 72, 74);
-  --list-accents: rgb(72, 72, 74);
-  --side-bar: rgb(44, 44, 46);
-  --list-background: rgb(28, 28, 30);
-  --list-color: white;
-  --icons: #8692a8;
-  --dropped-folders: rgb(54, 54, 56);
-  --hovers: #b6b7b8;
-  --destructive: rgb(255, 69, 58);
-  --popup-header: rgba(53, 154, 255, 0.7);
-  --popup-exit: rgb(209, 44, 35);
-  --word-count: rgba(252, 252, 252, 0.65);
-  --highlight: rgb(255, 239, 149);
-  --selection: #b5d5ff;
-  --floating-bs: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 body {
@@ -54,7 +31,7 @@ a {
   left: 0%;
   position: fixed;
   z-index: 1000000;
-  background: white;
+  background: var(--notes-background);
   width: 100vw;
   height: 100vh;
   display: grid;
@@ -116,11 +93,12 @@ a {
 }
 
 .whereTo:hover {
-  background: var(--list-accents);
+  background: var(--sidebar-accents);
 }
 
 .currPage {
   background: var(--main-accent) !important;
+  color: var(--accent-font);
 }
 
 #morePages {
@@ -136,13 +114,13 @@ a {
 }
 
 #sideBarRetractList:hover {
-  background: var(--list-accents);
+  background: var(--sidebar-accents);
 }
 
 #goHome {
   border-top-style: solid;
   border-width: 1px;
-  border-color: var(--list-accents);
+  border-color: var(--sidebar-accents);
   font-style: italic;
   text-decoration: none;
   height: 2em;
@@ -206,11 +184,10 @@ a {
   font-size: 14px;
   width: 100%;
   height: 100%;
-  background: black;
+  background: var(--searchAndUpload);
   outline: none;
   border-style: none;
-  color: var(--hovers);
-  background: black;
+  color: var(--searchAndUpload-color);
   padding: 0.25em;
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
@@ -266,15 +243,15 @@ a {
 }
 
 .down.folderName::before {
-  color: palegreen;
+  color: var(--main-accent);
 }
 
 .folderName:hover {
-  background: rgb(58, 58, 60);
+  background: var(--dropped-folders);
 }
 
 .itemUpload {
-  background: black;
+  background: var(--searchAndUpload);
   width: 100%;
   margin-bottom: -5px;
   margin-left: -5px;
@@ -284,14 +261,9 @@ a {
   height: 2em;
   border-top-style: solid;
   border-width: 1px;
-  border-color: var(--list-accents);
-  color: rgb(224, 224, 224);
+  border-color: var(--sidebar-accents);
+  color: var(--searchAndUpload-color);
   transition: 0.15s;
-}
-
-.down #yourUploads,
-.itemUpload.down {
-  background: black !important;
 }
 
 .itemUpload .folderName:hover {
@@ -305,7 +277,6 @@ a {
 .itemUpload .folderName::before {
   padding-right: 3px;
   content: attr(data-children);
-  color: peru;
   transition: 0s;
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
@@ -315,6 +286,10 @@ a {
   padding-bottom: 3px;
   max-height: 100px;
   overflow-y: auto;
+}
+
+.itemUpload a {
+  color: var(--searchAndUpload-color) !important;
 }
 
 .itemUpload.down {
@@ -346,20 +321,20 @@ a {
   z-index: 1;
   box-sizing: border-box;
   width: 100%;
-  height: 35px;
-  min-height: 35px;
+  height: 37px;
+  min-height: 37px;
   display: flex;
   margin-left: -5px;
   width: calc(100% + 5px);
   align-items: center;
   background: var(--body);
   border-left-style: none;
-  padding: 3px;
+  padding: 5px;
   gap: 3px;
 }
 
 .tab {
-  background: white;
+  background: var(--notes-background);
   border-radius: 3px;
   box-sizing: border-box;
   padding-left: 8px;
@@ -371,12 +346,12 @@ a {
   display: flex;
   justify-content: start;
   align-items: center;
-  color: black;
+  color: var(--tab-color);
   cursor: pointer;
   animation: tabIn 0.07s ease-out;
   user-select: none;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
-    rgb(211, 215, 218) 0px 0px 0px 1px inset;
+  /* box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, */
+    /* rgb(211, 215, 218) 0px 0px 0px 1px inset; */
 }
 
 .tab:hover {
@@ -385,7 +360,7 @@ a {
 
 .openTab {
   background: var(--icons) !important;
-  color: white !important;
+  color: var(--icons-color) !important;
 }
 
 /* toolbar. #brain is a container element for wikipedia summary, summary is put in this element and this element is put in the tooltip */
@@ -413,11 +388,13 @@ a {
   padding-left: 9px;
   padding-right: 9px;
   font-size: 1.4em;
+  justify-content: center;
+  align-items: center;
 }
 
 #toolBar {
   /* transform: translate(-50%, 0%); */
-  top: 35px;
+  top: 37px;
   right: 0%;
   position: fixed;
   user-select: none;
@@ -430,7 +407,7 @@ a {
   display: flex;
   margin-right: 16px;
   z-index: 1;
-  color: rgb(136, 136, 136);
+  color: var(--icons-color);
   box-sizing: border-box;
   padding-top: 3px;
   padding-left: 6px;
@@ -488,7 +465,8 @@ a {
 }
 
 #notesAreaContainer {
-  height: calc(100% - 35px);
+  box-sizing: border-box;
+  height: calc(100% - 37px);
   width: 100%;
   display: flex;
 }
@@ -576,12 +554,63 @@ mark {
   padding-left: 0.3em;
   padding-right: 0.3em;
   background: var(--highlight);
+  color: var(--highlight-color);
 }
 
 .reference {
   color: var(--main-accent);
   text-decoration: none;
   cursor: pointer;
+}
+
+table {
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  margin:0;
+  padding:0;
+  width: 100%;
+}
+table tr {
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+table th, table td {
+  padding: 10px;
+  text-align: center;
+}
+table th {
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media screen and (max-width: 600px) {
+  table {
+    border: 0;
+  }
+  table thead {
+    display: none;
+  }
+  table tr {
+    border-bottom: 2px solid #ddd;
+    display: block;
+    margin-bottom: 10px;
+  }
+  table td {
+    border-bottom: 1px dotted #ccc;
+    display: block;
+    font-size: 13px;
+    text-align: right;
+  }
+  table td:last-child {
+    border-bottom: 0;
+  }
+  table td:before {
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
 }
 
 #notesPreviewArea img,
@@ -694,15 +723,13 @@ blockquote:hover {
   bottom: 0%;
   left: calc(25px + 300px);
   position: fixed;
-  background: var(--word-count);
+  background: var(--notes-background);
+  color: var(--notes-color);
   backdrop-filter: blur(5px);
-  border-radius: 3px;
   user-select: none;
-  box-shadow: var(--floating-bs);
   display: flex;
   gap: 8px;
   padding: 0.3em;
-  margin-bottom: 4px;
 }
 
 #generalInfoPageNumber,
@@ -733,7 +760,7 @@ blockquote:hover {
 .dot {
   border-style: solid;
   border-width: 2px;
-  border-color: white;
+  border-color: var(--notes-background);
   cursor: pointer;
   height: 0.67em;
   width: 0.67em;
@@ -744,7 +771,7 @@ blockquote:hover {
 }
 
 .dot:hover {
-  border-color: var(--hovers);
+  border-color: var(--icons);
 }
 
 .dot.currPage:hover {
@@ -816,7 +843,7 @@ blockquote:hover {
   outline: none;
   border: none;
   resize: none;
-  color: white;
+  color: var(--icons-color);
   background: var(--icons);
   display: inline !important;
 }
@@ -845,7 +872,7 @@ blockquote:hover {
 }
 
 .contextMenuItem {
-  color: white;
+  color: var(--accent-font);
   overflow: hidden;
   white-space: nowrap;
   height: 1.5em;
@@ -870,7 +897,8 @@ blockquote:hover {
 }
 
 .listPreview {
-  background: white !important;
+  background: var(--notes-background) !important;
+  color: var(--notes-color);
   left: 330px;
   width: auto !important;
   animation: slideSmall 0.2s ease !important;
@@ -911,7 +939,6 @@ blockquote:hover {
   max-width: 1600px;
   transition: 0.25s;
   position: absolute;
-  color: rgb(0, 0, 0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -968,7 +995,8 @@ blockquote:hover {
   overflow-y: auto;
   flex-grow: 1;
   white-space: pre-wrap;
-  background: white;
+  background: var(--notes-background);
+  color: var(--notes-color);
   overscroll-behavior-y: contain;
   scroll-behavior: smooth;
   display: flex;
@@ -979,7 +1007,8 @@ blockquote:hover {
 #bookDiffContent h2 {
   text-align: center;
   padding: 0.5em;
-  background: var(--main-light-gray);
+  background: var(--misc-buttons);
+  color: var(--);
   border-radius: 6px;
   flex-grow: 1;
   user-select: none;
@@ -1005,7 +1034,7 @@ blockquote:hover {
   bottom: 0;
   right: 0;
   width: 20vw;
-  height: 100vh;
+  height: calc(100vh - 17px);
   box-sizing: border-box;
   padding: 5px;
   display: flex;
@@ -1026,7 +1055,7 @@ blockquote:hover {
   width: 100%;
   height: 30%;
   outline: none;
-  background: var(--list-background);
+  background: silver;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
     rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
@@ -1034,7 +1063,7 @@ blockquote:hover {
 .cardFront::before,
 .cardBack::before {
   content: "Front";
-  background: black;
+  background: gray;
   border-radius: 3px;
   margin-bottom: 10px;
   text-align: center;
@@ -1069,8 +1098,7 @@ blockquote:hover {
   color: rgba(0, 0, 0, 0.85);
   cursor: pointer;
   display: inline-flex;
-  font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica,
-    Arial, sans-serif;
+  font-family: Inter;
   font-size: 16px;
   font-weight: 600;
   justify-content: center;
@@ -1170,7 +1198,8 @@ blockquote:hover {
 .reset {
   cursor: pointer;
   padding: 5px;
-  background: var(--main-light-gray);
+  background: var(--misc-buttons);
+  color: var(--tab-color);
   justify-content: center;
   border-radius: 7px;
   display: flex;
@@ -1193,7 +1222,7 @@ blockquote:hover {
   border-bottom-right-radius: 6px;
   cursor: pointer;
   box-shadow: rgba(233, 233, 233, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
-  background: var(--main-light-gray);
+  background: var(--misc-buttons);
   transition: .25s;
   scroll-behavior: smooth;
 }
@@ -1340,7 +1369,7 @@ blockquote:hover {
   height: 1.8em;
   width: 100%;
   padding: 3px;
-  background: var(--main-light-gray);
+  background: var(--misc-buttons);
   border-radius: 3px;
   color: black;
   font-family: Inter, sans-serif;
@@ -1414,6 +1443,10 @@ blockquote:hover {
   flex-grow: 1;
 }
 
+.fc-col-header-cell-cushion, .fc-daygrid-day-number {
+  color: var(--notes-color) !important;
+}
+
 .fc-event {
   cursor: pointer;
 }
@@ -1447,12 +1480,13 @@ blockquote:hover {
   display: flex;
   flex-direction: column;
   width: 640px;
-  background: white;
+  background: var(--notes-background);
   box-shadow: var(--floating-bs);
   overflow: hidden;
   top: 2vh;
   animation: bounce-in 0.25s ease;
   font-family: monospace !important;
+  color: var(--notes-color);
 }
 
 #CommandPal .search {
@@ -1464,7 +1498,7 @@ blockquote:hover {
   appearance: none;
   font-size: 14px;
   background: transparent;
-  color: black !important;
+  color: var(--notes-color) !important;
   outline: none;
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
@@ -1493,13 +1527,13 @@ blockquote:hover {
 
 #CommandPal .item:hover {
   cursor: pointer;
-  background-color: var(--main-light-gray);
+  background-color: var(--misc-buttons);
   outline: none;
 }
 
 #CommandPal .item.selected {
   cursor: pointer;
-  background-color: var(--main-light-gray);
+  background-color: var(--misc-buttons);
   outline: none;
 }
 

@@ -194,86 +194,199 @@ document.body.innerHTML = `
     </div>
 `;
 
+// theming (WIP)
+let currTheme = null;
 const style = document.createElement("style");
+style.id = "zitselTheme";
 document.head.appendChild(style);
-/* 
-  --main-accent: rgb(10, 132, 255);
-  --body: #e7e7e7;
-  --main-light-gray: #e7e7e7;
-  --context-menu: rgb(72, 72, 74);
-  --list-accents: rgb(72, 72, 74);
-  --side-bar: rgb(44, 44, 46);
-  --main-dark-gray: rgb(28, 28, 30);
-  --icons: #8692a8;
-  --dropped-folders: rgb(54, 54, 56);
-  --hovers: #b6b7b8;
-  --destructive: rgb(255, 69, 58);
-  --popup-header: rgba(53, 154, 255, 0.7);
-  --popup-exit: rgb(209, 44, 35);
-  --word-count: rgba(252, 252, 252, 0.65);
-  --highlight: rgb(255, 239, 149);
-  --selection: #b5d5ff;
-*/
 
-const monokai = {
-  theme_name: "monokai",
-  mainAccent: "#56b0bf",
-  body: "#141414",
-  notesBackground: "#272822",
-  notesColor: "white",
-  contextMenu: "#202020",
-  listAccents: "navy",
-  sideBar: "#2e2e2e",
-  listBackground: "#141414",
-  listColor: "white",
-  icons: "lightblue",
-  droppedFolders: "#202020",
-  hovers: "red",
-  destructive: "red",
-  popupHeaders: "blue",
-  popupExit: "red",
-  wordCount: "navy",
-  highlight: "#e6db74",
-  selection: "lightcoral",
-  code: "#141414",
+const dracula = {
+  theme_name: "dracula",
+  theme_type: "dark",
+
+  quizletPurple: "#bd93f9",
+  quizletPurpleAccents: "#6272a4",
+  mainAccent: "#ff79c6",
+  accentFont: "white",
+  body: "#44475a",
+  notesBackground: "#282a36;",
+  notesColor: "#f8f8f2",
+  code: "#44475a",
+  miscButtons: "#44475a",
+  contextMenu: "#282a36",
+  sidebarAccents: "#6272a4",
+  sideBar: "#21222c",
+  listBackground: "#282a36",
+  searchAndUpload: "#50fa7b",
+  searchAndUploadColor: "black",
+  listColor: "#f8f8f2",
+  icons: "#ffb86c",
+  iconsColor: "black",
+  tabColor: "white",
+  droppedFolders: "#44475a",
+  hovers: "#6272a4",
+  destructive: "#ff5555",
+  popupHeader: "rgba(68, 71, 90, 0.7)",
+  popupExit: "#ff5555",
+  highlight: "#ffb86c",
+  highlightColor: "black",
+  selection: "#44475a",
+  floatingBs: "#44475a 0px 3px 8px",
 };
 
-function changeTheme(obj) {
-  if (!obj) {
-    style.innerText = "";
-    editor.setTheme("ace/theme/chrome");
-    return 1;
-  }
+const chrome = {
+  theme_name: "chrome",
+  theme_type: "light",
 
-  style.innerText = `
+  quizletPurple: "rgb(94, 94, 245)",
+  quizletPurpleAccents: "rgb(74, 74, 245)",
+  mainAccent: "rgb(10, 132, 255)",
+  accentFont: "white",
+  body: "#e7e7e7",
+  notesBackground: "white",
+  notesColor: "black",
+  code: "#e7e7e7",
+  miscButtons: "#e7e7e7",
+  contextMenu: "rgb(72, 72, 74)",
+  sidebarAccents: "rgb(72, 72, 74)",
+  sideBar: "rgb(44, 44, 46)",
+  listBackground: "rgb(28, 28, 30)",
+  searchAndUpload: "black",
+  searchAndUploadColor: "white",
+  listColor: "white",
+  icons: "#8692a8",
+  tabColor: "black",
+  iconsColor: "white",
+  droppedFolders: "rgb(54, 54, 56)",
+  hovers: "#b6b7b8",
+  destructive: "rgb(255, 69, 58)",
+  popupHeader: "rgba(53, 154, 255, 0.7)",
+  popupExit: "rgb(209, 44, 35)",
+  wordCount: "rgba(252, 252, 252, 0.65)",
+  wordCountColor: "black",
+  highlight: "rgb(255, 239, 149)",
+  highlightColor: "black",
+  selection: "#b5d5ff",
+  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+};
+
+const cobalt = {
+  theme_name: "cobalt",
+
+  quizletPurple: "#ff9c00",
+  quizletPurpleAccents: "#ff6000",
+  mainAccent: "#00ffdd",
+  body: "#003366",
+  notesBackground: "#002240",
+  notesColor: "#ffffff",
+  code: "#002240",
+  miscButtons: "#003366",
+  contextMenu: "#002240",
+  sidebarAccents: "#003366",
+  sideBar: "#001b33",
+  listBackground: "#002240",
+  searchAndUpload: "#00ffdd",
+  listColor: "#ffffff",
+  icons: "#00ffdd",
+  iconsColor: "#ffffff",
+  tabColor: "white",
+  droppedFolders: "#003366",
+  hovers: "#ff6000",
+  destructive: "#ff6000",
+  popupHeader: "rgba(0, 34, 64, 0.7)",
+  popupExit: "#ff6000",
+  highlight: "#ff9c00",
+  selection: "#003366",
+  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+};
+
+const solarized = {
+  theme_name: "solarized_light",
+  theme_type: "light",
+
+  quizletPurple: "#268bd2",
+  quizletPurpleAccents: "#2aa198",
+  mainAccent: "#b58900",
+  accentFont: "black",
+  body: "#eee8d5",
+  notesBackground: "#fdf6e3",
+  notesColor: "#586e75",
+  code: "#eee8d5",
+  miscButtons: "#eee8d5",
+  contextMenu: "#eee8d5",
+  sidebarAccents: "#93a1a1",
+  sideBar: "#eee8d5",
+  listBackground: "#fdf6e3",
+  searchAndUpload: "#268bd2",
+  searchAndUploadColor: "white",
+  listColor: "#586e75",
+  icons: "#268bd2",
+  iconsColor: "white",
+  tabColor: "black",
+  droppedFolders: "#eee8d5",
+  hovers: "#93a1a1",
+  destructive: "#dc322f",
+  popupHeader: "rgba(253, 246, 227, 0.7)",
+  popupExit: "#dc322f",
+  highlight: "#b58900",
+  highlightColor: "white",
+  selection: "#eee8d5",
+  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+};
+
+function changeTheme(themeName) {
+  let obj;
+  switch (themeName) {
+    case "dracula":
+      obj = dracula;
+      break;
+    case "cobalt":
+      obj = cobalt;
+      break;
+    case "solarized":
+      obj = solarized;
+      break;
+    default:
+      obj = chrome;
+  }
+  currTheme = obj;
+  localStorage.setItem("/theme", themeName)
+  document.getElementById("zitselTheme").innerText = `
   :root {
+    --quizlet-purple: ${obj.quizletPurple};
+    --quizlet-purple-accents: ${obj.quizletPurpleAccents};
     --main-accent: ${obj.mainAccent};
+    --accent-font: ${obj.accentFont};
     --body: ${obj.body};
     --notes-background: ${obj.notesBackground};
     --notes-color: ${obj.notesColor};
-    --main-light-gray: ${obj.mainLightGray};
+    --code: ${obj.code};
+    --misc-buttons: ${obj.miscButtons};
     --context-menu: ${obj.contextMenu};
-    --list-accents: ${obj.listAccents};
+    --sidebar-accents: ${obj.sidebarAccents};
     --side-bar: ${obj.sideBar};
     --list-background: ${obj.listBackground};
+    --searchAndUpload: ${obj.searchAndUpload};
+    --searchAndUpload-color: ${obj.searchAndUploadColor};
     --list-color: ${obj.listColor};
     --icons: ${obj.icons};
+    --icons-color: ${obj.iconsColor};
+    --tab-color: ${obj.tabColor};
     --dropped-folders: ${obj.droppedFolders};
     --hovers: ${obj.hovers};
     --destructive: ${obj.destructive};
-    --popup-header: ${obj.popupHeaders};
+    --popup-header: ${obj.popupHeader};
     --popup-exit: ${obj.popupExit};
-    --word-count: ${obj.wordCount};
     --highlight: ${obj.highlight};
+    --highlight-color: ${obj.highlightColor};
     --selection: ${obj.selection};
-    --code: ${obj.code};
+    --floating-bs: ${obj.floatingBs};
   }
 `;
   editor.setTheme(`ace/theme/${obj.theme_name}`);
 }
 
 window.changeTheme = changeTheme;
-window.monokai = monokai;
 
 // micromark directives
 function cal(d) {
@@ -359,7 +472,6 @@ const previewContent = document.getElementById("fill");
 const brDots = document.getElementById("brDots");
 const yellowButtons = document.getElementById("yellowButtons");
 const progBar = document.getElementById("progBar");
-
 
 // Text formatting stuff
 // note names must be at least 1 character and cannot include any chars other than numbers, letters, hyphens, or dashes
@@ -525,7 +637,7 @@ const generalInfoPageNumber = tippy("#generalInfoPageNumber", {
 
 const toolBarTips = [
   "Save (Ctrl + S)",
-  "Open",
+  "Notebook",
   "Delete",
   "Insert Image",
   "Switch View (Ctrl + E)",
@@ -533,25 +645,51 @@ const toolBarTips = [
   "Next Page",
 ];
 
-for (let i = 0; i < 7; i++) {
-  tippy(`#icon${i + 1}`, {
+const anonTooltips = [
+  {
+    name: "#icon1",
+    content: "Save (Ctrl + S)",
+  },
+  {
+    name: "#icon2",
+    content: "Notebook",
+  },
+  {
+    name: "#icon3",
+    content: "Delete",
+  },
+  {
+    name: "#icon4",
+    content: "Insert Image",
+  },
+  {
+    name: "#icon5",
+    content: "Switch View (Ctrl + E)",
+  },
+  {
+    name: "#icon6",
+    content: "Prev Page",
+  },
+  {
+    name: "#icon7",
+    content: "Next Page",
+  },
+  {
+    name: "#wordCount",
+    content: "Word Count",
+  },
+  {
+    name: "#letterCount",
+    content: "Character Count",
+  },
+];
+
+anonTooltips.forEach((obj) => {
+  tippy(obj.name, {
     arrow: false,
     animation: "shift-toward-subtle",
-    content: toolBarTips[i],
-    placement: "bottom-end",
+    content: obj.content,
   });
-}
-
-tippy("#wordCount", {
-  animation: "shift-toward-subtle",
-  arrow: false,
-  content: "Word Count",
-});
-
-tippy("#letterCount", {
-  animation: "shift-toward-subtle",
-  arrow: false,
-  content: "Character Count",
 });
 
 function insertStickyNote() {
@@ -658,7 +796,7 @@ async function referToolTip() {
   delContextMenu();
   const given = this;
   lastDynamicTippy = tippy([given], {
-    theme: "light",
+    theme: currTheme.theme_type || "light",
     animation: "shift-toward-subtle",
     content: "Loading...",
     allowHTML: true,
@@ -670,8 +808,14 @@ async function referToolTip() {
     const content =
       this.getAttribute("data-bookname") === note.name
         ? format(note.content[page])
-        : format((await getAnyBookContent(this.getAttribute("data-bookname"),"content"))[page]
-);
+        : format(
+            (
+              await getAnyBookContent(
+                this.getAttribute("data-bookname"),
+                "content"
+              )
+            )[page]
+          );
     lastDynamicTippy.setContent(
       `<div class = 'pagePreviewContainer'>${content}</div>`
     );
@@ -691,15 +835,14 @@ const notyf = new Notyf({
 // debounce when switching notes
 let switching = false;
 
-const crontab =
-  '19 21 * * * cd /home/ryaan/notesBackup && mongodump --uri="mongodb://localhost:27017/notes" && git add . && git commit -m "cron" && git push';
-
 // notebook names that aren't allowed because they are being used for other stuff
 const reservedNames = [
   {
     data: {
       name: "home",
-      content: ["# 👋 Welcome Home!\n\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!"],
+      content: [
+        "# 👋 Welcome Home!\n\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
+      ],
       children: [],
       parents: [],
       saved: false,
@@ -708,7 +851,9 @@ const reservedNames = [
   {
     data: {
       name: "todo__list",
-      content: ["This notebook is reserved for storing your calendar events. Sorry!"],
+      content: [
+        "This notebook is reserved for storing your calendar events. Sorry!",
+      ],
       children: [],
       parents: [],
       saved: false,
@@ -717,7 +862,9 @@ const reservedNames = [
   {
     data: {
       name: "sticky__notes",
-      content: ["This notebook is reserved for storing your sticky note. Sorry!"],
+      content: [
+        "This notebook is reserved for storing your sticky note. Sorry!",
+      ],
       children: [],
       parents: [],
       saved: false,
@@ -726,7 +873,9 @@ const reservedNames = [
   {
     data: {
       name: "flash__cards",
-      content: ["This notebook is reserved for storing your flahscards. Sorry!"],
+      content: [
+        "This notebook is reserved for storing your flahscards. Sorry!",
+      ],
       children: [],
       parents: [],
       saved: false,
@@ -768,7 +917,7 @@ const root = {
 };
 
 // event listeners and stuff we need to destroy on repaints
-let tabTippys = {};
+let tabTippys = new Map();
 let lastDynamicTippy = null;
 let pageHandlers = [];
 let listHandlers = [];
@@ -923,6 +1072,35 @@ async function defineCmd() {
           notesTextArea.setAttribute("data-vim", "true");
         }
       },
+    },
+    {
+      name: "🩳 Change Theme",
+      children: [
+        {
+          name: "🧛 Dracula",
+          handler: () => {
+            changeTheme("dracula")
+          },
+        },
+        {
+          name: "💎 Cobalt",
+          handler: () => {
+            changeTheme("cobalt")
+          },
+        },
+        {
+          name: "☀️ Solarized",
+          handler: () => {
+            changeTheme("solarized")
+          },
+        },
+        {
+          name: "🥈 Chrome (default)",
+          handler: () => {
+            changeTheme("chrome")
+          },
+        },
+      ],
     },
     {
       name: "👁️ Switch View",
@@ -1117,6 +1295,7 @@ function syncStatus(dbSave) {
     try {
       document.getElementById(`book__${note.name}`).innerText = note.name;
       document.title = note.name;
+      areNotesSavedIcon.style.filter = "grayscale(1)";
     } catch (err) {
       // console.log(err);
     }
@@ -1178,7 +1357,7 @@ function formatNonText(ele) {
       listener: referToolTip,
     });
   }
-  for (const node of notesPreviewArea.querySelectorAll("img")) {
+  for (const node of ele.querySelectorAll("img")) {
     node.addEventListener("contextmenu", removeImageToolTip);
     previewHandlers.push({
       element: node,
@@ -1198,8 +1377,8 @@ function addCloseTab(div) {
       e.preventDefault();
       const temp = this.getAttribute("data-bookname");
       library.delete(temp);
-      tabTippys[temp].destroy();
-      tabTippys[temp] = null;
+      tabTippys.get(temp).destroy();
+      tabTippys.delete(temp);
       savedWS.delete(temp);
       localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
       this.removeEventListener("click", switchTab);
@@ -1224,18 +1403,18 @@ function createWorkspace() {
     div.setAttribute("data-bookname", txt);
     div.addEventListener("click", switchTab);
     addCloseTab(div);
-    tabTippys[note] = tippy([div], {
-      theme: "dark",
-      animation: "shift-toward-subtle",
-      placement: "bottom-end",
-      content: txt,
-      arrow: false,
-    })[0];
+    tabTippys.set(
+      note,
+      tippy([div], {
+        theme: "dark",
+        animation: "shift-toward-subtle",
+        placement: "bottom-end",
+        content: txt,
+        arrow: false,
+      })[0]
+    );
     tabs.prepend(div);
   });
-  workspace.style.width = `calc(100% - 25px - ${
-    localStorage.getItem("/listSize") || 300
-  }px)`;
   list.style.width = `${parseInt(localStorage.getItem("/listSize") || 300)}px`;
   if (localStorage.getItem("/listShown") === "false") {
     hideList();
@@ -1264,7 +1443,7 @@ async function switchNote(noteName, page) {
     notyf.error("Invalid note name");
     return 0;
   }
-  hideBookDiffPopup()
+  hideBookDiffPopup();
   // can't do !page because page can be be 0 and !0 => true
   if (page == null) {
     try {
@@ -1294,14 +1473,13 @@ async function switchNote(noteName, page) {
   note = new Note();
   const data = (await getAnyBookContent(noteName, "_data")) || {
     name: noteName,
-    content: [''],
+    content: [""],
     children: [],
     parents: [],
     saved: false,
   };
   note.name = noteName.replaceAll("/", "");
-  note.content =
-    JSON.parse(localStorage.getItem(noteName)) || data.content;
+  note.content = JSON.parse(localStorage.getItem(noteName)) || data.content;
   note.pgN = page < note.content.length ? page : note.content.length - 1;
   note.dbSave = data.dbSave || data.content;
   note.children = data.children;
@@ -1325,13 +1503,16 @@ async function switchNote(noteName, page) {
     div.id = `book__${txt}`;
     div.setAttribute("data-bookname", txt);
     addCloseTab(div);
-    tabTippys[noteName] = tippy([div], {
-      theme: "dark",
-      animation: "shift-toward-subtle",
-      placement: "bottom-end",
-      content: txt,
-      arrow: false,
-    })[0];
+    tabTippys.set(
+      noteName,
+      tippy([div], {
+        theme: "dark",
+        animation: "shift-toward-subtle",
+        placement: "bottom-end",
+        content: txt,
+        arrow: false,
+      })[0]
+    );
     tabs.prepend(div);
   }
   if (reservedNames.some((e) => e.data.name === note.name)) {
@@ -1526,7 +1707,7 @@ function search(term) {
 }
 
 function resizeList(e) {
-  border.style.background = "rgb(10,132,255)";
+  border.classList.add("currPage");
   document.body.style.cursor = "w-resize";
   if (e.clientX <= 600 && e.clientX >= 300) {
     list.style.width = `${e.clientX - 16}px`;
@@ -1536,6 +1717,7 @@ function resizeList(e) {
 }
 
 function hideList() {
+  workspace.style.width = "calc(100% - 20px";
   bottomLeftGeneralInfo.style.left = "25px";
   list.style.display = "none";
   list.setAttribute("data-pos", "hidden");
@@ -1545,6 +1727,9 @@ function hideList() {
 }
 
 function showList() {
+  workspace.style.width = `calc(100% - 25px - ${
+    localStorage.getItem("/listSize") || 300
+  }px)`;
   bottomLeftGeneralInfo.style.left =
     parseInt(localStorage.getItem("/listSize") || 300) + 25 + "px";
   list.setAttribute("data-pos", "shown");
@@ -1638,7 +1823,9 @@ async function getAnyBookContent(bookName, desiredInfo) {
     if (desiredInfo === "_data") {
       return reservedNames.find((e) => e.data.name === bookName)["data"];
     }
-    return reservedNames.find((e) => e.data.name === bookName)["data"][desiredInfo];
+    return reservedNames.find((e) => e.data.name === bookName)["data"][
+      desiredInfo
+    ];
   }
   if (library.get(bookName)) {
     const cBook = library.get(bookName);
@@ -1669,7 +1856,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
   } else if (response.status === 404) {
     return null;
   } else {
-    notyf.error(`There was an error retrieving notebook: ${bookName}`)
+    notyf.error(`There was an error retrieving notebook: ${bookName}`);
     return null;
   }
 }
@@ -1708,7 +1895,7 @@ async function copyBook(newName) {
       }),
     });
     if (save.ok) {
-      localStorage.setItem(newName, localStorage.getItem(note.name))
+      localStorage.setItem(newName, localStorage.getItem(note.name));
       updateList();
       switchNote(newName, 0);
     } else {
@@ -1875,7 +2062,14 @@ async function showPagePreview(e) {
   preview.innerHTML =
     this.getAttribute("data-bookname") === note.name
       ? format(note.content[page])
-      : format((await getAnyBookContent(this.getAttribute("data-bookname"), "content"))[page]);
+      : format(
+          (
+            await getAnyBookContent(
+              this.getAttribute("data-bookname"),
+              "content"
+            )
+          )[page]
+        );
   menu.appendChild(preview);
   mainContainer.after(menu);
 }
@@ -1927,7 +2121,7 @@ function getDiff(one, other) {
       ? ["#33ff96", "black"]
       : part.removed
       ? ["#ff5e5e", "black"]
-      : ["rgba(0,0,0,0)", "black"];
+      : ["rgba(0,0,0,0)", ""];
     span = document.createElement("span");
     span.style.background = color[0];
     span.style.color = color[1];
@@ -1954,7 +2148,7 @@ function hideBookDiffPopup() {
     // console.log(err);
   }
   mainContainer.removeEventListener("click", hideBookDiffPopup);
-  editor.session.off("change", hideBookDiffPopup)
+  editor.session.off("change", hideBookDiffPopup);
 }
 
 function showBookDiffPopup() {
@@ -2020,7 +2214,7 @@ async function saveStickyNotes() {
     },
     body: JSON.stringify({
       name: "sticky__notes",
-      content: JSON.stringify([stickyNotesTextArea.value]),
+      content: [stickyNotesTextArea.value],
     }),
   });
   if (!saveStatus.ok) {
@@ -2049,6 +2243,7 @@ async function initializeStickyNotes() {
   const response = await fetch(`/api/get/notebooks/sticky__notes`);
   if (response.ok) {
     let json = await response.json();
+    console.log(json["data"]["content"]);
     stickyNotesTextArea.value = json["data"]["content"][0];
   } else if (response.status === 404) {
     stickyNotesTextArea.value = "";
@@ -2093,7 +2288,7 @@ function fcPop(e) {
 
 function flashcardMode() {
   if (!note.saved) {
-    notyf.error("Flashcards can only be created for saved notebooks")
+    notyf.error("Flashcards can only be created for saved notebooks");
     return 0;
   }
   hideBookDiffPopup();
@@ -2196,25 +2391,26 @@ function showFlashcards(noAnimation) {
   if (noAnimation != null && noAnimation) {
     bookDiffPopup.style.animation = "none";
   }
-  const organized = flashcards
-    .filter((e) => e.subject === note.name)
-    .reduce(
-      (obj, e) => {
-        switch (e.learning) {
-          case "unattempted":
-            obj[0].push(e);
-            break;
-          case "know":
-            obj[1].push(e);
-            break;
-          case "dontKnow":
-            obj[2].push(e);
-            break;
-        }
-        return obj;
-      },
-      [[], [], []]
-    );
+  const organized = flashcards.reduce(
+    (arr2d, e) => {
+      if (e.subject !== note.name) {
+        return arr2d;
+      }
+      switch (e.learning) {
+        case "unattempted":
+          arr2d[0].push(e);
+          break;
+        case "know":
+          arr2d[1].push(e);
+          break;
+        case "dontKnow":
+          arr2d[2].push(e);
+          break;
+      }
+      return arr2d;
+    },
+    [[], [], []]
+  );
 
   const extra = document.createElement("div");
   extra.classList.add("extra");
@@ -2665,7 +2861,10 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 }
 
 function showTodo(hereForInsertion) {
-  if (hereForInsertion && reservedNames.some((e) => e.data.name === note.name)) {
+  if (
+    hereForInsertion &&
+    reservedNames.some((e) => e.data.name === note.name)
+  ) {
     notyf.error("Reserved notebooks are read only");
     return 0;
   }
@@ -3069,7 +3268,7 @@ async function relinquishNote(child, parent) {
   }
 }
 
-async function chatGPT(content) {
+async function chatGPT(content, prompt) {
   const response = await fetch("/api/chatGPT", {
     method: "POST",
     headers: {
@@ -3077,6 +3276,7 @@ async function chatGPT(content) {
     },
     body: JSON.stringify({
       content,
+      prompt,
     }),
   });
   if (response.ok) {
@@ -3087,14 +3287,18 @@ async function chatGPT(content) {
   }
 }
 
+// Possible prompt for creating flashcards: Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags and add spaces as necessary to make the markdown look nice.
 async function AISUmmary() {
   const name = note.name;
   const pg = note.pgN + 1;
   mainContainer.style.pointerEvents = "none";
-  const AI = await chatGPT(editor.getValue());
-  reservedNames.find(
-    (e) => e.data.name === "AI-Summary"
-  ).data.content = `["# ✨ AI Summary (:ref[${name}] - pg. ${pg})\\n\\n${AI}]"]`;
+  const AI = await chatGPT(editor.getValue(), "TLDR:");
+  reservedNames.find((e) => e.data.name === "AI-Summary").data.content = [
+    `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI.replaceAll(
+      "<br>",
+      "\n"
+    )}]`,
+  ];
   await switchNote("AI-Summary");
   updateAndSaveNotesLocally();
   mainContainer.style.pointerEvents = "inherit";
@@ -3129,7 +3333,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
       click: function () {
         let hasTyped = false;
         const storeHTML = this.innerHTML;
-        this.style.background = "rgb(10,132,255)";
+        this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter book name";
         this.style.color = "silver";
@@ -3160,7 +3364,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           function () {
             this.contentEditable = false;
             this.innerHTML = storeHTML;
-            this.style.background = "inherit";
+            this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Open Notebook";
             this.style.color = "white";
@@ -3173,18 +3377,18 @@ document.getElementById("icon2").addEventListener("click", (e) => {
     {
       text: "Relinquish Notebook",
       click: async (e) => {
-        const buttons = (
-          await getAnyBookContent(note.name, "parents")
-        ).map((parent) => {
-          return {
-            text: parent,
-            click: () => {
-              relinquishNote(note.name, parent);
-              delContextMenu();
-            },
-            appearance: "ios",
-          };
-        });
+        const buttons = (await getAnyBookContent(note.name, "parents")).map(
+          (parent) => {
+            return {
+              text: parent,
+              click: () => {
+                relinquishNote(note.name, parent);
+                delContextMenu();
+              },
+              appearance: "ios",
+            };
+          }
+        );
         contextMenu(e, buttons, [
           document.getElementById("contextMenu").style.left,
           document.getElementById("contextMenu").style.top,
@@ -3223,7 +3427,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
       click: function () {
         let hasTyped = false;
         const storeHTML = this.innerHTML;
-        this.style.background = "rgb(10,132,255)";
+        this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter child name";
         this.style.color = "silver";
@@ -3254,7 +3458,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           function () {
             this.contentEditable = false;
             this.innerHTML = storeHTML;
-            this.style.background = "inherit";
+            this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
             this.style.color = "white";
@@ -3269,7 +3473,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
       click: function () {
         let hasTyped = false;
         const storeHTML = this.innerHTML;
-        this.style.background = "rgb(10,132,255)";
+        this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter copy name";
         this.style.color = "silver";
@@ -3299,7 +3503,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           function () {
             this.contentEditable = false;
             this.innerHTML = storeHTML;
-            this.style.background = "inherit";
+            this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
             this.style.color = "white";
@@ -3501,7 +3705,7 @@ border.addEventListener("mousedown", () => {
     "mouseup",
     () => {
       localStorage.setItem("/listSize", list.style.width.replace("px", ""));
-      border.style.background = "none";
+      border.classList.remove("currPage");
       document.body.style.cursor = "inherit";
       mainContainer.style.userSelect = "inherit";
       document.removeEventListener("mousemove", resizeList);
@@ -3521,6 +3725,7 @@ document.getElementById("loading").addEventListener(
 window.addEventListener(
   "load",
   async () => {
+    changeTheme(localStorage.getItem("/theme") || "chrome");
     createWorkspace();
     await createList();
     progBar.style.width = "70px";
@@ -3564,7 +3769,7 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    console.log("%cWelcome!", "color:yellow;font-weight:bold;"); 
+    console.log("%cWelcome!", "color:yellow;font-weight:bold;");
   },
   { once: true }
 );

@@ -11,13 +11,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function gpt(content) {
+async function gpt(content, prompt) {
   const completion = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: [
       {
         role: "system",
-        content: "TLDR:",
+        content: prompt,
       },
       {
         role: "user",
@@ -359,8 +359,7 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
 
 app.post("/api/chatGPT", async (req, res) => {
   try {
-    const content = req.body.content;
-    const response = await gpt(content);
+    const response = await gpt(req.body.content, req.body.prompt);
     res.status(200).json({ data: response });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
