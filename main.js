@@ -19,6 +19,7 @@ import { mark, markHTML } from "./micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
+import { chrome, clouds_midnight, cobalt, dracula, gruvbox, solarized_dark, solarized_light, twilight } from "./themes/index.js"
 
 document.body.innerHTML = `
     <div id="loading">
@@ -154,6 +155,8 @@ document.body.innerHTML = `
       <span id="generalInfoViewMode"></span>
       <span id="letterCount">00000</span>
       <span id="wordCount">00000</span>
+      <span id = "spacer">|</span>
+      <span id = "openCommandPal">>_</span>
     </div>
 
     <div id="mainContainer">
@@ -194,167 +197,50 @@ document.body.innerHTML = `
     </div>
 `;
 
-// theming (WIP)
+if (location.pathname === "/") {
+  location.replace("/home");
+}
+
+// theming
 let currTheme = null;
 const style = document.createElement("style");
 style.id = "zitselTheme";
 document.head.appendChild(style);
 
-const dracula = {
-  theme_name: "dracula",
-  theme_type: "dark",
-
-  quizletPurple: "#bd93f9",
-  quizletPurpleAccents: "#6272a4",
-  mainAccent: "#ff79c6",
-  accentFont: "white",
-  body: "#44475a",
-  notesBackground: "#282a36;",
-  notesColor: "#f8f8f2",
-  code: "#44475a",
-  miscButtons: "#44475a",
-  contextMenu: "#282a36",
-  sidebarAccents: "#6272a4",
-  sideBar: "#21222c",
-  listBackground: "#282a36",
-  searchAndUpload: "#50fa7b",
-  searchAndUploadColor: "black",
-  listColor: "#f8f8f2",
-  icons: "#ffb86c",
-  iconsColor: "black",
-  tabColor: "white",
-  droppedFolders: "#44475a",
-  hovers: "#6272a4",
-  destructive: "#ff5555",
-  popupHeader: "rgba(68, 71, 90, 0.7)",
-  popupExit: "#ff5555",
-  highlight: "#ffb86c",
-  highlightColor: "black",
-  selection: "#44475a",
-  floatingBs: "#44475a 0px 3px 8px",
-};
-
-const chrome = {
-  theme_name: "chrome",
-  theme_type: "light",
-
-  quizletPurple: "rgb(94, 94, 245)",
-  quizletPurpleAccents: "rgb(74, 74, 245)",
-  mainAccent: "rgb(10, 132, 255)",
-  accentFont: "white",
-  body: "#e7e7e7",
-  notesBackground: "white",
-  notesColor: "black",
-  code: "#e7e7e7",
-  miscButtons: "#e7e7e7",
-  contextMenu: "rgb(72, 72, 74)",
-  sidebarAccents: "rgb(72, 72, 74)",
-  sideBar: "rgb(44, 44, 46)",
-  listBackground: "rgb(28, 28, 30)",
-  searchAndUpload: "black",
-  searchAndUploadColor: "white",
-  listColor: "white",
-  icons: "#8692a8",
-  tabColor: "black",
-  iconsColor: "white",
-  droppedFolders: "rgb(54, 54, 56)",
-  hovers: "#b6b7b8",
-  destructive: "rgb(255, 69, 58)",
-  popupHeader: "rgba(53, 154, 255, 0.7)",
-  popupExit: "rgb(209, 44, 35)",
-  wordCount: "rgba(252, 252, 252, 0.65)",
-  wordCountColor: "black",
-  highlight: "rgb(255, 239, 149)",
-  highlightColor: "black",
-  selection: "#b5d5ff",
-  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-};
-
-const cobalt = {
-  theme_name: "cobalt",
-
-  quizletPurple: "#ff9c00",
-  quizletPurpleAccents: "#ff6000",
-  mainAccent: "#00ffdd",
-  body: "#003366",
-  notesBackground: "#002240",
-  notesColor: "#ffffff",
-  code: "#002240",
-  miscButtons: "#003366",
-  contextMenu: "#002240",
-  sidebarAccents: "#003366",
-  sideBar: "#001b33",
-  listBackground: "#002240",
-  searchAndUpload: "#00ffdd",
-  listColor: "#ffffff",
-  icons: "#00ffdd",
-  iconsColor: "#ffffff",
-  tabColor: "white",
-  droppedFolders: "#003366",
-  hovers: "#ff6000",
-  destructive: "#ff6000",
-  popupHeader: "rgba(0, 34, 64, 0.7)",
-  popupExit: "#ff6000",
-  highlight: "#ff9c00",
-  selection: "#003366",
-  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-};
-
-const solarized = {
-  theme_name: "solarized_light",
-  theme_type: "light",
-
-  quizletPurple: "#268bd2",
-  quizletPurpleAccents: "#2aa198",
-  mainAccent: "#b58900",
-  accentFont: "black",
-  body: "#eee8d5",
-  notesBackground: "#fdf6e3",
-  notesColor: "#586e75",
-  code: "#eee8d5",
-  miscButtons: "#eee8d5",
-  contextMenu: "#eee8d5",
-  sidebarAccents: "#93a1a1",
-  sideBar: "#eee8d5",
-  listBackground: "#fdf6e3",
-  searchAndUpload: "#268bd2",
-  searchAndUploadColor: "white",
-  listColor: "#586e75",
-  icons: "#268bd2",
-  iconsColor: "white",
-  tabColor: "black",
-  droppedFolders: "#eee8d5",
-  hovers: "#93a1a1",
-  destructive: "#dc322f",
-  popupHeader: "rgba(253, 246, 227, 0.7)",
-  popupExit: "#dc322f",
-  highlight: "#b58900",
-  highlightColor: "white",
-  selection: "#eee8d5",
-  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-};
-
 function changeTheme(themeName) {
   let obj;
   switch (themeName) {
+    case "gruvbox":
+      obj = gruvbox;
+      break;
+    case "clouds_midnight":
+      obj = clouds_midnight;
+      break;
+    case "twilight":
+      obj = twilight;
+      break;
     case "dracula":
       obj = dracula;
       break;
     case "cobalt":
       obj = cobalt;
       break;
-    case "solarized":
-      obj = solarized;
+    case "solarized_light":
+      obj = solarized_light;
+      break;
+    case "solarized_dark":
+      obj = solarized_dark;
       break;
     default:
       obj = chrome;
   }
   currTheme = obj;
-  localStorage.setItem("/theme", themeName)
+  localStorage.setItem("/theme", themeName);
   document.getElementById("zitselTheme").innerText = `
   :root {
     --quizlet-purple: ${obj.quizletPurple};
     --quizlet-purple-accents: ${obj.quizletPurpleAccents};
+    --quizlet-font: ${obj.quizletFont};
     --main-accent: ${obj.mainAccent};
     --accent-font: ${obj.accentFont};
     --body: ${obj.body};
@@ -362,7 +248,9 @@ function changeTheme(themeName) {
     --notes-color: ${obj.notesColor};
     --code: ${obj.code};
     --misc-buttons: ${obj.miscButtons};
+    --buttons-color: ${obj.buttonsColor};
     --context-menu: ${obj.contextMenu};
+    --context-menu-color: ${obj.contextMenuColor};
     --sidebar-accents: ${obj.sidebarAccents};
     --side-bar: ${obj.sideBar};
     --list-background: ${obj.listBackground};
@@ -383,10 +271,8 @@ function changeTheme(themeName) {
     --floating-bs: ${obj.floatingBs};
   }
 `;
-  editor.setTheme(`ace/theme/${obj.theme_name}`);
+  editor.setTheme(`ace/theme/${themeName}`);
 }
-
-window.changeTheme = changeTheme;
 
 // micromark directives
 function cal(d) {
@@ -431,7 +317,7 @@ function ref(d) {
 
 // ace editor
 const editor = ace.edit("editor");
-editor.setTheme("ace/theme/chrome");
+// editor.setTheme("ace/theme/chrome");
 editor.setOptions({
   maxLines: Infinity,
 });
@@ -474,7 +360,7 @@ const yellowButtons = document.getElementById("yellowButtons");
 const progBar = document.getElementById("progBar");
 
 // Text formatting stuff
-// note names must be at least 1 character and cannot include any chars other than numbers, letters, hyphens, or dashes
+// note names must be at least 1 character and cannot include any chars other than numbers, letters, hyphens, or underscores
 var validNoteName = /^[a-zA-Z0-9-_]+$/;
 
 // https://github.com/stiang/remove-markdown/blob/main/index.js
@@ -682,6 +568,10 @@ const anonTooltips = [
     name: "#letterCount",
     content: "Character Count",
   },
+  {
+    name: "#openCommandPal",
+    content: "Command Palette",
+  },
 ];
 
 anonTooltips.forEach((obj) => {
@@ -689,6 +579,7 @@ anonTooltips.forEach((obj) => {
     arrow: false,
     animation: "shift-toward-subtle",
     content: obj.content,
+    placement: "bottom",
   });
 });
 
@@ -796,7 +687,7 @@ async function referToolTip() {
   delContextMenu();
   const given = this;
   lastDynamicTippy = tippy([given], {
-    theme: currTheme.theme_type || "light",
+    theme: currTheme.theme_type,
     animation: "shift-toward-subtle",
     content: "Loading...",
     allowHTML: true,
@@ -1077,27 +968,51 @@ async function defineCmd() {
       name: "🩳 Change Theme",
       children: [
         {
-          name: "🧛 Dracula",
+          name: "⛈️ Clouds Midnight",
           handler: () => {
-            changeTheme("dracula")
+            changeTheme("clouds_midnight");
           },
         },
         {
           name: "💎 Cobalt",
           handler: () => {
-            changeTheme("cobalt")
+            changeTheme("cobalt");
           },
         },
         {
-          name: "☀️ Solarized",
+          name: "🧛 Dracula",
           handler: () => {
-            changeTheme("solarized")
+            changeTheme("dracula");
+          },
+        },
+        {
+          name: "📻 Gruvbox",
+          handler: () => {
+            changeTheme("gruvbox");
+          },
+        },
+        {
+          name: "🌙 Solarized Dark",
+          handler: () => {
+            changeTheme("solarized_dark");
+          },
+        },
+        {
+          name: "☀️ Solarized Light",
+          handler: () => {
+            changeTheme("solarized_light");
+          },
+        },
+        {
+          name: "🌃 Twilight",
+          handler: () => {
+            changeTheme("twilight");
           },
         },
         {
           name: "🥈 Chrome (default)",
           handler: () => {
-            changeTheme("chrome")
+            changeTheme("chrome");
           },
         },
       ],
@@ -1385,7 +1300,7 @@ function addCloseTab(div) {
       this.remove();
       if (!savedWS.size) {
         switchNote("home");
-      } else if (temp === note.name) {
+      } else if (note && temp === note.name) {
         switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
       }
     },
@@ -2243,7 +2158,6 @@ async function initializeStickyNotes() {
   const response = await fetch(`/api/get/notebooks/sticky__notes`);
   if (response.ok) {
     let json = await response.json();
-    console.log(json["data"]["content"]);
     stickyNotesTextArea.value = json["data"]["content"][0];
   } else if (response.status === 404) {
     stickyNotesTextArea.value = "";
@@ -2807,7 +2721,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     if (task.start === today) {
       dueDate = `<b style = 'color: white;'>Due ${task.start}</b>`;
     } else if (task.start < today) {
-      dueDate = `<b style = 'color: orange'>Due ${task.start}</b>`;
+      dueDate = `<b><mark>Due ${task.start}</mark></b>`;
     } else {
       dueDate = `Due ${task.start}`;
     }
@@ -3720,6 +3634,10 @@ document.getElementById("loading").addEventListener(
   },
   { once: true }
 );
+
+document.getElementById("openCommandPal").addEventListener("click", () => {
+  document.getElementsByClassName("mobile-button")[0].click();
+});
 
 // onload functions
 window.addEventListener(
