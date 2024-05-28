@@ -19,7 +19,7 @@ import { mark, markHTML } from "./micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
-import { chrome, clouds_midnight, cobalt, dracula, gruvbox, solarized_dark, solarized_light, twilight } from "./themes/index.js"
+import themes from "./themes/index.js";
 
 document.body.innerHTML = `
     <div id="loading">
@@ -208,32 +208,9 @@ style.id = "zitselTheme";
 document.head.appendChild(style);
 
 function changeTheme(themeName) {
-  let obj;
-  switch (themeName) {
-    case "gruvbox":
-      obj = gruvbox;
-      break;
-    case "clouds_midnight":
-      obj = clouds_midnight;
-      break;
-    case "twilight":
-      obj = twilight;
-      break;
-    case "dracula":
-      obj = dracula;
-      break;
-    case "cobalt":
-      obj = cobalt;
-      break;
-    case "solarized_light":
-      obj = solarized_light;
-      break;
-    case "solarized_dark":
-      obj = solarized_dark;
-      break;
-    default:
-      obj = chrome;
-  }
+  const obj =
+    themes.find((e) => e.name === themeName) ||
+    themes.find((e) => e.name === "chrome");
   currTheme = obj;
   localStorage.setItem("/theme", themeName);
   document.getElementById("zitselTheme").innerText = `
@@ -839,14 +816,14 @@ async function defineCmd() {
   const list = await fetch("/api/get/list");
   const json = await list.json();
   const cmdList = json.data.map((e) => ({
-    name: `📗 ${e.name}`,
+    name: `${e.name}`,
     handler: () => switchNote(e.name),
   }));
 
   const cmdNest = json.data.reduce((arr, e) => {
     if (e.name !== note.name && !family.includes(e.name)) {
       arr.push({
-        name: `📗 ${e.name}`,
+        name: `${e.name}`,
         handler: () => nestNote(note.name, e.name),
       });
     }
@@ -855,105 +832,105 @@ async function defineCmd() {
 
   const cmdRel = (await getAnyBookContent(note.name, "parents")).map(
     (parent) => ({
-      name: `📗 ${parent}`,
+      name: `${parent}`,
       handler: () => relinquishNote(note.name, parent),
     })
   );
 
   let commands = [
     {
-      name: "📃 New Page",
+      name: "New Page",
       handler: () => jumpToDesiredPage(note.content.length),
     },
     {
-      name: "🚶 Go to Page",
+      name: "Go to Page",
       children: cmdPgs,
     },
     {
-      name: "📖 Open Notebook",
+      name: "Open Notebook",
       children: cmdList,
     },
     {
-      name: "💾 Save Notebook",
+      name: "Save Notebook",
       handler: () => saveNoteBookToDb(),
     },
     {
-      name: "🖼️ Insert Image",
+      name: "Insert Image",
       handler: () => document.getElementById("getFile1").click(),
     },
     {
-      name: "📂 Nest Notebook",
+      name: "Nest Notebook",
       children: cmdNest,
     },
     {
-      name: "🫗 Relinquish Notebook",
+      name: "Relinquish Notebook",
       children: cmdRel,
     },
     {
-      name: "🔎 Compare Local Notes to DB",
+      name: "Compare Local Notes to DB",
       handler: () => showBookDiffPopup(),
     },
     {
-      name: "✨ AI Summary",
+      name: "AI Summary",
       handler: () => AISUmmary(),
     },
     {
-      name: "🃏 Flashcard Mode",
+      name: "Flashcard Mode",
       handler: () => flashcardMode(),
     },
     {
-      name: "🗑️ Delete This Page",
+      name: "Delete This Page",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: () => deletePage(),
         },
       ],
     },
     {
-      name: "🗑️ Delete Notebook",
+      name: "Delete Notebook",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: () => deleteNoteBookFromDb(),
         },
       ],
     },
     {
-      name: "🪠 Force Update Notebook",
+      name: "Force Update Notebook",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: () => forceUpdateNotes(),
         },
       ],
     },
     {
-      name: "📇 Open Flashcards",
+      name: "Open Flashcards",
       handler: () => showFlashcards(),
     },
     {
-      name: "📅 Open Calendar",
+      name: "Open Calendar",
       handler: () => showTodo(false),
     },
+    // {
+    //   name: "Open Sticky Note",
+    //   handler: () => showStickyNotes(),
+    // },
     {
-      name: "📝 Open Sticky Note",
-      handler: () => showStickyNotes(),
-    },
-    {
-      name: "✈️ Import Sticky Note",
+      name: "Import Sticky Note",
       handler: () => {
         insertStickyNote();
       },
     },
     {
-      name: "✈️ Insert Calendar Event",
+      name: "Insert Calendar Event",
       handler: () => {
         showTodo(true);
       },
     },
     {
-      name: "⌨️ Toggle Vim Mode",
+      name: "Toggle Vim Mode",
       handler: () => {
         if (notesTextArea.getAttribute("data-vim") === "true") {
           editor.setKeyboardHandler("ace/keyboard/vscode");
@@ -965,77 +942,51 @@ async function defineCmd() {
       },
     },
     {
-      name: "🩳 Change Theme",
-      children: [
-        {
-          name: "⛈️ Clouds Midnight",
-          handler: () => {
-            changeTheme("clouds_midnight");
-          },
-        },
-        {
-          name: "💎 Cobalt",
-          handler: () => {
-            changeTheme("cobalt");
-          },
-        },
-        {
-          name: "🧛 Dracula",
-          handler: () => {
-            changeTheme("dracula");
-          },
-        },
-        {
-          name: "📻 Gruvbox",
-          handler: () => {
-            changeTheme("gruvbox");
-          },
-        },
-        {
-          name: "🌙 Solarized Dark",
-          handler: () => {
-            changeTheme("solarized_dark");
-          },
-        },
-        {
-          name: "☀️ Solarized Light",
-          handler: () => {
-            changeTheme("solarized_light");
-          },
-        },
-        {
-          name: "🌃 Twilight",
-          handler: () => {
-            changeTheme("twilight");
-          },
-        },
-        {
-          name: "🥈 Chrome (default)",
-          handler: () => {
-            changeTheme("chrome");
-          },
-        },
-      ],
+      name: "Change Theme",
+      children: themes
+        .map((e) => {
+          return {
+            name: e.name
+              .split("_")
+              .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
+              .join(" "),
+            handler: () => {
+              changeTheme(e.name);
+            },
+          };
+        })
+        .sort((a, b) => {
+          const name1 = a.name;
+          const name2 = b.name;
+          if (name1 < name2) {
+            return -1;
+          }
+          if (name1 > name2) {
+            return 1;
+          }
+          // names must be equal
+          return 0;
+        }),
     },
     {
-      name: "👁️ Switch View",
+      name: "Switch View",
       children: [
         {
-          name: "🌗 Split",
+          name: "Split",
           handler: () => {
             localStorage.setItem("/viewPref", "split");
             editingWindow("split");
           },
         },
         {
-          name: "🌑 Read",
+          name: "Read",
           handler: () => {
             localStorage.setItem("/viewPref", "read");
             editingWindow("read");
           },
         },
         {
-          name: "🌕 Write",
+          name: "Write",
           handler: () => {
             localStorage.setItem("/viewPref", "write");
             editingWindow("write");
@@ -1044,16 +995,16 @@ async function defineCmd() {
       ],
     },
     {
-      name: "🧠 Toggle Wikipedia Search",
+      name: "Toggle Wikipedia Search",
       handler: () => toggleWikiSearch(),
     },
     {
-      name: "🌴 Toggle List",
+      name: "Toggle List",
       handler: () => toggleList(),
     },
   ].sort((a, b) => {
-    const name1 = a.name.substring(2);
-    const name2 = b.name.substring(2);
+    const name1 = a.name;
+    const name2 = b.name;
     if (name1 < name2) {
       return -1;
     }
@@ -2719,9 +2670,9 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     today = `${yyyy}-${mm}-${dd}`;
 
     if (task.start === today) {
-      dueDate = `<b style = 'color: white;'>Due ${task.start}</b>`;
+      dueDate = `<b>Due ${task.start}</b>`;
     } else if (task.start < today) {
-      dueDate = `<b><mark>Due ${task.start}</mark></b>`;
+      dueDate = `<b><i>Due ${task.start}</i></b>`;
     } else {
       dueDate = `Due ${task.start}`;
     }
@@ -3205,7 +3156,12 @@ async function chatGPT(content, prompt) {
 async function AISUmmary() {
   const name = note.name;
   const pg = note.pgN + 1;
+  const loadingScreen = document.createElement("div");
   mainContainer.style.pointerEvents = "none";
+  loadingScreen.id = "loading";
+  loadingScreen.style.opacity = ".9";
+  loadingScreen.innerHTML = '<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>'
+  mainContainer.after(loadingScreen)
   const AI = await chatGPT(editor.getValue(), "TLDR:");
   reservedNames.find((e) => e.data.name === "AI-Summary").data.content = [
     `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI.replaceAll(
@@ -3215,6 +3171,7 @@ async function AISUmmary() {
   ];
   await switchNote("AI-Summary");
   updateAndSaveNotesLocally();
+  loadingScreen.remove();
   mainContainer.style.pointerEvents = "inherit";
 }
 
@@ -3250,7 +3207,6 @@ document.getElementById("icon2").addEventListener("click", (e) => {
         this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter book name";
-        this.style.color = "silver";
         this.contentEditable = true;
         this.focus();
         this.addEventListener(
@@ -3258,7 +3214,6 @@ document.getElementById("icon2").addEventListener("click", (e) => {
           function () {
             hasTyped = true;
             this.innerText = "";
-            this.style.color = "white";
           },
           { once: true }
         );
@@ -3281,7 +3236,6 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Open Notebook";
-            this.style.color = "white";
           },
           { once: true }
         );
@@ -3344,14 +3298,13 @@ document.getElementById("icon2").addEventListener("click", (e) => {
         this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter child name";
-        this.style.color = "silver";
         this.contentEditable = true;
         this.focus();
         this.addEventListener(
           "beforeinput",
           function () {
             this.innerText = "";
-            this.style.color = "white";
+
             hasTyped = true;
           },
           { once: true }
@@ -3375,7 +3328,6 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
-            this.style.color = "white";
           },
           { once: true }
         );
@@ -3390,14 +3342,13 @@ document.getElementById("icon2").addEventListener("click", (e) => {
         this.classList.add("currPage");
         this.style.fontStyle = "italic";
         this.innerText = "Enter copy name";
-        this.style.color = "silver";
         this.contentEditable = true;
         this.focus();
         this.addEventListener(
           "beforeinput",
           function () {
             this.innerText = "";
-            this.style.color = "white";
+
             hasTyped = true;
           },
           { once: true }
@@ -3420,7 +3371,6 @@ document.getElementById("icon2").addEventListener("click", (e) => {
             this.classList.remove("currPage");
             this.style.fontStyle = "inherit";
             this.innerText = "Copy Notebook";
-            this.style.color = "white";
           },
           { once: true }
         );
@@ -3634,7 +3584,6 @@ document.getElementById("loading").addEventListener(
   },
   { once: true }
 );
-
 document.getElementById("openCommandPal").addEventListener("click", () => {
   document.getElementsByClassName("mobile-button")[0].click();
 });
@@ -3643,6 +3592,7 @@ document.getElementById("openCommandPal").addEventListener("click", () => {
 window.addEventListener(
   "load",
   async () => {
+    const startTime = Date.now();
     changeTheme(localStorage.getItem("/theme") || "chrome");
     createWorkspace();
     await createList();
@@ -3687,7 +3637,7 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    console.log("%cWelcome!", "color:yellow;font-weight:bold;");
+    console.log(`%cLoad time: ${Date.now() - startTime}ms!`, "color:yellow;font-weight:bold;");
   },
   { once: true }
 );
