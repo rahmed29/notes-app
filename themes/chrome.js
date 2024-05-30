@@ -33,5 +33,4 @@ export const chrome = {
   highlight: "rgb(255, 239, 149)",
   highlightColor: "black",
   selection: "#b5d5ff",
-  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
 };

@@ -374,7 +374,7 @@ a {
 }
 
 #brain a {
-  color: var(--notes-color);
+  color: lightblue;
 }
 
 #icons .emoji {

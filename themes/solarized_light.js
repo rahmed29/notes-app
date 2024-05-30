@@ -31,5 +31,4 @@ export const solarized_light = {
   highlight: "#b58900",
   highlightColor: "white",
   selection: "#eee8d5",
-  floatingBs: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
 };

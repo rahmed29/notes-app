@@ -31,6 +31,4 @@ export const cobalt = {
   highlight: "#ff9c00",
   highlightColor: "black",
   selection: "#86543A",
-  floatingBs:
-    "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset",
 };

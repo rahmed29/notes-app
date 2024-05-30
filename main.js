@@ -202,18 +202,19 @@ if (location.pathname === "/") {
 }
 
 // theming
-let currTheme = null;
-const style = document.createElement("style");
-style.id = "zitselTheme";
-document.head.appendChild(style);
-
 function changeTheme(themeName) {
+  try {
+    document.getElementById("zitselTheme").remove();
+  } catch (err) {}
+  const style = document.createElement("style");
+  style.id = "zitselTheme";
+  document.head.appendChild(style);
   const obj =
     themes.find((e) => e.name === themeName) ||
     themes.find((e) => e.name === "chrome");
   currTheme = obj;
   localStorage.setItem("/theme", themeName);
-  document.getElementById("zitselTheme").innerText = `
+  style.innerText = `
   :root {
     --quizlet-purple: ${obj.quizletPurple};
     --quizlet-purple-accents: ${obj.quizletPurpleAccents};
@@ -245,7 +246,11 @@ function changeTheme(themeName) {
     --highlight: ${obj.highlight};
     --highlight-color: ${obj.highlightColor};
     --selection: ${obj.selection};
-    --floating-bs: ${obj.floatingBs};
+    --floating-bs: ${
+      obj.theme_type === "dark"
+        ? "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset"
+        : "rgba(0, 0, 0, 0.24) 0px 3px 8px"
+    };
   }
 `;
   editor.setTheme(`ace/theme/${themeName}`);
@@ -560,6 +565,113 @@ anonTooltips.forEach((obj) => {
   });
 });
 
+// current theme
+let currTheme = null;
+
+// toast notifs
+const notyf = new Notyf({
+  position: {
+    y: "bottom",
+  },
+  dismissible: true,
+});
+
+// debounce when switching notes
+let switching = false;
+
+// notebook names that aren't allowed because they are being used for other stuff
+const reservedNames = [
+  {
+    data: {
+      name: "home",
+      content: [
+        "# 👋 Welcome Home!\n\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
+      ],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+  {
+    data: {
+      name: "todo__list",
+      content: [
+        "This notebook is reserved for storing your calendar events. Sorry!",
+      ],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+  {
+    data: {
+      name: "sticky__notes",
+      content: [
+        "This notebook is reserved for storing your sticky note. Sorry!",
+      ],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+  {
+    data: {
+      name: "flash__cards",
+      content: [
+        "This notebook is reserved for storing your flahscards. Sorry!",
+      ],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+  {
+    data: {
+      name: "AI-Summary",
+      content: ["This notebook name is reserved for AI Summaries. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+];
+
+// active and completed events for todo
+let events;
+let pastEvents;
+
+// flashcards
+let flashcards = [];
+let currCard = null;
+
+// wikiSearch enabled
+let wikiEnabled = true;
+
+// variable for the tree list state
+let haveToUpdateList = false;
+let nestedBooks = null;
+const droppedFolders = new Set(
+  JSON.parse(localStorage.getItem("/fileStructure")) || []
+);
+const root = {
+  name: "_root",
+  children: [],
+  excerpt: [],
+  parents: [],
+};
+
+// event listeners and stuff we need to destroy on repaints
+let tabTippys = new Map();
+let lastDynamicTippy = null;
+let pageHandlers = [];
+let listHandlers = [];
+let previewHandlers = [];
+
+// instance of fullcalendar, air date picker and command pal for later destruction
+let calendar;
+let datePicker;
+let c;
+
 function insertStickyNote() {
   if (!reservedNames.some((e) => e.data.name === note.name)) {
     editor.insert(stickyNotesTextArea.value);
@@ -691,110 +803,6 @@ async function referToolTip() {
     lastDynamicTippy.destroy();
   }
 }
-
-// toast notifs
-const notyf = new Notyf({
-  position: {
-    y: "bottom",
-  },
-  dismissible: true,
-});
-
-// debounce when switching notes
-let switching = false;
-
-// notebook names that aren't allowed because they are being used for other stuff
-const reservedNames = [
-  {
-    data: {
-      name: "home",
-      content: [
-        "# 👋 Welcome Home!\n\nUse the __side menu__, the __toolbar__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
-      ],
-      children: [],
-      parents: [],
-      saved: false,
-    },
-  },
-  {
-    data: {
-      name: "todo__list",
-      content: [
-        "This notebook is reserved for storing your calendar events. Sorry!",
-      ],
-      children: [],
-      parents: [],
-      saved: false,
-    },
-  },
-  {
-    data: {
-      name: "sticky__notes",
-      content: [
-        "This notebook is reserved for storing your sticky note. Sorry!",
-      ],
-      children: [],
-      parents: [],
-      saved: false,
-    },
-  },
-  {
-    data: {
-      name: "flash__cards",
-      content: [
-        "This notebook is reserved for storing your flahscards. Sorry!",
-      ],
-      children: [],
-      parents: [],
-      saved: false,
-    },
-  },
-  {
-    data: {
-      name: "AI-Summary",
-      content: ["This notebook name is reserved for AI Summaries. Sorry!"],
-      children: [],
-      parents: [],
-      saved: false,
-    },
-  },
-];
-
-// active and completed events for todo
-let events;
-let pastEvents;
-
-// flashcards
-let flashcards = [];
-let currCard = null;
-
-// wikiSearch enabled
-let wikiEnabled = true;
-
-// variable for the tree list state
-let haveToUpdateList = false;
-let nestedBooks = null;
-const droppedFolders = new Set(
-  JSON.parse(localStorage.getItem("/fileStructure")) || []
-);
-const root = {
-  name: "_root",
-  children: [],
-  excerpt: [],
-  parents: [],
-};
-
-// event listeners and stuff we need to destroy on repaints
-let tabTippys = new Map();
-let lastDynamicTippy = null;
-let pageHandlers = [];
-let listHandlers = [];
-let previewHandlers = [];
-
-// instance of fullcalendar, air date picker and command pal for later destruction
-let calendar;
-let datePicker;
-let c;
 
 // Re-Instantiate the command palette
 async function defineCmd() {
@@ -3160,8 +3168,9 @@ async function AISUmmary() {
   mainContainer.style.pointerEvents = "none";
   loadingScreen.id = "loading";
   loadingScreen.style.opacity = ".9";
-  loadingScreen.innerHTML = '<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>'
-  mainContainer.after(loadingScreen)
+  loadingScreen.innerHTML =
+    '<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+  mainContainer.after(loadingScreen);
   const AI = await chatGPT(editor.getValue(), "TLDR:");
   reservedNames.find((e) => e.data.name === "AI-Summary").data.content = [
     `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI.replaceAll(
@@ -3637,7 +3646,10 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    console.log(`%cLoad time: ${Date.now() - startTime}ms!`, "color:yellow;font-weight:bold;");
+    console.log(
+      `%cLoad time: ${Date.now() - startTime}ms!`,
+      "color:yellow;font-weight:bold;"
+    );
   },
   { once: true }
 );

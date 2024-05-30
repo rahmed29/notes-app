@@ -31,6 +31,4 @@ export const gruvbox = {
   highlight: "#fabd2f",
   highlightColor: "#282828",
   selection: "#8d5332",
-  floatingBs:
-    "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset",
 };

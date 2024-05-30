@@ -31,6 +31,4 @@ export const twilight = {
   highlight: "#e6db74",
   highlightColor: "#272822",
   selection: "#3c4043",
-  floatingBs:
-    "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset",
 };

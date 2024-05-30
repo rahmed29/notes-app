@@ -31,6 +31,4 @@ export const tomorrowNight80s = {
   highlight: "#6699cc",
   highlightColor: "#2d2d2d",
   selection: "#515151",
-  floatingBs:
-    "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset",
 };

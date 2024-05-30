@@ -31,6 +31,4 @@ export const clouds_midnight = {
   highlight: "#ffb454",
   highlightColor: "#27292c",
   selection: "#3c3f41",
-  floatingBs:
-    "rgba(70, 75, 103, 0.05) 0px 0px 0px 1px, rgb(70, 75, 103) 0px 0px 0px 1px inset",
 };
