@@ -182,13 +182,12 @@ app.get("/api/get/list/", async (req, res) => {
       notebook.name !== "todo__list" &&
       notebook.name !== "flash__cards"
     ) {
-      let excerpts = [];
-      notebook.content.forEach((page) => {
+      let excerpts = notebook.content.map((page) => {
         const name =
           page.indexOf("\n") === -1
             ? page
             : page.substring(0, page.indexOf("\n"));
-        excerpts.push(name);
+        return name;
       });
       data.push({
         name: notebook.name,

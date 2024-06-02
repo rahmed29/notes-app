@@ -30,5 +30,5 @@ export const solarized_dark = {
   popupExit: "#dc322f",
   highlight: "#b58900",
   highlightColor: "gainsboro",
-  selection: "#073642",
+  selection: "#1a414b",
 };

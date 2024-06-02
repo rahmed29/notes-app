@@ -30,5 +30,5 @@ export const solarized_light = {
   popupExit: "#dc322f",
   highlight: "#b58900",
   highlightColor: "white",
-  selection: "#eee8d5",
+  selection: "#e6e5d5",
 };

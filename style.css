@@ -273,12 +273,8 @@ a {
   color: var(--list-color) !important;
 }
 
-#listOfBooks li a:hover {
-  background: var(--dropped-folders);
-}
-
 .itemUpload .folderName::before {
-  padding-right: 3px;
+  margin-left: -1px;
   content: attr(data-children);
   transition: 0s;
   font-family: Inter, sans-serif;
@@ -287,7 +283,7 @@ a {
 
 .itemUpload ul {
   padding-bottom: 3px;
-  max-height: 100px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
@@ -479,6 +475,11 @@ a {
   display: flex;
 }
 
+#notesPreviewArea .tippy-content {
+  background: var(--notes-background);
+  box-shadow: var(--floating-bs);
+}
+
 #notesAreaContainer .tippy-content {
   padding: 3px;
 }
@@ -625,13 +626,17 @@ table th {
 #notesPreviewArea img,
 .pagePreviewContainer img {
   border-style: solid;
-  border-width: 1px;
+  border-width: 2px;
   border-color: rgba(0, 0, 0, 0);
   user-select: none;
   max-width: 80%;
   height: auto;
   border-radius: 12px;
   transition: 0.25s;
+}
+
+.pagePreviewContainer img {
+  max-width: 100%;
 }
 
 #notesPreviewArea img:hover {
@@ -964,6 +969,10 @@ blockquote:hover {
   animation: fade 0.25s ease;
 }
 
+#bookDiffContent .fcButtons button {
+  background: var(--misc-buttons);
+}
+
 #bookDiffContent a {
   color: black;
 }
@@ -1024,7 +1033,6 @@ blockquote:hover {
   padding: 0.5em;
   background: var(--misc-buttons);
   border-radius: 6px;
-  flex-grow: 1;
   user-select: none;
 }
 
@@ -1200,8 +1208,31 @@ blockquote:hover {
   user-select: none;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  color: white;
+  color: var(--quizlet-font);
   background: var(--quizlet-purple-accents);
+}
+
+/* flashcard editing mode */
+.editableCard {
+  height: auto;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  justify-content: center;
+}
+
+.editableCard::before {
+  content: attr(data-order);
+}
+
+.editableCard .cardFront, .editableCard .cardBack {
+  width: 50%;
+  height: 300px;
+  opacity: .75;
+}
+
+.editableCard .cardFront:focus, .editableCard .cardBack:focus {
+  opacity: 1;
 }
 
 /* flashcard popup */
@@ -1274,10 +1305,6 @@ blockquote:hover {
   width: 50%;
 }
 
-.studyContainer .fcButtons button {
-  background: var(--misc-buttons);
-}
-
 .studyingOptions {
   gap: 5px;
   width: 70%;
@@ -1346,6 +1373,14 @@ blockquote:hover {
 }
 
 /* calendar popup */
+#seePast {
+  cursor: pointer;
+}
+
+#seePast:hover {
+  background: var(--hovers);
+}
+
 .filter {
   box-sizing: border-box;
   padding: 3px;
@@ -1390,6 +1425,7 @@ blockquote:hover {
   border-radius: 3px;
   color: var(--buttons-color);
   font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
   outline: none;
   border: none;
   box-sizing: border-box;
@@ -1453,6 +1489,17 @@ blockquote:hover {
 
 .eventBottom:hover {
   background: var(--quizlet-purple-accents);
+}
+
+.ace_search {
+  border-radius: 5px !important;
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+.ace_search_field {
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
 /* override full calendar variables, not to be mistaken with my own fc (flashcards) stuff */
@@ -1575,6 +1622,17 @@ blockquote:hover {
 }
 
 /* https://codepen.io/oltika/pen/WGLZyb */
+.grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: .5;
+}
+
+.topOverflow {
+  box-shadow: 0px 9px 6px -4px rgba(0,0,0,0.25);
+}
+
 .saved {
   animation: saved 1s ease;
 }

@@ -1,8 +1,8 @@
 export const cobalt = {
   name: "cobalt",
   theme_type: "dark",
-  quizletPurple: "#ff9c00",
-  quizletPurpleAccents: "#ff6000",
+  quizletPurple: "#00ffdd",
+  quizletPurpleAccents: "#0eceb4",
   quizletFont: "black",
   mainAccent: "#00ffdd",
   accentFont: "black",

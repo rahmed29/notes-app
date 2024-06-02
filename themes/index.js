@@ -32,5 +32,5 @@ export default [
   monokai,
   github_dark,
   nord_dark,
-  pastel_on_dark
+  pastel_on_dark,
 ];

@@ -20,6 +20,48 @@ import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
 import themes from "./themes/index.js";
+import { allSettledWithThrow } from "openai/lib/Util.mjs";
+
+function memorySizeOf(obj) {
+  var bytes = 0;
+
+  function sizeOf(obj) {
+    if (obj !== null && obj !== undefined) {
+      switch (typeof obj) {
+        case "number":
+          bytes += 8;
+          break;
+        case "string":
+          bytes += obj.length * 2;
+          break;
+        case "boolean":
+          bytes += 4;
+          break;
+        case "object":
+          var objClass = Object.prototype.toString.call(obj).slice(8, -1);
+          if (objClass === "Object" || objClass === "Array") {
+            for (var key in obj) {
+              if (!obj.hasOwnProperty(key)) continue;
+              sizeOf(obj[key]);
+            }
+          } else bytes += obj.toString().length * 2;
+          break;
+      }
+    }
+    return bytes;
+  }
+
+  function formatByteSize(bytes) {
+    if (bytes < 1024) return bytes + " bytes";
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(3) + " KiB";
+    else if (bytes < 1073741824) return (bytes / 1048576).toFixed(3) + " MiB";
+    else return (bytes / 1073741824).toFixed(3) + " GiB";
+  }
+
+  return formatByteSize(sizeOf(obj));
+}
+
+window.memorySizeOf = memorySizeOf;
 
 document.body.innerHTML = `
     <div id="loading">
@@ -571,7 +613,8 @@ let currTheme = null;
 // toast notifs
 const notyf = new Notyf({
   position: {
-    y: "bottom",
+    y: "top",
+    x: "center"
   },
   dismissible: true,
 });
@@ -629,6 +672,15 @@ const reservedNames = [
     data: {
       name: "AI-Summary",
       content: ["This notebook name is reserved for AI Summaries. Sorry!"],
+      children: [],
+      parents: [],
+      saved: false,
+    },
+  },
+  {
+    data: {
+      name: "Image-Preview",
+      content: ["This notebook name is reserved for previewing uploaded images. Sorry!"],
       children: [],
       parents: [],
       saved: false,
@@ -694,7 +746,8 @@ const dropzone = new Dropzone(document.body, {
     file.previewElement.remove();
     editor.insert(`![](${response})`);
     updateAndSaveNotesLocally();
-    saveNoteBookToDb();
+    // saveNoteBookToDb();
+    updateList();
   },
 });
 
@@ -709,7 +762,8 @@ async function insertAndSaveImage() {
       const response = await imageUploadStatus.text();
       editor.insert(`![](${response})`);
       updateAndSaveNotesLocally();
-      saveNoteBookToDb();
+      updateList();
+      // saveNoteBookToDb();
     } else {
       notyf.error("An error occurred when saving an image.");
     }
@@ -726,7 +780,8 @@ async function deleteImageFromDb(image) {
   if (imageDelete.ok) {
     editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
     updateAndSaveNotesLocally();
-    saveNoteBookToDb();
+    // saveNoteBookToDb();
+    updateList();
   } else {
     notyf.error("An error occurred when deleting an image.");
   }
@@ -741,6 +796,7 @@ function removeImageToolTip(e) {
         text: "Open Image",
         click: function () {
           window.open(`/uploads/${this.getAttribute("data-props")}`, "_blank");
+          delContextMenu();
         },
         appearance: "ios",
       },
@@ -821,14 +877,13 @@ async function defineCmd() {
   });
 
   const family = await getFamily(note.name);
-  const list = await fetch("/api/get/list");
-  const json = await list.json();
-  const cmdList = json.data.map((e) => ({
+  const json = await getList();
+  const cmdList = json.map((e) => ({
     name: `${e.name}`,
     handler: () => switchNote(e.name),
   }));
 
-  const cmdNest = json.data.reduce((arr, e) => {
+  const cmdNest = json.reduce((arr, e) => {
     if (e.name !== note.name && !family.includes(e.name)) {
       arr.push({
         name: `${e.name}`,
@@ -883,7 +938,7 @@ async function defineCmd() {
       handler: () => AISUmmary(),
     },
     {
-      name: "Flashcard Mode",
+      name: "Create Flashcards",
       handler: () => flashcardMode(),
     },
     {
@@ -1139,10 +1194,10 @@ async function updateAndSaveNotesLocally() {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus(note.dbSave);
-  previewHandlers.forEach(({ element, type, listener }) => {
-    element.removeEventListener(type, listener);
-  });
-  previewHandlers = [];
+  previewHandlers = previewHandlers.reduce((arr, e) => {
+    e.element.removeEventListener(e.type, e.listener);
+    return arr;
+  }, [])
   const v = document.createElement("div");
   v.innerHTML = format(editor.getValue());
   v.id = "fill";
@@ -1244,10 +1299,8 @@ function formatNonText(ele) {
 // loading workspace from last session
 // adds event listener for closing tab parameter
 function addCloseTab(div) {
-  div.addEventListener("click", switchTab);
-  div.addEventListener(
-    "contextmenu",
-    function (e) {
+  function closeTab(e) {
+    if (e.button === 1) {
       e.preventDefault();
       const temp = this.getAttribute("data-bookname");
       library.delete(temp);
@@ -1256,15 +1309,18 @@ function addCloseTab(div) {
       savedWS.delete(temp);
       localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
       this.removeEventListener("click", switchTab);
+      // self removing event listener
+      this.removeEventListener("mouseup", closeTab);
       this.remove();
       if (!savedWS.size) {
         switchNote("home");
       } else if (note && temp === note.name) {
         switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
       }
-    },
-    { once: true }
-  );
+    }
+  }
+  div.addEventListener("click", switchTab);
+  div.addEventListener("mouseup", closeTab);
 }
 
 function createWorkspace() {
@@ -1358,7 +1414,7 @@ async function switchNote(noteName, page) {
   note.dbSave = data.dbSave || data.content;
   note.children = data.children;
   note.parents = data.parents;
-  note.family = await getFamily(noteName);
+  note.family = await getFamily(noteName, data);
   note.timeOfSave = data.date;
   note.saved = data.saved;
   note.aceSessions = data.aceSessions || [];
@@ -1428,20 +1484,13 @@ function dropWrapper(e) {
 
 async function createList() {
   nestedBooks = new Set();
-  listHandlers.forEach(({ element, type, listener }) => {
-    element.removeEventListener(type, listener);
-  });
-  listHandlers = [];
-  const response = await fetch("/api/get/list");
-  if (!response.ok) {
-    notyf.error("An error occurred when creating the tree list");
-    return 0;
-  }
-  const json = await response.json();
-  const result = json["data"];
-  root.children = [];
-  result.forEach((obj) => {
-    root.children.push(obj.name);
+  listHandlers = listHandlers.reduce((arr, e) => {
+    e.element.removeEventListener(e.type, e.listener);
+    return arr;
+  }, [])
+  const result = await getList();
+  root.children = result.map((obj) => {
+    return obj.name;
   });
   const gigaFolder = nestedList(root, result).childNodes[1];
   gigaFolder.classList.add("gigaFolder");
@@ -1462,13 +1511,22 @@ async function createList() {
   });
 }
 
-function updateList() {
-  if (list.getAttribute("data-pos") === "hidden") {
-    haveToUpdateList = true;
-  } else {
-    createList();
+window.memorySizeOf = memorySizeOf;
+
+let listInMemory = null;
+
+async function getList() {
+  if (!listInMemory) {
+    await updateList();
   }
-  defineCmd();
+  return listInMemory;
+}
+
+async function updateList() {
+  const list = await fetch("/api/get/list");
+  const json = await list.json();
+  listInMemory = json.data;
+  createList();
 }
 
 function nestedList(obj, allNotes) {
@@ -1545,6 +1603,15 @@ function nestedList(obj, allNotes) {
   return folder;
 }
 
+function showImagePreview(e) {
+  showPagePreview(e, `![](${e.target.getAttribute("data-href")})`);
+}
+
+function goToImagePreview(e) {
+  reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [`![](${e.target.getAttribute("data-href")})`];
+  switchNote("Image-Preview")
+}
+
 async function appendUploads() {
   const images = await fetch("/api/get/image-list");
   if (!images.ok) {
@@ -1560,9 +1627,15 @@ async function appendUploads() {
   }
   result2.forEach((file) => {
     const a = document.createElement("a");
-    a.href = `/uploads/${file}`;
-    a.setAttribute("target", "_blank");
+    a.addEventListener("contextmenu", showImagePreview)
+    listHandlers.push({
+      element: a,
+      type: "mouseenter",
+      listener: showImagePreview,
+    });
+    a.setAttribute("data-href", `/uploads/${file}`);
     a.innerText = file;
+    a.addEventListener("click", goToImagePreview)
     const li = document.createElement("li");
     li.appendChild(a);
     ul.appendChild(li);
@@ -1627,10 +1700,10 @@ function toggleList() {
 
 // page numbers on the left
 function createPageNumbers() {
-  pageHandlers.forEach(({ element, type, listener }) => {
-    element.removeEventListener(type, listener);
-  });
-  pageHandlers = [];
+  pageHandlers = pageHandlers.reduce((arr, e) => {
+    e.element.removeEventListener(e.type, e.listener);
+    return arr;
+  }, [])
   while (topLeftPageNumber.firstChild) {
     topLeftPageNumber.firstChild.remove();
   }
@@ -1719,6 +1792,14 @@ async function getAnyBookContent(bookName, desiredInfo) {
       return cachedData["data"];
     }
     return cachedData["data"][desiredInfo];
+  } else if (
+    listInMemory &&
+    (desiredInfo === "parents" || desiredInfo === "children")
+  ) {
+    const objectInList = listInMemory.find((e) => e.name === bookName);
+    if (objectInList) {
+      return objectInList[desiredInfo];
+    }
   }
   const response = await fetch(`/api/get/notebooks/${bookName}`);
   if (response.ok) {
@@ -1826,6 +1907,7 @@ async function saveNoteBookToDb() {
     notyf.error("An error occurred when saving a notebook");
   }
   updateList();
+  defineCmd();
 }
 
 async function deleteNoteBookFromDb() {
@@ -1872,6 +1954,7 @@ async function deleteNoteBookFromDb() {
     notyf.error("An error occurred when deleting a notebook");
   }
   updateList();
+  defineCmd();
 }
 
 // context menu
@@ -1914,15 +1997,15 @@ function contextMenu(e, button, position) {
 }
 
 // page preview
-async function showPagePreview(e) {
+async function showPagePreview(e, customText) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
   const leftAmount =
-    this.id.substring(0, "whereTo".length) === "whereTo"
+    e.currentTarget.id.substring(0, "whereTo".length) === "whereTo"
       ? 30
       : parseInt(list.style.width.replace("px", "")) + 30;
-  const page = this.getAttribute("data-page");
+  const page = e.currentTarget.getAttribute("data-page");
   const menu = document.createElement("div");
   menu.id = "contextMenu";
   menu.classList.add("listPreview");
@@ -1933,17 +2016,11 @@ async function showPagePreview(e) {
       : "calc(100vh - 340px)";
   const preview = document.createElement("div");
   preview.classList.add("pagePreviewContainer");
-  preview.innerHTML =
-    this.getAttribute("data-bookname") === note.name
-      ? format(note.content[page])
-      : format(
-          (
-            await getAnyBookContent(
-              this.getAttribute("data-bookname"),
-              "content"
-            )
-          )[page]
-        );
+  preview.innerHTML = customText ? format(customText) : format(
+    (await getAnyBookContent(e.currentTarget.getAttribute("data-bookname"), "content"))[
+      page
+    ]
+  );
   menu.appendChild(preview);
   mainContainer.after(menu);
 }
@@ -1962,6 +2039,7 @@ function createPopupWindow() {
     delContextMenu();
     hideStickyNotes();
   });
+  document.body.classList.add("poppedUp")
   bookDiffPopup.id = "bookDiffPopup";
   const bookDiffHeader = document.createElement("div");
   bookDiffHeader.id = "bookDiffHeader";
@@ -2021,6 +2099,7 @@ function hideBookDiffPopup() {
   } catch (err) {
     // console.log(err);
   }
+  document.body.classList.remove("poppedUp")
   mainContainer.removeEventListener("click", hideBookDiffPopup);
   editor.session.off("change", hideBookDiffPopup);
 }
@@ -2167,8 +2246,8 @@ function flashcardMode() {
   hideBookDiffPopup();
   leaveFlashcardMode();
   document.body.classList.add("flashcardMode");
-  const alert = document.createElement("div");
   hideList();
+  const alert = document.createElement("div");
   alert.id = "fcAlert";
   alert.innerText =
     "You are in flashcard mode. Click some text to add it to the focused side of the card";
@@ -2181,7 +2260,6 @@ function flashcardMode() {
   cardFront.classList.add("currCard");
   cardFront.contentEditable = true;
   cardFront.spellcheck = false;
-  cardFront.focus();
   currCard = cardFront;
   cardFront.classList.add("cardFront");
   const buttons = document.createElement("div");
@@ -2240,6 +2318,7 @@ function flashcardMode() {
   fcArea.appendChild(buttons);
   mainContainer.after(fcArea);
   notesPreviewArea.addEventListener("click", fcPop);
+  cardFront.focus();
 }
 
 function leaveFlashcardMode() {
@@ -2287,6 +2366,17 @@ function showFlashcards(noAnimation) {
 
   const extra = document.createElement("div");
   extra.classList.add("extra");
+  const editAll = document.createElement("div");
+  editAll.classList.add("reset");
+  editAll.innerText = "📝 Edit";
+  editAll.addEventListener(
+    "click",
+    () => {
+      editCards(flashcards.filter((e) => e.subject === note.name));
+    },
+    { once: true }
+  );
+  extra.appendChild(editAll)
   const reset = document.createElement("div");
   reset.classList.add("reset");
   reset.innerText = "🔁 Reset All";
@@ -2309,7 +2399,7 @@ function showFlashcards(noAnimation) {
     "click",
     () => {
       const cards = flashcards.filter((e) => e.subject === note.name);
-      study([cards.shift()], cards, bookDiffContent);
+      study([cards.shift()], cards);
     },
     { once: true }
   );
@@ -2343,7 +2433,7 @@ function showFlashcards(noAnimation) {
     cards.addEventListener(
       "click",
       () => {
-        study([e.shift()], e, bookDiffContent);
+        study([e.shift()], e);
       },
       { once: true }
     );
@@ -2356,6 +2446,15 @@ function showFlashcards(noAnimation) {
         contextMenu(
           e,
           [
+            {
+              attr: card.id,
+              text: `Edit Card`,
+              click: function () {
+                editCards([card])
+                delContextMenu();
+              },
+              appearance: "ios",
+            },
             {
               attr: card.id,
               text: `Reset Card`,
@@ -2399,6 +2498,13 @@ function showFlashcards(noAnimation) {
       cards.appendChild(cardFront);
     });
 
+    if (!cards.innerHTML) {
+      cards.classList.add("grid")
+      cards.innerHTML = "<i>Cards for this notebook will appear here.</i>"
+    } else {
+      cards.classList.remove("grid")
+    }
+
     wrapper.appendChild(info);
     wrapper.appendChild(cards);
     wrapper.classList.add("fcGroup");
@@ -2408,16 +2514,100 @@ function showFlashcards(noAnimation) {
   mainContainer.after(bookDiffPopup);
 }
 
-function study(cardArr, allCards, bookDiffContent) {
+function shuffle(array) {
+  const newArr = [...array]
+  let currentIndex = array.length;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [newArr[currentIndex], newArr[randomIndex]] = [
+      newArr[randomIndex], newArr[currentIndex]];
+  }
+  
+  return newArr;
+}
+
+function editCards(cardArr) {
+  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
+  bookDiffPopup.style.animation = "none"
+  mainContainer.after(bookDiffPopup);
+
+  const h2 = document.createElement("h2")
+  h2.innerText = "Flashcard Editor";
+  bookDiffContent.appendChild(h2)
+
+  let count = 0;
+
+  const copy = [...cardArr];
+
+  copy.forEach((card) => {
+    count++;
+    const oneCard = document.createElement("div")
+    oneCard.setAttribute("data-order", count)
+    oneCard.classList.add("editableCard")
+
+    const cardFront = document.createElement("div")
+    cardFront.addEventListener("input", function() {
+      card.front = this.innerText;
+    })
+    cardFront.innerText = card.front;
+    cardFront.classList.add("cardFront");
+    cardFront.contentEditable = true;
+    cardFront.spellcheck = false;
+  
+    const cardBack = document.createElement("div")
+    cardBack.addEventListener("input", function() {
+      card.back = this.innerText;
+    })
+    cardBack.innerText = card.back;
+    cardBack.classList.add("cardBack");
+    cardBack.contentEditable = true;
+    cardBack.spellcheck = false;
+  
+    oneCard.appendChild(cardFront)
+    oneCard.appendChild(cardBack)
+  
+    bookDiffContent.appendChild(oneCard)
+  })
+
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("fcButtons");
+  const check = document.createElement("button");
+  check.innerText = "💾 Save";
+  check.addEventListener("click", () => {
+    cardArr = copy;
+    saveFlashcards();
+    showFlashcards(true);
+  }, { once: true })
+  buttonContainer.appendChild(check)
+  const exit = document.createElement("button");
+  exit.innerText = "❌ Exit";
+  exit.addEventListener("click", () => {
+    showFlashcards(true);
+  }, { once: true })
+  buttonContainer.appendChild(exit)
+
+  bookDiffContent.appendChild(buttonContainer)
+  bookDiffContent.children[1].firstChild.focus();
+}
+
+function study(cardArr, allCards) {
+  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
+  bookDiffPopup.style.animation = "none";
+  mainContainer.after(bookDiffPopup)
+
   if (!cardArr[0]) {
     showFlashcards(true);
     return;
   }
   const cardObj = cardArr[0];
 
-  while (bookDiffContent.firstChild) {
-    bookDiffContent.firstChild.remove();
-  }
   const container = document.createElement("div");
   container.classList.add("studyContainer");
   bookDiffContent.appendChild(container);
@@ -2439,7 +2629,7 @@ function study(cardArr, allCards, bookDiffContent) {
   reset.innerText = "🔁 Reset Card";
   reset.addEventListener("click", () => {
     cardObj.learning = "unattempted";
-    study(cardArr, allCards, bookDiffContent);
+    study(cardArr, allCards);
   });
   options.appendChild(reset);
 
@@ -2450,7 +2640,7 @@ function study(cardArr, allCards, bookDiffContent) {
   if (cardArr.length > 1) {
     back.addEventListener("click", () => {
       allCards.push(cardArr.shift());
-      study(cardArr, allCards, bookDiffContent);
+      study(cardArr, allCards);
     });
     back.style.opacity = "1";
   }
@@ -2460,9 +2650,19 @@ function study(cardArr, allCards, bookDiffContent) {
   skip.classList.add("reset");
   skip.innerText = "⏩ Skip";
   skip.addEventListener("click", () => {
-    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+    study([allCards.shift(), ...cardArr], allCards);
   });
   options.appendChild(skip);
+
+  const reshuffle = document.createElement("div");
+  reshuffle.classList.add("reset")
+  reshuffle.innerText = "🔀 Shuffle";
+  reshuffle.addEventListener("click", (e) => {
+    const shuffled = shuffle([cardArr.shift(), ...allCards])
+    notyf.success("Cards were shuffled")
+    study([shuffled.shift(), ...cardArr], shuffled);
+  });
+  options.appendChild(reshuffle);
 
   const progress = document.createElement("span");
   progress.style.fontFamily = "monospace";
@@ -2505,14 +2705,14 @@ function study(cardArr, allCards, bookDiffContent) {
     cardObj.learning = "know";
     moneyAnimation(e, "😊");
     saveFlashcards();
-    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+    study([allCards.shift(), ...cardArr], allCards);
   });
   const x = document.createElement("button");
   x.addEventListener("click", (e) => {
     cardObj.learning = "dontKnow";
     moneyAnimation(e, "😔");
     saveFlashcards();
-    study([allCards.shift(), ...cardArr], allCards, bookDiffContent);
+    study([allCards.shift(), ...cardArr], allCards);
   });
   x.innerText = "❌ Don't Know";
   if (cardObj.learning === "dontKnow") {
@@ -2664,7 +2864,16 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     }
     const label = document.createElement("span");
     label.innerText = task.title;
-    label.contentEditable = true;
+    // label.contentEditable = true;
+    // label.addEventListener("keydown", function (e) {
+    //   if (e.key === "Enter") {
+    //     e.preventDefault();
+    //     this.blur();
+    //   }
+    // })
+    // label.addEventListener("blur", function () {
+    //   console.log(this.innerText)
+    // })
 
     eventTop.appendChild(checkbox);
     eventTop.appendChild(label);
@@ -2708,6 +2917,14 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 
     taskList.prepend(event);
   });
+
+  if (!taskList.innerHTML) {
+    taskList.classList.add("grid")
+    taskList.innerHTML = "<i>Tasks will appear here.</i>"
+  } else {
+    taskList.classList.remove("grid")
+  }
+
   if (constraint) {
     const div = document.createElement("s");
     div.classList.add("filter");
@@ -3006,9 +3223,12 @@ function editingWindow(choice) {
 }
 
 // 'hierarchy' stuff
-async function getAncestors(bookName) {
+async function getAncestors(bookName, optionalPreFetchedData) {
   let response = new Set();
-  const parents = (await getAnyBookContent(bookName, "parents")) || [];
+  const parents =
+    optionalPreFetchedData.parents ||
+    (await getAnyBookContent(bookName, "parents")) ||
+    [];
 
   if (!parents[0]) {
     return response;
@@ -3016,15 +3236,18 @@ async function getAncestors(bookName) {
 
   parents.forEach(async (parent) => {
     response.add(parent);
-    response = new Set([...response, ...(await getAncestors(parent))]);
+    response = new Set([...response, ...(await getAncestors(parent, {}))]);
   });
 
   return response;
 }
 
-async function getDescendants(bookName) {
+async function getDescendants(bookName, optionalPreFetchedData) {
   let response = new Set();
-  const children = (await getAnyBookContent(bookName, "children")) || [];
+  const children =
+    optionalPreFetchedData.children ||
+    (await getAnyBookContent(bookName, "children")) ||
+    [];
 
   if (!children[0]) {
     return response;
@@ -3032,18 +3255,18 @@ async function getDescendants(bookName) {
 
   children.forEach(async (child) => {
     response.add(child);
-    response = new Set([...response, ...(await getDescendants(child))]);
+    response = new Set([...response, ...(await getDescendants(child, {}))]);
   });
 
   return response;
 }
 
-async function getFamily(bookName) {
+async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getAncestors(bookName);
-    const descendants = await getDescendants(bookName);
+    const ancestors = await getAncestors(bookName, optionalPreFetchedData);
+    const descendants = await getDescendants(bookName, optionalPreFetchedData);
     const response = Array.from(ancestors).concat(Array.from(descendants));
     return response;
   }
@@ -3100,6 +3323,7 @@ async function nestNote(child, parent) {
       }
 
       updateList();
+      defineCmd();
     } else {
       notyf.error("An error occurred when nesting a notebook");
     }
@@ -3135,10 +3359,17 @@ async function relinquishNote(child, parent) {
       }
 
       updateList();
+      defineCmd();
     } else {
       notyf.error("An error occurred when relinquishing a notebook");
     }
   }
+}
+
+// ChatGPT
+const gptPrompts = {
+  flashcards: "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags and add spaces as necessary to make the markdown look nice.",
+  tldr: "TLDR:",
 }
 
 async function chatGPT(content, prompt) {
@@ -3160,7 +3391,6 @@ async function chatGPT(content, prompt) {
   }
 }
 
-// Possible prompt for creating flashcards: Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags and add spaces as necessary to make the markdown look nice.
 async function AISUmmary() {
   const name = note.name;
   const pg = note.pgN + 1;
@@ -3171,7 +3401,7 @@ async function AISUmmary() {
   loadingScreen.innerHTML =
     '<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
   mainContainer.after(loadingScreen);
-  const AI = await chatGPT(editor.getValue(), "TLDR:");
+  const AI = await chatGPT(editor.getValue(), gptPrompts.flashcards);
   reservedNames.find((e) => e.data.name === "AI-Summary").data.content = [
     `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI.replaceAll(
       "<br>",
@@ -3202,6 +3432,20 @@ mainContainer.addEventListener("contextmenu", delContextMenu);
 notesPreviewArea.addEventListener("click", (e) => {
   wikiSearch(e);
 });
+// notesPreviewArea.addEventListener("scroll", function () {
+//   if (this.scrollTop > 0) {
+//     tabs.classList.add("topOverflow")
+//   } else {
+//     tabs.classList.remove("topOverflow")
+//   }
+// })
+// notesTextArea.addEventListener("scroll", function () {
+//   if (this.scrollTop > 0) {
+//     tabs.classList.add("topOverflow")
+//   } else {
+//     tabs.classList.remove("topOverflow")
+//   }
+// })
 
 // toolbar
 document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
@@ -3277,9 +3521,8 @@ document.getElementById("icon2").addEventListener("click", (e) => {
       text: "Nest Notebook",
       click: async (e) => {
         const family = await getFamily(note.name);
-        const list = await fetch("/api/get/list");
-        const json = await list.json();
-        const buttons = json.data.reduce((arr, e) => {
+        const json = await getList();
+        const buttons = json.reduce((arr, e) => {
           if (e.name !== note.name && !family.includes(e.name)) {
             arr.push({
               text: e.name,
@@ -3434,6 +3677,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       click: () => {
         localStorage.setItem("/viewPref", "split");
         editingWindow("split");
+        delContextMenu();
       },
       appearance: "ios",
     },
@@ -3442,6 +3686,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       click: () => {
         localStorage.setItem("/viewPref", "read");
         editingWindow("read");
+        delContextMenu();
       },
       appearance: "ios",
     },
@@ -3450,6 +3695,7 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       click: () => {
         localStorage.setItem("/viewPref", "write");
         editingWindow("write");
+        delContextMenu();
       },
       appearance: "ios",
     },
@@ -3604,7 +3850,7 @@ window.addEventListener(
     const startTime = Date.now();
     changeTheme(localStorage.getItem("/theme") || "chrome");
     createWorkspace();
-    await createList();
+    // await createList();
     progBar.style.width = "70px";
     await initializeFlashcards();
     progBar.style.width = "140px";
@@ -3635,6 +3881,13 @@ window.addEventListener(
     });
 
     for (let i = 0, n = brDots.children.length; i < n; i++) {
+      const dotFunctions = ["Flashcards", "Calendar", "Sticky Note"]
+      tippy([brDots.children[i]], {
+        animation: "shift-toward-subtle",
+        arrow: false,
+        content: dotFunctions[i],
+        placement: "left",
+      });
       brDots.children[i].addEventListener("click", function () {
         for (let j = 0, n = yellowButtons.children.length; j < n; j++) {
           yellowButtons.children[j].classList.add("gone");
