@@ -614,7 +614,7 @@ let currTheme = null;
 const notyf = new Notyf({
   position: {
     y: "top",
-    x: "center"
+    x: "center",
   },
   dismissible: true,
 });
@@ -680,7 +680,9 @@ const reservedNames = [
   {
     data: {
       name: "Image-Preview",
-      content: ["This notebook name is reserved for previewing uploaded images. Sorry!"],
+      content: [
+        "This notebook name is reserved for previewing uploaded images. Sorry!",
+      ],
       children: [],
       parents: [],
       saved: false,
@@ -699,8 +701,7 @@ let currCard = null;
 // wikiSearch enabled
 let wikiEnabled = true;
 
-// variable for the tree list state
-let haveToUpdateList = false;
+// variable for the tree list
 let nestedBooks = null;
 const droppedFolders = new Set(
   JSON.parse(localStorage.getItem("/fileStructure")) || []
@@ -969,7 +970,7 @@ async function defineCmd() {
       ],
     },
     {
-      name: "Open Flashcards",
+      name: "Practice Flashcards",
       handler: () => showFlashcards(),
     },
     {
@@ -1197,7 +1198,7 @@ async function updateAndSaveNotesLocally() {
   previewHandlers = previewHandlers.reduce((arr, e) => {
     e.element.removeEventListener(e.type, e.listener);
     return arr;
-  }, [])
+  }, []);
   const v = document.createElement("div");
   v.innerHTML = format(editor.getValue());
   v.id = "fill";
@@ -1487,7 +1488,7 @@ async function createList() {
   listHandlers = listHandlers.reduce((arr, e) => {
     e.element.removeEventListener(e.type, e.listener);
     return arr;
-  }, [])
+  }, []);
   const result = await getList();
   root.children = result.map((obj) => {
     return obj.name;
@@ -1608,8 +1609,10 @@ function showImagePreview(e) {
 }
 
 function goToImagePreview(e) {
-  reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [`![](${e.target.getAttribute("data-href")})`];
-  switchNote("Image-Preview")
+  reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [
+    `![](${e.target.getAttribute("data-href")})`,
+  ];
+  switchNote("Image-Preview");
 }
 
 async function appendUploads() {
@@ -1627,7 +1630,7 @@ async function appendUploads() {
   }
   result2.forEach((file) => {
     const a = document.createElement("a");
-    a.addEventListener("contextmenu", showImagePreview)
+    a.addEventListener("contextmenu", showImagePreview);
     listHandlers.push({
       element: a,
       type: "mouseenter",
@@ -1635,7 +1638,7 @@ async function appendUploads() {
     });
     a.setAttribute("data-href", `/uploads/${file}`);
     a.innerText = file;
-    a.addEventListener("click", goToImagePreview)
+    a.addEventListener("click", goToImagePreview);
     const li = document.createElement("li");
     li.appendChild(a);
     ul.appendChild(li);
@@ -1681,10 +1684,6 @@ function showList() {
     parseInt(localStorage.getItem("/listSize") || 300) + 25 + "px";
   list.setAttribute("data-pos", "shown");
   list.style.display = "flex";
-  if (haveToUpdateList) {
-    createList();
-    haveToUpdateList = false;
-  }
   border.style.display = "inline";
   tabs.style.marginLeft = "-5px";
   localStorage.setItem("/listShown", "true");
@@ -1703,7 +1702,7 @@ function createPageNumbers() {
   pageHandlers = pageHandlers.reduce((arr, e) => {
     e.element.removeEventListener(e.type, e.listener);
     return arr;
-  }, [])
+  }, []);
   while (topLeftPageNumber.firstChild) {
     topLeftPageNumber.firstChild.remove();
   }
@@ -2016,11 +2015,16 @@ async function showPagePreview(e, customText) {
       : "calc(100vh - 340px)";
   const preview = document.createElement("div");
   preview.classList.add("pagePreviewContainer");
-  preview.innerHTML = customText ? format(customText) : format(
-    (await getAnyBookContent(e.currentTarget.getAttribute("data-bookname"), "content"))[
-      page
-    ]
-  );
+  preview.innerHTML = customText
+    ? format(customText)
+    : format(
+        (
+          await getAnyBookContent(
+            e.currentTarget.getAttribute("data-bookname"),
+            "content"
+          )
+        )[page]
+      );
   menu.appendChild(preview);
   mainContainer.after(menu);
 }
@@ -2039,7 +2043,7 @@ function createPopupWindow() {
     delContextMenu();
     hideStickyNotes();
   });
-  document.body.classList.add("poppedUp")
+  document.body.classList.add("poppedUp");
   bookDiffPopup.id = "bookDiffPopup";
   const bookDiffHeader = document.createElement("div");
   bookDiffHeader.id = "bookDiffHeader";
@@ -2052,6 +2056,13 @@ function createPopupWindow() {
   bookDiffPopup.appendChild(bookDiffHeader);
   const bookDiffContent = document.createElement("div");
   bookDiffContent.id = "bookDiffContent";
+  bookDiffContent.addEventListener("scroll", function() {
+    if (this.scrollTop === 0) {
+      this.classList.remove("topOverflow")
+    } else {
+      this.classList.add("topOverflow")
+    }
+  })
   bookDiffPopup.appendChild(bookDiffContent);
   bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
     once: true,
@@ -2099,7 +2110,7 @@ function hideBookDiffPopup() {
   } catch (err) {
     // console.log(err);
   }
-  document.body.classList.remove("poppedUp")
+  document.body.classList.remove("poppedUp");
   mainContainer.removeEventListener("click", hideBookDiffPopup);
   editor.session.off("change", hideBookDiffPopup);
 }
@@ -2376,7 +2387,7 @@ function showFlashcards(noAnimation) {
     },
     { once: true }
   );
-  extra.appendChild(editAll)
+  extra.appendChild(editAll);
   const reset = document.createElement("div");
   reset.classList.add("reset");
   reset.innerText = "🔁 Reset All";
@@ -2450,7 +2461,7 @@ function showFlashcards(noAnimation) {
               attr: card.id,
               text: `Edit Card`,
               click: function () {
-                editCards([card])
+                editCards([card]);
                 delContextMenu();
               },
               appearance: "ios",
@@ -2499,10 +2510,10 @@ function showFlashcards(noAnimation) {
     });
 
     if (!cards.innerHTML) {
-      cards.classList.add("grid")
-      cards.innerHTML = "<i>Cards for this notebook will appear here.</i>"
+      cards.classList.add("grid");
+      cards.innerHTML = "<i>Cards for this notebook will appear here.</i>";
     } else {
-      cards.classList.remove("grid")
+      cards.classList.remove("grid");
     }
 
     wrapper.appendChild(info);
@@ -2515,32 +2526,37 @@ function showFlashcards(noAnimation) {
 }
 
 function shuffle(array) {
-  const newArr = [...array]
+  const newArr = [...array];
   let currentIndex = array.length;
 
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
-
     // Pick a remaining element...
     let randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
     [newArr[currentIndex], newArr[randomIndex]] = [
-      newArr[randomIndex], newArr[currentIndex]];
+      newArr[randomIndex],
+      newArr[currentIndex],
+    ];
   }
-  
+
   return newArr;
 }
 
 function editCards(cardArr) {
+  if (cardArr.length === 0) {
+    return 0;
+  }
+
   const { bookDiffPopup, bookDiffContent } = createPopupWindow();
-  bookDiffPopup.style.animation = "none"
+  bookDiffPopup.style.animation = "none";
   mainContainer.after(bookDiffPopup);
 
-  const h2 = document.createElement("h2")
+  const h2 = document.createElement("h2");
   h2.innerText = "Flashcard Editor";
-  bookDiffContent.appendChild(h2)
+  bookDiffContent.appendChild(h2);
 
   let count = 0;
 
@@ -2548,59 +2564,67 @@ function editCards(cardArr) {
 
   copy.forEach((card) => {
     count++;
-    const oneCard = document.createElement("div")
-    oneCard.setAttribute("data-order", count)
-    oneCard.classList.add("editableCard")
+    const oneCard = document.createElement("div");
+    oneCard.setAttribute("data-order", count);
+    oneCard.classList.add("editableCard");
 
-    const cardFront = document.createElement("div")
-    cardFront.addEventListener("input", function() {
+    const cardFront = document.createElement("div");
+    cardFront.addEventListener("input", function () {
       card.front = this.innerText;
-    })
+    });
     cardFront.innerText = card.front;
     cardFront.classList.add("cardFront");
     cardFront.contentEditable = true;
     cardFront.spellcheck = false;
-  
-    const cardBack = document.createElement("div")
-    cardBack.addEventListener("input", function() {
+
+    const cardBack = document.createElement("div");
+    cardBack.addEventListener("input", function () {
       card.back = this.innerText;
-    })
+    });
     cardBack.innerText = card.back;
     cardBack.classList.add("cardBack");
     cardBack.contentEditable = true;
     cardBack.spellcheck = false;
-  
-    oneCard.appendChild(cardFront)
-    oneCard.appendChild(cardBack)
-  
-    bookDiffContent.appendChild(oneCard)
-  })
+
+    oneCard.appendChild(cardFront);
+    oneCard.appendChild(cardBack);
+
+    bookDiffContent.appendChild(oneCard);
+  });
 
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("fcButtons");
   const check = document.createElement("button");
   check.innerText = "💾 Save";
-  check.addEventListener("click", () => {
-    cardArr = copy;
-    saveFlashcards();
-    showFlashcards(true);
-  }, { once: true })
-  buttonContainer.appendChild(check)
+  check.addEventListener(
+    "click",
+    () => {
+      cardArr = copy;
+      saveFlashcards();
+      showFlashcards(true);
+    },
+    { once: true }
+  );
+  buttonContainer.appendChild(check);
   const exit = document.createElement("button");
   exit.innerText = "❌ Exit";
-  exit.addEventListener("click", () => {
-    showFlashcards(true);
-  }, { once: true })
-  buttonContainer.appendChild(exit)
+  exit.addEventListener(
+    "click",
+    () => {
+      showFlashcards(true);
+    },
+    { once: true }
+  );
+  buttonContainer.appendChild(exit);
 
-  bookDiffContent.appendChild(buttonContainer)
+  bookDiffContent.appendChild(buttonContainer);
   bookDiffContent.children[1].firstChild.focus();
 }
 
 function study(cardArr, allCards) {
   const { bookDiffPopup, bookDiffContent } = createPopupWindow();
   bookDiffPopup.style.animation = "none";
-  mainContainer.after(bookDiffPopup)
+  mainContainer.after(bookDiffPopup);
 
   if (!cardArr[0]) {
     showFlashcards(true);
@@ -2655,11 +2679,11 @@ function study(cardArr, allCards) {
   options.appendChild(skip);
 
   const reshuffle = document.createElement("div");
-  reshuffle.classList.add("reset")
+  reshuffle.classList.add("reset");
   reshuffle.innerText = "🔀 Shuffle";
   reshuffle.addEventListener("click", (e) => {
-    const shuffled = shuffle([cardArr.shift(), ...allCards])
-    notyf.success("Cards were shuffled")
+    const shuffled = shuffle([cardArr.shift(), ...allCards]);
+    notyf.success("Cards were shuffled");
     study([shuffled.shift(), ...cardArr], shuffled);
   });
   options.appendChild(reshuffle);
@@ -2700,6 +2724,7 @@ function study(cardArr, allCards) {
   check.innerText = "✅ Know";
   if (cardObj.learning === "know") {
     check.style.background = "lightgreen";
+    check.style.color = "black";
   }
   check.addEventListener("click", (e) => {
     cardObj.learning = "know";
@@ -2717,6 +2742,7 @@ function study(cardArr, allCards) {
   x.innerText = "❌ Don't Know";
   if (cardObj.learning === "dontKnow") {
     x.style.background = "lightcoral";
+    x.style.color = "black";
   }
   buttonContainer.appendChild(check);
   buttonContainer.appendChild(x);
@@ -2919,10 +2945,10 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   });
 
   if (!taskList.innerHTML) {
-    taskList.classList.add("grid")
-    taskList.innerHTML = "<i>Tasks will appear here.</i>"
+    taskList.classList.add("grid");
+    taskList.innerHTML = "<i>Tasks will appear here.</i>";
   } else {
-    taskList.classList.remove("grid")
+    taskList.classList.remove("grid");
   }
 
   if (constraint) {
@@ -3041,9 +3067,9 @@ function showTodo(hereForInsertion) {
       events.push(eventObj);
       saveTodo();
 
-      // taskName.value = ""
-      // taskCategory.value = ""
-      // dp.value = ""
+      taskName.value = ""
+      taskCategory.value = ""
+      dp.value = ""
 
       renderTaskList(false, taskList);
     }
@@ -3368,9 +3394,34 @@ async function relinquishNote(child, parent) {
 
 // ChatGPT
 const gptPrompts = {
-  flashcards: "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags and add spaces as necessary to make the markdown look nice.",
+  flashcards:
+    "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions, do not label the columns however. Do not use any HTML tags.",
   tldr: "TLDR:",
+};
+
+async function AIFlashcards() {
+  const generatedCards = [];
+
+  const response = await chatGPT(editor.getValue(), gptPrompts.flashcards);
+  const shadow = document.createElement("div");
+  shadow.innerHTML = format(response);
+  for (const td of shadow.getElementsByTagName("table")[0].rows) {
+    if (td.children[0].innerText && td.children[0].innerText) {
+      generatedCards.push({
+        subject: note.name,
+        front: td.children[0].innerText.replaceAll("<br>", "\n"),
+        back: td.children[1].innerText.replaceAll("<br>", "\n"),
+        id: Date.now(),
+        learning: "unattempted",
+      })
+    }
+  }
+
+  editCards(generatedCards);
 }
+
+window.AIFlashcards = AIFlashcards
+
 
 async function chatGPT(content, prompt) {
   const response = await fetch("/api/chatGPT", {
@@ -3881,7 +3932,7 @@ window.addEventListener(
     });
 
     for (let i = 0, n = brDots.children.length; i < n; i++) {
-      const dotFunctions = ["Flashcards", "Calendar", "Sticky Note"]
+      const dotFunctions = ["Flashcards", "Calendar", "Sticky Note"];
       tippy([brDots.children[i]], {
         animation: "shift-toward-subtle",
         arrow: false,

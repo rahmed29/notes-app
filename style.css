@@ -253,9 +253,7 @@ a {
   width: 100%;
   margin-bottom: -5px;
   margin-left: -5px;
-  padding-left: 5px;
-  padding-top: 3px;
-  padding-right: 0.25em;
+  padding: 3px .25em 0 5px;
   height: 2em;
   border-top-style: solid;
   border-width: 1px;
@@ -354,7 +352,7 @@ a {
 }
 
 .tab:hover {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .openTab {
@@ -376,21 +374,18 @@ a {
 #icons .emoji {
   height: 1.15em;
   width: 1.15em;
-  filter: drop-shadow(1px .01em .01em rgba(0,0,0,.2)) 
-        drop-shadow(.01em 1px .01em rgba(0,0,0,.2))
-        drop-shadow(-1px .01em .01em rgba(0,0,0,.2)) 
-        drop-shadow(.01em -1px .01em rgba(0,0,0,.2));
+  filter: drop-shadow(1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em 1px 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(-1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em -1px 0.01em rgba(0, 0, 0, 0.2));
 }
 
 #icons {
   background: var(--icons);
   border-radius: 5px;
-  padding: 2px;
   display: flex;
   gap: 5px;
-  padding-top: 6px;
-  padding-left: 9px;
-  padding-right: 9px;
+  padding: 6px 9px 2px 9px;
   font-size: 1.4em;
   justify-content: center;
   align-items: center;
@@ -413,10 +408,7 @@ a {
   z-index: 1;
   color: var(--icons-color);
   box-sizing: border-box;
-  padding-top: 3px;
-  padding-left: 6px;
-  padding-right: 6px;
-  padding-bottom: 6px;
+  padding: 3px 6px 6px 6px;
 }
 
 #toolBar::before {
@@ -560,8 +552,7 @@ a {
 }
 
 mark {
-  padding-left: 0.3em;
-  padding-right: 0.3em;
+  padding: 0 .3em 0 .3em;
   background: var(--highlight);
   color: var(--highlight-color);
 }
@@ -694,8 +685,7 @@ blockquote:hover {
 
 .note-calendar-event {
   box-sizing: border-box;
-  padding-bottom: 5px !important;
-  padding: 10px;
+  padding: 10px 10px 5px 10px;
   height: 10em;
   width: 10em;
   border-radius: 12px;
@@ -1009,10 +999,7 @@ blockquote:hover {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   box-sizing: border-box;
-  padding-top: 2em;
-  padding-bottom: 2em;
-  padding-left: 10%;
-  padding-right: 10%;
+  padding: 2em 10% 2em 10%;
   width: 100%;
   height: 100%;
   overflow-x: hidden;
@@ -1026,6 +1013,7 @@ blockquote:hover {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  transition: .5s;
 }
 
 #bookDiffContent h2 {
@@ -1225,13 +1213,15 @@ blockquote:hover {
   content: attr(data-order);
 }
 
-.editableCard .cardFront, .editableCard .cardBack {
+.editableCard .cardFront,
+.editableCard .cardBack {
   width: 50%;
   height: 300px;
-  opacity: .75;
+  opacity: 0.75;
 }
 
-.editableCard .cardFront:focus, .editableCard .cardBack:focus {
+.editableCard .cardFront:focus,
+.editableCard .cardBack:focus {
   opacity: 1;
 }
 
@@ -1339,7 +1329,8 @@ blockquote:hover {
 .qFront,
 .qBack {
   box-sizing: border-box;
-  padding: 5px;
+  padding: 1em 2em 2em 2em;
+  line-height: 1.5em;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -1351,10 +1342,14 @@ blockquote:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   overflow-y: auto;
+  border-top-style: solid;
+  border-width: 1em;
+  border-color: var(--quizlet-purple-accents);
 }
 
-.qFront::before,
+/* .qFront::before,
 .qBack::before {
   content: "Front";
   width: 100%;
@@ -1362,11 +1357,11 @@ blockquote:hover {
   border-radius: 4px;
   background: var(--quizlet-purple-accents);
   margin-bottom: 10px;
-}
+} */
 
-.qBack::before {
+/* .qBack::before {
   content: "Back";
-}
+} */
 
 .qBack {
   transform: rotateX(180deg);
@@ -1436,13 +1431,12 @@ blockquote:hover {
 }
 
 #taskList {
-  padding-top: 10px !important;
   flex-grow: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 3px;
+  padding: 10px 3px 3px 3px;
   overflow-y: auto;
   border-radius: 6px;
   scroll-behavior: smooth;
@@ -1527,13 +1521,13 @@ blockquote:hover {
   color: var(--buttons-color) !important;
 }
 
-.fc-day-today {
+/* .fc-day-today {
   background: var(--highlight) !important;
 }
 
 .fc-day-today .fc-daygrid-day-number {
   color: var(--highlight-color) !important;
-}
+} */
 
 /* https://stackoverflow.com/a/69970674 */
 #wikipediaBrainAnimation {
@@ -1626,11 +1620,11 @@ blockquote:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .topOverflow {
-  box-shadow: 0px 9px 6px -4px rgba(0,0,0,0.25);
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 50px 36px -28px inset;
 }
 
 .saved {
