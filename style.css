@@ -922,7 +922,6 @@ blockquote:hover {
   padding: 15px;
   font-size: 14px;
   overscroll-behavior-y: contain;
-  scroll-behavior: smooth;
 }
 
 .pagePreviewContainer h1,
@@ -1225,6 +1224,24 @@ blockquote:hover {
   opacity: 1;
 }
 
+.deleteCard {
+  outline: none;
+  border-style: none;
+  user-select: none;
+  cursor: pointer;
+  height: 2em;
+  width: 2em;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--misc-buttons);
+}
+
+.deleteCard:hover {
+  background: var(--hovers);
+}
+
 /* flashcard popup */
 .reset {
   cursor: pointer;
@@ -1248,7 +1265,7 @@ blockquote:hover {
   height: 100%;
   padding: 1%;
   gap: 5px;
-  overflow-x: hidden;
+  overflow-x: auto;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   cursor: pointer;
@@ -1256,7 +1273,6 @@ blockquote:hover {
     rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
   background: var(--misc-buttons);
   transition: 0.25s;
-  scroll-behavior: smooth;
 }
 
 .fcCardList:hover {

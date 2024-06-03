@@ -20,7 +20,10 @@ import { directive, directiveHtml } from "micromark-extension-directive";
 import DOMPurify from "dompurify";
 import "./node_modules/command-pal/public/build/bundle.js";
 import themes from "./themes/index.js";
-import { allSettledWithThrow } from "openai/lib/Util.mjs";
+
+function log(msg) {
+  console.log(`%c${msg}`, "color:yellow;font-weight:bold;");
+}
 
 function memorySizeOf(obj) {
   var bytes = 0;
@@ -2056,13 +2059,6 @@ function createPopupWindow() {
   bookDiffPopup.appendChild(bookDiffHeader);
   const bookDiffContent = document.createElement("div");
   bookDiffContent.id = "bookDiffContent";
-  bookDiffContent.addEventListener("scroll", function() {
-    if (this.scrollTop === 0) {
-      this.classList.remove("topOverflow")
-    } else {
-      this.classList.add("topOverflow")
-    }
-  })
   bookDiffPopup.appendChild(bookDiffContent);
   bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
     once: true,
@@ -2229,6 +2225,10 @@ async function initializeFlashcards() {
 }
 
 async function saveFlashcards() {
+  flashcards = flashcards.filter(
+    (card) =>
+      card.front && card.front !== "\n" && card.back && card.back !== "\n"
+  );
   const response = await fetch("/api/save/notebooks/", {
     method: "POST",
     headers: {
@@ -2267,6 +2267,15 @@ function flashcardMode() {
   brain.classList.add("grayscale");
   const fcArea = document.createElement("div");
   fcArea.id = "fcArea";
+  const aibutton = document.createElement("div");
+  aibutton.classList.add("fcButtons");
+  const generated = document.createElement("button");
+  generated.innerText = "✨ Generate Cards";
+  generated.addEventListener("click", () => {
+    AIFlashcards();
+  });
+  aibutton.appendChild(generated);
+  fcArea.appendChild(aibutton);
   const cardFront = document.createElement("div");
   cardFront.classList.add("currCard");
   cardFront.contentEditable = true;
@@ -2286,6 +2295,7 @@ function flashcardMode() {
           front: cardFront.innerText,
           back: cardBack.innerText,
           id: Date.now(),
+          ai_generated: false,
           learning: "unattempted",
         });
         moneyAnimation(e, "✔️");
@@ -2383,7 +2393,8 @@ function showFlashcards(noAnimation) {
   editAll.addEventListener(
     "click",
     () => {
-      editCards(flashcards.filter((e) => e.subject === note.name));
+      let promisedCards = flashcards.filter((e) => e.subject === note.name);
+      editCards(promisedCards);
     },
     { once: true }
   );
@@ -2545,7 +2556,21 @@ function shuffle(array) {
   return newArr;
 }
 
-function editCards(cardArr) {
+async function editCards(cardArr) {
+  try {
+    const resolvedArr = await editCardsHelper(cardArr);
+    for (let i = 0, n = cardArr.length; i < n; i++) {
+      cardArr[i].front = resolvedArr[i].front;
+      cardArr[i].back = resolvedArr[i].back;
+    }
+    saveFlashcards();
+  } catch (err) {
+    log("Flashcards were not saved");
+  }
+  showFlashcards(true);
+}
+
+function editCardsHelper(cardArr) {
   if (cardArr.length === 0) {
     return 0;
   }
@@ -2560,65 +2585,76 @@ function editCards(cardArr) {
 
   let count = 0;
 
-  const copy = [...cardArr];
+  const copy = JSON.parse(JSON.stringify(cardArr));
 
-  copy.forEach((card) => {
-    count++;
-    const oneCard = document.createElement("div");
-    oneCard.setAttribute("data-order", count);
-    oneCard.classList.add("editableCard");
+  return new Promise((resolve, reject) => {
+    copy.forEach((card) => {
+      count++;
+      const oneCard = document.createElement("div");
+      oneCard.setAttribute("data-order", count);
+      oneCard.classList.add("editableCard");
 
-    const cardFront = document.createElement("div");
-    cardFront.addEventListener("input", function () {
-      card.front = this.innerText;
+      const cardFront = document.createElement("div");
+      cardFront.addEventListener("input", function () {
+        card.front = this.innerText;
+      });
+      cardFront.innerText = card.front;
+      cardFront.classList.add("cardFront");
+      cardFront.contentEditable = true;
+      cardFront.spellcheck = false;
+
+      const cardBack = document.createElement("div");
+      cardBack.addEventListener("input", function () {
+        card.back = this.innerText;
+      });
+      cardBack.innerText = card.back;
+      cardBack.classList.add("cardBack");
+      cardBack.contentEditable = true;
+      cardBack.spellcheck = false;
+
+      const remove = document.createElement("button");
+      remove.classList.add("deleteCard");
+      remove.innerText = "❌";
+      remove.addEventListener("click", function (e) {
+        card.front = "";
+        card.back = "";
+        this.parentElement.remove();
+        delContextMenu();
+      });
+
+      oneCard.appendChild(cardFront);
+      oneCard.appendChild(cardBack);
+      oneCard.appendChild(remove);
+
+      bookDiffContent.appendChild(oneCard);
     });
-    cardFront.innerText = card.front;
-    cardFront.classList.add("cardFront");
-    cardFront.contentEditable = true;
-    cardFront.spellcheck = false;
 
-    const cardBack = document.createElement("div");
-    cardBack.addEventListener("input", function () {
-      card.back = this.innerText;
-    });
-    cardBack.innerText = card.back;
-    cardBack.classList.add("cardBack");
-    cardBack.contentEditable = true;
-    cardBack.spellcheck = false;
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("fcButtons");
+    const check = document.createElement("button");
+    check.innerText = "💾 Save";
+    check.addEventListener(
+      "click",
+      () => {
+        resolve(copy);
+      },
+      { once: true }
+    );
+    buttonContainer.appendChild(check);
+    const exit = document.createElement("button");
+    exit.innerText = "❌ Exit";
+    exit.addEventListener(
+      "click",
+      () => {
+        reject(new Error("Unsaved"));
+      },
+      { once: true }
+    );
+    buttonContainer.appendChild(exit);
 
-    oneCard.appendChild(cardFront);
-    oneCard.appendChild(cardBack);
-
-    bookDiffContent.appendChild(oneCard);
+    bookDiffContent.appendChild(buttonContainer);
+    bookDiffContent.children[1].firstChild.focus();
   });
-
-  const buttonContainer = document.createElement("div");
-  buttonContainer.classList.add("fcButtons");
-  const check = document.createElement("button");
-  check.innerText = "💾 Save";
-  check.addEventListener(
-    "click",
-    () => {
-      cardArr = copy;
-      saveFlashcards();
-      showFlashcards(true);
-    },
-    { once: true }
-  );
-  buttonContainer.appendChild(check);
-  const exit = document.createElement("button");
-  exit.innerText = "❌ Exit";
-  exit.addEventListener(
-    "click",
-    () => {
-      showFlashcards(true);
-    },
-    { once: true }
-  );
-  buttonContainer.appendChild(exit);
-
-  bookDiffContent.appendChild(buttonContainer);
-  bookDiffContent.children[1].firstChild.focus();
 }
 
 function study(cardArr, allCards) {
@@ -2919,7 +2955,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     } else {
       dueDate = `Due ${task.start}`;
     }
-    eventBottom.innerHTML = `${task.extendedProps.category} ${dueDate}`;
+    eventBottom.innerHTML = `${task.extendedProps.category} - ${dueDate}`;
     eventBottom.classList.add("eventBottom");
     if (lookingAtPast) {
       eventBottom.addEventListener(
@@ -3067,9 +3103,9 @@ function showTodo(hereForInsertion) {
       events.push(eventObj);
       saveTodo();
 
-      taskName.value = ""
-      taskCategory.value = ""
-      dp.value = ""
+      taskName.value = "";
+      taskCategory.value = "";
+      dp.value = "";
 
       renderTaskList(false, taskList);
     }
@@ -3400,28 +3436,41 @@ const gptPrompts = {
 };
 
 async function AIFlashcards() {
-  const generatedCards = [];
-
-  const response = await chatGPT(editor.getValue(), gptPrompts.flashcards);
+  let generatedCards = [];
+  loading();
+  const response =
+    (await chatGPT(editor.getValue(), gptPrompts.flashcards)) || "";
   const shadow = document.createElement("div");
   shadow.innerHTML = format(response);
-  for (const td of shadow.getElementsByTagName("table")[0].rows) {
-    if (td.children[0].innerText && td.children[0].innerText) {
-      generatedCards.push({
-        subject: note.name,
-        front: td.children[0].innerText.replaceAll("<br>", "\n"),
-        back: td.children[1].innerText.replaceAll("<br>", "\n"),
-        id: Date.now(),
-        learning: "unattempted",
-      })
+  let count = 0;
+  if (shadow.getElementsByTagName("table")[0]) {
+    for (const td of shadow.getElementsByTagName("table")[0].rows) {
+      if (td.children[0].innerText && td.children[0].innerText) {
+        generatedCards.push({
+          subject: note.name,
+          front: td.children[0].innerText.replaceAll("<br>", "\n"),
+          back: td.children[1].innerText.replaceAll("<br>", "\n"),
+          id: Date.now() + count,
+          ai_generated: true,
+          learning: "unattempted",
+        });
+        count++;
+      }
     }
+    stopLoading();
+    leaveFlashcardMode();
+    try {
+      generatedCards = await editCardsHelper(generatedCards);
+      flashcards = flashcards.concat(generatedCards);
+      saveFlashcards();
+    } catch (err) {
+      log("Flashcards were not saved");
+    }
+    showFlashcards(true);
+  } else {
+    notyf.error("We couldn't generated flashcards this time.");
   }
-
-  editCards(generatedCards);
 }
-
-window.AIFlashcards = AIFlashcards
-
 
 async function chatGPT(content, prompt) {
   const response = await fetch("/api/chatGPT", {
@@ -3438,13 +3487,11 @@ async function chatGPT(content, prompt) {
     const json = await response.json();
     return json.data;
   } else {
-    return `Error code ${response.status}.`;
+    return null;
   }
 }
 
-async function AISUmmary() {
-  const name = note.name;
-  const pg = note.pgN + 1;
+function loading() {
   const loadingScreen = document.createElement("div");
   mainContainer.style.pointerEvents = "none";
   loadingScreen.id = "loading";
@@ -3452,17 +3499,32 @@ async function AISUmmary() {
   loadingScreen.innerHTML =
     '<div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
   mainContainer.after(loadingScreen);
-  const AI = await chatGPT(editor.getValue(), gptPrompts.flashcards);
+}
+
+function stopLoading() {
+  try {
+    document.getElementById("loading").remove();
+  } catch (err) {
+    log("Nothing was loading");
+  }
+  mainContainer.style.pointerEvents = "inherit";
+}
+
+async function AISUmmary() {
+  const name = note.name;
+  const pg = note.pgN + 1;
+  loading();
+  const AI =
+    (await chatGPT(editor.getValue(), gptPrompts.tldr)) || `An error occurred.`;
   reservedNames.find((e) => e.data.name === "AI-Summary").data.content = [
     `# ✨ AI Summary (:ref[${name}] - pg. ${pg})\n\n${AI.replaceAll(
       "<br>",
       "\n"
-    )}]`,
+    )}`,
   ];
+  stopLoading();
   await switchNote("AI-Summary");
   updateAndSaveNotesLocally();
-  loadingScreen.remove();
-  mainContainer.style.pointerEvents = "inherit";
 }
 
 // Event listeners
@@ -3950,10 +4012,7 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    console.log(
-      `%cLoad time: ${Date.now() - startTime}ms!`,
-      "color:yellow;font-weight:bold;"
-    );
+    log(`Load time: ${Date.now() - startTime}ms!`);
   },
   { once: true }
 );
