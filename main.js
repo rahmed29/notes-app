@@ -744,7 +744,7 @@ const dropzone = new Dropzone(document.body, {
   clickable: false,
   acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
   error: () => {
-    notyf.error("An error occurred when saving an image.");
+    notyf.error("An error occurred when saving an image");
   },
   success: (file, response) => {
     file.previewElement.remove();
@@ -769,7 +769,7 @@ async function insertAndSaveImage() {
       updateList();
       // saveNoteBookToDb();
     } else {
-      notyf.error("An error occurred when saving an image.");
+      notyf.error("An error occurred when saving an image");
     }
   } else {
     notyf.error("Reserved notebooks are read only");
@@ -787,7 +787,7 @@ async function deleteImageFromDb(image) {
     // saveNoteBookToDb();
     updateList();
   } else {
-    notyf.error("An error occurred when deleting an image.");
+    notyf.error("An error occurred when deleting an image");
   }
 }
 
@@ -1377,7 +1377,7 @@ async function switchNote(noteName, page) {
     notyf.error("Invalid note name");
     return 0;
   }
-  hideBookDiffPopup();
+  closePopupWindow();
   // can't do !page because page can be be 0 and !0 => true
   if (page == null) {
     try {
@@ -2040,7 +2040,7 @@ function scrollCM(e) {
 
 // popup ui
 function createPopupWindow() {
-  hideBookDiffPopup();
+  closePopupWindow();
   const bookDiffPopup = document.createElement("div");
   bookDiffPopup.addEventListener("click", () => {
     delContextMenu();
@@ -2060,11 +2060,11 @@ function createPopupWindow() {
   const bookDiffContent = document.createElement("div");
   bookDiffContent.id = "bookDiffContent";
   bookDiffPopup.appendChild(bookDiffContent);
-  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
+  bookDiffExitContainer.addEventListener("click", closePopupWindow, {
     once: true,
   });
-  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
-  editor.session.on("change", hideBookDiffPopup);
+  mainContainer.addEventListener("click", closePopupWindow, { once: true });
+  editor.session.on("change", closePopupWindow);
   return { bookDiffPopup, bookDiffContent };
 }
 
@@ -2090,7 +2090,7 @@ function getDiff(one, other) {
   return fragment;
 }
 
-function hideBookDiffPopup() {
+function closePopupWindow() {
   try {
     document.getElementById("bookDiffPopup").remove();
   } catch (err) {
@@ -2106,9 +2106,15 @@ function hideBookDiffPopup() {
   } catch (err) {
     // console.log(err);
   }
+  try {
+    editCardsRejection(new Error("Exited"));
+    editCardsRejection = null;
+  } catch (err) {
+    // console.log(err);
+  }
   document.body.classList.remove("poppedUp");
-  mainContainer.removeEventListener("click", hideBookDiffPopup);
-  editor.session.off("change", hideBookDiffPopup);
+  mainContainer.removeEventListener("click", closePopupWindow);
+  editor.session.off("change", closePopupWindow);
 }
 
 function showBookDiffPopup() {
@@ -2138,7 +2144,7 @@ function showBookDiffPopup() {
             text: `Go to Page ${i + 1}`,
             click: () => {
               jumpToDesiredPage(i);
-              hideBookDiffPopup();
+              closePopupWindow();
               delContextMenu();
             },
             appearance: "ios",
@@ -2183,7 +2189,7 @@ async function saveStickyNotes() {
 }
 
 function showStickyNotes() {
-  hideBookDiffPopup();
+  closePopupWindow();
   stickyNotes.classList.remove("gone");
   openCalendar.classList.add("gone");
   stickyNotes.classList.add("snOpen");
@@ -2207,7 +2213,7 @@ async function initializeStickyNotes() {
   } else if (response.status === 404) {
     stickyNotesTextArea.value = "";
   } else {
-    notyf.error("An error occurred when loading your sticky note.");
+    notyf.error("An error occurred when loading your sticky note");
   }
 }
 
@@ -2220,7 +2226,7 @@ async function initializeFlashcards() {
   } else if (response.status === 404) {
     flashcards = [];
   } else {
-    notyf.error("An error occurred when loading your flashcards.");
+    notyf.error("An error occurred when loading your flashcards");
   }
 }
 
@@ -2254,7 +2260,7 @@ function flashcardMode() {
     notyf.error("Flashcards can only be created for saved notebooks");
     return 0;
   }
-  hideBookDiffPopup();
+  closePopupWindow();
   leaveFlashcardMode();
   document.body.classList.add("flashcardMode");
   hideList();
@@ -2556,6 +2562,7 @@ function shuffle(array) {
   return newArr;
 }
 
+let editCardsRejection = null;
 async function editCards(cardArr) {
   try {
     const resolvedArr = await editCardsHelper(cardArr);
@@ -2564,10 +2571,13 @@ async function editCards(cardArr) {
       cardArr[i].back = resolvedArr[i].back;
     }
     saveFlashcards();
+    showFlashcards(true);
   } catch (err) {
-    log("Flashcards were not saved");
+    if (err.message === "Unsaved") {
+      showFlashcards(true);
+    }
   }
-  showFlashcards(true);
+  log("Exited editCards");
 }
 
 function editCardsHelper(cardArr) {
@@ -2588,6 +2598,8 @@ function editCardsHelper(cardArr) {
   const copy = JSON.parse(JSON.stringify(cardArr));
 
   return new Promise((resolve, reject) => {
+    // Make rejection available globally and reject it when closing popup
+    editCardsRejection = reject;
     copy.forEach((card) => {
       count++;
       const oneCard = document.createElement("div");
@@ -2637,6 +2649,7 @@ function editCardsHelper(cardArr) {
       "click",
       () => {
         resolve(copy);
+        editCardsRejection = null;
       },
       { once: true }
     );
@@ -2646,7 +2659,7 @@ function editCardsHelper(cardArr) {
     exit.addEventListener(
       "click",
       () => {
-        reject(new Error("Unsaved"));
+        editCardsRejection(new Error("Unsaved"));
       },
       { once: true }
     );
@@ -2797,7 +2810,7 @@ async function initializeTodo() {
     events = [];
     pastEvents = [];
   } else {
-    notyf.error("An error occurred when loading your calendar events.");
+    notyf.error("An error occurred when loading your calendar events");
   }
 }
 
@@ -3042,7 +3055,7 @@ function showTodo(hereForInsertion) {
       eventClick: (info) => {
         editor.insert(`:cal[${info.event.id}]`);
         updateAndSaveNotesLocally();
-        hideBookDiffPopup();
+        closePopupWindow();
       },
     });
   } else {
@@ -3186,10 +3199,10 @@ function showTodo(hereForInsertion) {
   calendar.render();
   renderTaskList(false, taskList);
 
-  bookDiffExitContainer.addEventListener("click", hideBookDiffPopup, {
+  bookDiffExitContainer.addEventListener("click", closePopupWindow, {
     once: true,
   });
-  mainContainer.addEventListener("click", hideBookDiffPopup, { once: true });
+  mainContainer.addEventListener("click", closePopupWindow, { once: true });
   // document.addEventListener("keydown", hidePopups)
 }
 
@@ -3464,12 +3477,14 @@ async function AIFlashcards() {
       flashcards = flashcards.concat(generatedCards);
       saveFlashcards();
     } catch (err) {
-      log("Flashcards were not saved");
+      if (err.message === "Unsaved") {
+        showFlashcards(true);
+      }
     }
-    showFlashcards(true);
   } else {
-    notyf.error("We couldn't generated flashcards this time.");
+    notyf.error("Flashcards could not be generated properly");
   }
+  log("Exited AIFlashcards safely")
 }
 
 async function chatGPT(content, prompt) {
