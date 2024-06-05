@@ -176,7 +176,9 @@ app.post("/api/save/images", upload.single("avatar"), function (req, res) {
 app.get("/api/get/list/", async (req, res) => {
   let data = [];
   const result = await Item.find();
-  result.forEach((notebook) => {
+  // sort array from newest to oldest
+  for (let i = result.length - 1; i >= 0; i--) {
+    const notebook = result[i];
     if (
       notebook.name !== "sticky__notes" &&
       notebook.name !== "todo__list" &&
@@ -196,7 +198,7 @@ app.get("/api/get/list/", async (req, res) => {
         parents: notebook.parents,
       });
     }
-  });
+  }
   res.status(200).json({ data });
 });
 

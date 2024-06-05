@@ -308,7 +308,7 @@ function cal(d) {
   this.tag("<div");
   this.tag(' class="note-calendar-wrapper"');
 
-  const calEv = events.find((e) => e.id == d.label) || {
+  const calEv = events.concat(pastEvents).find((e) => e.id == d.label) || {
     allDay: true,
     title: "404",
     start: "1337-04-20",
@@ -318,14 +318,25 @@ function cal(d) {
     },
   };
 
+  const date = formatHDate(calEv.start).split(" ");
+  const month = date[0];
+  const day = date[1].substring(0, date[1].length - 1);
+  const year = date[2];
+
   this.tag(">");
   this.raw(
     DOMPurify.sanitize(`
     <div class = "note-calendar-event">
-      <b>📅 ${calEv.start}</b>
-      <span>${calEv.title}</span>
-      <i>${calEv.extendedProps.category}</i>
+      <b>${month}</b>
+      <span>${day}</span>
+      <i>${year}</i>
     </div>
+    <div>
+      <h2>📅 ${calEv.title}</h2>
+      <i>"${calEv.extendedProps.description || "No description provided"}"</i>
+      <br>
+    </div>
+    <b>${calEv.extendedProps.category}</b>
   `)
   );
   this.tag("</div>");
@@ -338,7 +349,7 @@ function ref(d) {
   this.tag(' class="reference"');
 
   this.tag(">");
-  this.raw(d.label || "");
+  this.raw(DOMPurify.sanitize(d.label) || "");
   this.tag("</span>");
 }
 
@@ -862,6 +873,7 @@ async function referToolTip() {
   } catch (err) {
     lastDynamicTippy.destroy();
   }
+  // console.log(document.getElementsByClassName("tippy-content")[0].parentElement.parentElement)
 }
 
 // Re-Instantiate the command palette
@@ -1096,14 +1108,10 @@ let library = new Map();
 let lastNote = null;
 let note = null;
 
-// note class holding all details about a notebook
-class Note {
-  constructor() {}
-}
-
-// helper function for dealing with blank page
+// helper function for dealing with blank page, but it's useless now might as well get rid of it
+// at one point when this was more hacky and I didn't know anything it checked against "undefined" but not anymore
 function pageIsNull(page) {
-  if (!page || page === "undefined") {
+  if (!page) {
     return true;
   } else {
     return false;
@@ -1226,7 +1234,7 @@ async function updateAndSaveNotesLocally() {
 function syncStatus(dbSave) {
   if (reservedNames.some((e) => e.data.name === note.name)) {
     try {
-      document.getElementById(`book__${note.name}`).innerText = note.name;
+      document.getElementById(`book__${note.name}`).firstChild.innerText = note.name;
       document.title = note.name;
       areNotesSavedIcon.style.filter = "grayscale(1)";
     } catch (err) {
@@ -1239,7 +1247,7 @@ function syncStatus(dbSave) {
     try {
       document.getElementById(
         `book__${note.name}`
-      ).innerText = `* ${note.name}`;
+      ).firstChild.innerText = `* ${note.name}`;
     } catch (err) {
       // console.log(err);
     }
@@ -1250,7 +1258,7 @@ function syncStatus(dbSave) {
       synced.setContent(`Notes were saved at ${note.timeOfSave}`);
       document.title = note.name;
       try {
-        document.getElementById(`book__${note.name}`).innerText = note.name;
+        document.getElementById(`book__${note.name}`).firstChild.innerText = note.name;
       } catch (err) {
         // console.log(err);
       }
@@ -1265,7 +1273,7 @@ function syncStatus(dbSave) {
       try {
         document.getElementById(
           `book__${note.name}`
-        ).innerText = `* ${note.name}`;
+        ).firstChild.innerText = `* ${note.name}`;
       } catch (err) {
         // console.log(err);
       }
@@ -1300,54 +1308,81 @@ function formatNonText(ele) {
   }
 }
 
-// loading workspace from last session
-// adds event listener for closing tab parameter
-function addCloseTab(div) {
-  function closeTab(e) {
-    if (e.button === 1) {
-      e.preventDefault();
-      const temp = this.getAttribute("data-bookname");
-      library.delete(temp);
-      tabTippys.get(temp).destroy();
-      tabTippys.delete(temp);
-      savedWS.delete(temp);
-      localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
-      this.removeEventListener("click", switchTab);
-      // self removing event listener
-      this.removeEventListener("mouseup", closeTab);
+function closeTab(e) {
+  const compare = this.className?.includes("tabExit") ? 1 : e.button;
+  if (compare === 1) {
+    e.stopPropagation();
+    e.preventDefault();
+    const temp = this.getAttribute("data-bookname");
+    library.delete(temp);
+    tabTippys.get(temp).destroy();
+    tabTippys.delete(temp);
+    savedWS.delete(temp);
+    localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+    this.removeEventListener("click", switchTab);
+    this.removeEventListener("mouseup", closeTab);
+    if (this.className?.includes("tabExit")) {
+      this.parentElement.remove();
+    } else {
       this.remove();
-      if (!savedWS.size) {
-        switchNote("home");
-      } else if (note && temp === note.name) {
-        switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
-      }
+    }
+    if (!savedWS.size) {
+      switchNote("home");
+    } else if (note && temp === note.name) {
+      switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
     }
   }
-  div.addEventListener("click", switchTab);
-  div.addEventListener("mouseup", closeTab);
 }
 
+// create a tab element
+function createTab(txt, shouldOpen) {
+  function addCloseTab(ele, isExitButton) {
+    if (isExitButton) {
+      ele.addEventListener("click", closeTab);
+    } else {
+      ele.addEventListener("click", switchTab);
+      ele.addEventListener("mouseup", closeTab);
+    }
+  }
+
+  const div = document.createElement("div");
+  const tabName = document.createElement("span")
+  tabName.classList.add("tabName")
+  tabName.innerText = txt;
+  div.appendChild(tabName);
+  console.log("WAHT THE FUCK")
+
+  const exitButton = document.createElement("span")
+  exitButton.setAttribute("data-bookname", txt);
+  exitButton.classList.add("tabExit")
+  exitButton.innerText = "+";
+  addCloseTab(exitButton, true)
+  div.appendChild(exitButton)
+
+  div.classList.add("tab");
+  if (shouldOpen) {
+    div.classList.add("openTab");
+  }
+  div.id = `book__${txt}`;
+  div.setAttribute("data-bookname", txt);
+  addCloseTab(div, false);
+  tabTippys.set(
+    txt,
+    tippy([div], {
+      theme: "dark",
+      animation: "shift-toward-subtle",
+      placement: "bottom-end",
+      content: txt,
+      arrow: false,
+    })[0]
+  );
+  tabs.prepend(div);
+}
+
+// loading workspace from last session
 function createWorkspace() {
-  Array.from(savedWS).forEach((note) => {
-    const div = document.createElement("div");
-    const txt = note;
-    div.innerText = txt;
-    div.classList.add("tab");
-    div.id = `book__${txt}`;
-    div.setAttribute("data-bookname", txt);
-    div.addEventListener("click", switchTab);
-    addCloseTab(div);
-    tabTippys.set(
-      note,
-      tippy([div], {
-        theme: "dark",
-        animation: "shift-toward-subtle",
-        placement: "bottom-end",
-        content: txt,
-        arrow: false,
-      })[0]
-    );
-    tabs.prepend(div);
+  Array.from(savedWS).forEach((noteName) => {
+    createTab(noteName);
   });
   list.style.width = `${parseInt(localStorage.getItem("/listSize") || 300)}px`;
   if (localStorage.getItem("/listShown") === "false") {
@@ -1404,7 +1439,7 @@ async function switchNote(noteName, page) {
     // console.log(err);
   }
   lastNote = note;
-  note = new Note();
+  note = {};
   const data = (await getAnyBookContent(noteName, "_data")) || {
     name: noteName,
     content: [""],
@@ -1429,25 +1464,7 @@ async function switchNote(noteName, page) {
   try {
     document.getElementById(`book__${note.name}`).classList.add("openTab");
   } catch (err) {
-    const div = document.createElement("div");
-    const txt = note.name;
-    div.innerText = txt;
-    div.classList.add("tab");
-    div.classList.add("openTab");
-    div.id = `book__${txt}`;
-    div.setAttribute("data-bookname", txt);
-    addCloseTab(div);
-    tabTippys.set(
-      noteName,
-      tippy([div], {
-        theme: "dark",
-        animation: "shift-toward-subtle",
-        placement: "bottom-end",
-        content: txt,
-        arrow: false,
-      })[0]
-    );
-    tabs.prepend(div);
+    createTab(note.name, true);
   }
   if (reservedNames.some((e) => e.data.name === note.name)) {
     toolBar.classList.add("homeToolBar");
@@ -1492,10 +1509,19 @@ async function createList() {
     e.element.removeEventListener(e.type, e.listener);
     return arr;
   }, []);
-  const result = await getList();
-  root.children = result.map((obj) => {
-    return obj.name;
+  const result = (await getList()).sort((a, b) => {
+    const date1 = a.name;
+    const date2 = b.name;
+    if (date1 < date2) {
+      return 1;
+    }
+    if (date1 > date1) {
+      return -1;
+    }
+    // names must be equal
+    return 0;
   });
+  root.children = result.map((obj) => obj.name);
   const gigaFolder = nestedList(root, result).childNodes[1];
   gigaFolder.classList.add("gigaFolder");
   while (listContainer.firstChild) {
@@ -1575,7 +1601,7 @@ function nestedList(obj, allNotes) {
     li.appendChild(a);
     ul.appendChild(li);
   }
-  if (obj.children[0]) {
+  if (obj.children.length > 0) {
     obj.children.forEach((childName) => {
       folder.setAttribute(
         "data-searchValue",
@@ -1586,8 +1612,7 @@ function nestedList(obj, allNotes) {
         li.appendChild(
           nestedList(
             allNotes.find((obj) => obj.name === childName),
-            allNotes,
-            false
+            allNotes
           )
         );
         ul.prepend(li);
@@ -1821,12 +1846,13 @@ async function getAnyBookContent(bookName, desiredInfo) {
 async function forceUpdateNotes() {
   const name = note.name;
   try {
-    document.getElementById(`book__${note.name}`).remove();
-    document
-      .getElementById(`book__${note.name}`)
-      .removeEventListener("click", switchTab);
+    const tabToClose = document.getElementById(`book__${note.name}`);
+    tabToClose.removeEventListener("click", switchTab);
+    tabToClose.removeEventListener("mouseup", closeTab);
+    tabToClose.children[1].removeEventListener("click", closeTab)
+    tabToClose.remove();
   } catch (err) {
-    // console.log(err);
+    console.log(err);
   }
   const pg = note.pgN;
   note = null;
@@ -2112,6 +2138,10 @@ function closePopupWindow() {
   } catch (err) {
     // console.log(err);
   }
+  taskTippys = taskTippys.reduce((arr, e) => {
+    e.destroy();
+    return arr;
+  }, []);
   document.body.classList.remove("poppedUp");
   mainContainer.removeEventListener("click", closePopupWindow);
   editor.session.off("change", closePopupWindow);
@@ -2439,18 +2469,9 @@ function showFlashcards(noAnimation) {
     const info = document.createElement("div");
     info.classList.add("fcGroupInfo");
     const num = document.createElement("span");
+    const infoTexts = ["Unattempted - ", "Know - ", "Don't Know - "];
     num.innerText = "0";
-    switch (i) {
-      case 0:
-        info.innerText = "Unattempted - ";
-        break;
-      case 1:
-        info.innerText = "Know - ";
-        break;
-      case 2:
-        info.innerText = "Don't Know - ";
-        break;
-    }
+    info.innerText = infoTexts[i];
     info.appendChild(num);
     const cards = document.createElement("div");
     cards.addEventListener("wheel", function (e) {
@@ -2577,7 +2598,6 @@ async function editCards(cardArr) {
       showFlashcards(true);
     }
   }
-  log("Exited editCards");
 }
 
 function editCardsHelper(cardArr) {
@@ -2798,6 +2818,8 @@ function study(cardArr, allCards) {
   container.appendChild(buttonContainer);
 }
 
+let taskTippys = [];
+
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
@@ -2831,7 +2853,40 @@ async function saveTodo() {
   }
 }
 
+function formatHDate(dateStr) {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const suffixes = ["th", "st", "nd", "rd"];
+  const dateParts = dateStr.split("-");
+  const year = dateParts[0];
+  const month = months[parseInt(dateParts[1], 10) - 1];
+  const day = parseInt(dateParts[2], 10);
+
+  let suffix =
+    suffixes[day % 10 > 3 ? 0 : (day % 100) - (day % 10) != 10 ? day % 10 : 0];
+
+  return DOMPurify.sanitize(`${month} ${day}${suffix}, ${year}`);
+}
+
 function renderTaskList(lookingAtPast, taskList, constraint) {
+  taskTippys = taskTippys.reduce((arr, e) => {
+    e.destroy();
+    return arr;
+  }, []);
+
   while (taskList.firstChild) {
     taskList.firstChild.remove();
   }
@@ -2865,35 +2920,36 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     event.classList.add("task");
     event.id = `task__${task.id}`;
 
-    if (lookingAtPast) {
-      event.addEventListener("contextmenu", (e) => {
-        contextMenu(
-          e,
-          [
-            {
-              text: `Delete Event`,
-              click: function () {
-                this.innerText = "Confirm";
-                this.classList.add("rios");
-                this.addEventListener(
-                  "click",
-                  function () {
-                    events = events.filter((e) => e.id !== task.id);
-                    pastEvents = pastEvents.filter((e) => e.id !== task.id);
-                    saveTodo();
-                    document.getElementById(`task__${task.id}`).remove();
-                    delContextMenu();
-                  },
-                  { once: true }
-                );
-              },
-              appearance: "ios",
+    event.addEventListener("contextmenu", (e) => {
+      contextMenu(
+        e,
+        [
+          {
+            text: `Delete Event`,
+            click: function () {
+              this.innerText = "Confirm";
+              this.classList.add("rios");
+              this.addEventListener(
+                "click",
+                function () {
+                  events = events.filter((e) => e.id !== task.id);
+                  pastEvents = pastEvents.filter((e) => e.id !== task.id);
+                  try {
+                    calendar.getEventById(task.id).remove();
+                  } catch (err) {}
+                  saveTodo();
+                  document.getElementById(`task__${task.id}`).remove();
+                  delContextMenu();
+                },
+                { once: true }
+              );
             },
-          ],
-          [`${e.clientX}px`, `${e.clientY}px`]
-        );
-      });
-    }
+            appearance: "ios",
+          },
+        ],
+        [`${e.clientX}px`, `${e.clientY}px`]
+      );
+    });
 
     const eventTop = document.createElement("div");
 
@@ -2939,6 +2995,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     }
     const label = document.createElement("span");
     label.innerText = task.title;
+    label.classList.add("taskTitle");
     // label.contentEditable = true;
     // label.addEventListener("keydown", function (e) {
     //   if (e.key === "Enter") {
@@ -2949,9 +3006,35 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     // label.addEventListener("blur", function () {
     //   console.log(this.innerText)
     // })
+    const moreInfo = document.createElement("span");
+    moreInfo.innerText = "❓";
+    moreInfo.classList.add("taskMoreInfo");
+    taskTippys.push(
+      tippy([moreInfo], {
+        animation: "shift-toward-subtle",
+        allowHTML: true,
+        arrow: false,
+        content: `
+        <div class = "taskExtendedDesc">
+          <h3 style = "margin: 5px;">📅 ${DOMPurify.sanitize(task.title)}</h3>
+          <hr><b>Description:</b>
+          "<i>${
+            DOMPurify.sanitize(task.extendedProps.description) ||
+            "No description was provided for this task."
+          }</i>"
+          <hr>
+          <b>Due:</b> ${formatHDate(task.start)}
+          <hr>
+          <b>Category:</b> ${DOMPurify.sanitize(task.extendedProps.category)}
+        </div>
+      `,
+        placement: "right",
+      })[0]
+    );
 
     eventTop.appendChild(checkbox);
     eventTop.appendChild(label);
+    eventTop.appendChild(moreInfo);
 
     const eventBottom = document.createElement("div");
     let dueDate;
@@ -2962,13 +3045,20 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     today = `${yyyy}-${mm}-${dd}`;
 
     if (task.start === today) {
-      dueDate = `<b>Due ${task.start}</b>`;
+      dueDate = `<b>${task.start}</b>`;
     } else if (task.start < today) {
-      dueDate = `<b><i>Due ${task.start}</i></b>`;
+      dueDate = `<b><i>${task.start}</i></b>`;
     } else {
-      dueDate = `Due ${task.start}`;
+      dueDate = task.start;
     }
-    eventBottom.innerHTML = `${task.extendedProps.category} - ${dueDate}`;
+    const taskCategory = document.createElement("span");
+    taskCategory.classList.add("taskCategory");
+    taskCategory.innerText = task.extendedProps.category;
+    const taskDueDate = document.createElement("span");
+    taskDueDate.classList.add("taskDueDate");
+    taskDueDate.innerHTML = dueDate;
+    eventBottom.appendChild(taskCategory);
+    eventBottom.appendChild(taskDueDate);
     eventBottom.classList.add("eventBottom");
     if (lookingAtPast) {
       eventBottom.addEventListener(
@@ -3003,7 +3093,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   if (constraint) {
     const div = document.createElement("s");
     div.classList.add("filter");
-    div.innerText = `Filter: ${constraint}`;
+    div.innerText = `Category: ${constraint}`;
     taskList.prepend(div);
     if (lookingAtPast) {
       div.addEventListener(
@@ -3047,23 +3137,13 @@ function showTodo(hereForInsertion) {
   const calendarContainer = document.createElement("div");
   todoContainer.appendChild(calendarContainer);
 
-  if (hereForInsertion) {
-    calendar = new Calendar(calendarContainer, {
-      plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
-      initialView: "dayGridMonth",
-      events: events,
-      eventClick: (info) => {
+  const eventClick = hereForInsertion
+    ? (info) => {
         editor.insert(`:cal[${info.event.id}]`);
         updateAndSaveNotesLocally();
         closePopupWindow();
-      },
-    });
-  } else {
-    calendar = new Calendar(calendarContainer, {
-      plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
-      initialView: "dayGridMonth",
-      events: events,
-      eventClick: (info) => {
+      }
+    : (info) => {
         try {
           const evInList = document.getElementById(`task__${info.event.id}`);
           evInList.addEventListener(
@@ -3080,16 +3160,25 @@ function showTodo(hereForInsertion) {
         } catch (err) {
           // console.log(err);
         }
-      },
-    });
-  }
+      };
+
+  calendar = new Calendar(calendarContainer, {
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
+    initialView: "dayGridMonth",
+    events: events,
+    eventClick,
+  });
 
   const taskName = document.createElement("input");
-  taskName.placeholder = "Task Name";
+  taskName.placeholder = "Name";
   addTaskContainer.appendChild(taskName);
   const taskCategory = document.createElement("input");
-  taskCategory.placeholder = "Task Category";
+  taskCategory.placeholder = "Category";
   addTaskContainer.appendChild(taskCategory);
+
+  const taskDesc = document.createElement("textarea");
+  taskDesc.placeholder = "Description";
+  addTaskContainer.appendChild(taskDesc);
 
   const dp = document.createElement("input");
   dp.id = "datePicker";
@@ -3109,7 +3198,8 @@ function showTodo(hereForInsertion) {
         title: taskName.value,
         start: dp.value,
         extendedProps: {
-          category: taskCategory.value || "misc",
+          category: taskCategory.value.split(" ")[0] || "misc",
+          description: taskDesc.value,
         },
       };
       calendar.addEvent(eventObj);
@@ -3117,6 +3207,7 @@ function showTodo(hereForInsertion) {
       saveTodo();
 
       taskName.value = "";
+      taskDesc.value = "";
       taskCategory.value = "";
       dp.value = "";
 
@@ -3144,7 +3235,13 @@ function showTodo(hereForInsertion) {
     taskName.focus();
   });
 
+  // const importTasks = document.createElement("input");
+  // importTasks.id = "seePast";
+  // importTasks.setAttribute("type", "button");
+  // importTasks.value = "Import Tasks from Notebook"
+
   addTaskContainer.appendChild(seePast);
+  // addTaskContainer.appendChild(importTasks);
 
   bookDiffContent.appendChild(todoContainer);
 
@@ -3305,7 +3402,7 @@ async function getAncestors(bookName, optionalPreFetchedData) {
     (await getAnyBookContent(bookName, "parents")) ||
     [];
 
-  if (!parents[0]) {
+  if (parents.length === 0) {
     return response;
   }
 
@@ -3324,7 +3421,7 @@ async function getDescendants(bookName, optionalPreFetchedData) {
     (await getAnyBookContent(bookName, "children")) ||
     [];
 
-  if (!children[0]) {
+  if (children.length === 0) {
     return response;
   }
 
@@ -3483,8 +3580,9 @@ async function AIFlashcards() {
     }
   } else {
     notyf.error("Flashcards could not be generated properly");
+    stopLoading();
+    leaveFlashcardMode();
   }
-  log("Exited AIFlashcards safely")
 }
 
 async function chatGPT(content, prompt) {

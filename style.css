@@ -25,6 +25,13 @@ a {
   color: var(--main-accent);
 }
 
+.tippy-box {
+  border-radius: 6px !important;
+  background: var(--notes-background) !important;
+  color: var(--notes-color) !important;
+  box-shadow: var(--floating-bs) !important;
+}
+
 #loading {
   top: 0%;
   left: 0%;
@@ -334,14 +341,14 @@ a {
   background: var(--notes-background);
   border-radius: 3px;
   box-sizing: border-box;
-  padding-left: 8px;
+  padding: 0 8px 0 8px;
   height: 100%;
   width: 8rem;
   overflow: hidden;
   white-space: nowrap;
   font-size: 13px;
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
   color: var(--tab-color);
   cursor: pointer;
@@ -351,9 +358,25 @@ a {
   /* rgb(211, 215, 218) 0px 0px 0px 1px inset; */
 }
 
-.tab:hover {
-  opacity: 0.5;
+.tabName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.tabExit {
+  font-size: 20px;
+  transform: rotate(45deg);
+  font-weight: bold;
+}
+
+.tabExit:hover {
+  color: var(--destructive);
+}
+
+/* .tab:hover {
+  opacity: 0.5;
+} */
 
 .openTab {
   background: var(--icons) !important;
@@ -365,10 +388,6 @@ a {
 #brain {
   width: 400px;
   height: auto;
-}
-
-#brain a {
-  color: lightblue;
 }
 
 #icons .emoji {
@@ -465,11 +484,6 @@ a {
   height: calc(100% - 37px);
   width: 100%;
   display: flex;
-}
-
-#notesPreviewArea .tippy-content {
-  background: var(--notes-background);
-  box-shadow: var(--floating-bs);
 }
 
 #notesAreaContainer .tippy-content {
@@ -672,43 +686,65 @@ blockquote:hover {
   background: var(--code);
 }
 
+
+/* This needs media query. looks rly bad when even slightly zoomed in */
 .note-calendar-wrapper {
+  box-sizing: border-box;
   width: 100%;
+  height: 10em;
+  padding: 10px 20px 10px 10px;
   display: flex;
-  justify-content: center;
+  gap: 1em;
+  justify-content: start;
+  align-items: start;
   border-radius: 12px;
+  background: var(--code);
+  overflow: hidden;
 }
 
-.note-calendar-wrapper:hover {
-  background: var(--code);
+.note-calendar-wrapper b {
+  align-self: flex-end;
+  justify-self: flex-end;
+  margin-left: auto;
 }
 
 .note-calendar-event {
   box-sizing: border-box;
   padding: 10px 10px 5px 10px;
-  height: 10em;
-  width: 10em;
+  height: 100%;
+  min-width: 9em;
+  max-width: 9em;
   border-radius: 12px;
-  background: var(--code);
-  box-shadow: var(--floating-bs);
+  background: var(--notes-background);
+  justify-content: space-evenly;
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: 5px;
   overflow-y: auto;
   cursor: default;
+  justify-self: flex-start;
 }
 
 .note-calendar-event span {
   flex-grow: 1;
   margin-top: 5px;
   cursor: default;
+  font-size: 2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
 }
 
 .note-calendar-event b {
+  width: 100%;
+  box-sizing: border-box;
   border-width: 1px;
   border-style: solid;
   border-radius: 6px;
-  border-color: var(--notes-color);
+  background: var(--code);
+  border-color: rgba(0, 0, 0, 0.3);
   padding: 3px;
   box-shadow: rgba(245, 245, 245, 0.25) 0px 30px 60px -12px inset,
     rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
@@ -1019,6 +1055,7 @@ blockquote:hover {
   text-align: center;
   padding: 0.5em;
   background: var(--misc-buttons);
+  color: var(--buttons-color);
   border-radius: 6px;
   user-select: none;
 }
@@ -1395,8 +1432,8 @@ blockquote:hover {
 .filter {
   box-sizing: border-box;
   padding: 3px;
-  background: var(--misc-buttons);
-  color: var(--buttons-color);
+  background: var(--quizlet-purple);
+  color: var(--quizlet-font);
   width: auto;
   cursor: pointer;
   border-radius: 3px;
@@ -1428,21 +1465,41 @@ blockquote:hover {
   align-items: center;
 }
 
-#addTaskContainer input {
+#addTaskContainer input, #addTaskContainer textarea {
   height: 1.8em;
   width: 100%;
   padding: 3px;
   background: var(--misc-buttons);
-  border-radius: 3px;
   color: var(--buttons-color);
+  border-radius: 3px;
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
   outline: none;
   border: none;
   box-sizing: border-box;
+  font-size: 14px;
 }
 
-#addTaskContainer input:focus {
+::-webkit-input-placeholder {
+  font-style: italic;
+}
+:-moz-placeholder {
+  font-style: italic;  
+}
+::-moz-placeholder {
+  font-style: italic;  
+}
+:-ms-input-placeholder {  
+  font-style: italic; 
+}
+
+#addTaskContainer textarea {
+  height: 100px;
+  resize: none;
+  font-size: 14px;
+}
+
+#addTaskContainer input:focus,  #addTaskContainer textarea:focus {
   background: var(--hovers);
 }
 
@@ -1454,6 +1511,7 @@ blockquote:hover {
   gap: 3px;
   padding: 10px 3px 3px 3px;
   overflow-y: auto;
+  overflow-x: visible;
   border-radius: 6px;
   scroll-behavior: smooth;
 }
@@ -1488,13 +1546,50 @@ blockquote:hover {
   gap: 5px;
 }
 
+.taskDueDate::before {
+  content: " - ";
+}
+
+.taskCategory, .taskDueDate {
+  max-width: 50cqw;
+  white-space: nowrap;
+}
+
+.taskExtendedDesc {
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 300px;
+  word-wrap: break-word;
+}
+
+.taskTitle, .taskCategory {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taskMoreInfo {
+  padding: 3px;
+  width: 1em;
+  height: 1em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.taskMoreInfo:hover {
+  background: var(--quizlet-purple-accents);
+  border-radius: 6px;
+}
+
 .eventBottom {
   box-sizing: border-box;
-  padding-left: 3px;
+  padding: 3px;
   font-size: 13px;
   border-radius: 2px;
   transition: 0.25s;
   display: flex;
+  cursor: pointer;
 }
 
 .eventBottom:hover {
@@ -1515,6 +1610,7 @@ blockquote:hover {
 /* override full calendar variables, not to be mistaken with my own fc (flashcards) stuff */
 .fc {
   flex-grow: 1;
+  user-select: none;
 }
 
 .fc-col-header-cell-cushion,
