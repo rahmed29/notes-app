@@ -25,47 +25,6 @@ function log(msg) {
   console.log(`%c${msg}`, "color:yellow;font-weight:bold;");
 }
 
-function memorySizeOf(obj) {
-  var bytes = 0;
-
-  function sizeOf(obj) {
-    if (obj !== null && obj !== undefined) {
-      switch (typeof obj) {
-        case "number":
-          bytes += 8;
-          break;
-        case "string":
-          bytes += obj.length * 2;
-          break;
-        case "boolean":
-          bytes += 4;
-          break;
-        case "object":
-          var objClass = Object.prototype.toString.call(obj).slice(8, -1);
-          if (objClass === "Object" || objClass === "Array") {
-            for (var key in obj) {
-              if (!obj.hasOwnProperty(key)) continue;
-              sizeOf(obj[key]);
-            }
-          } else bytes += obj.toString().length * 2;
-          break;
-      }
-    }
-    return bytes;
-  }
-
-  function formatByteSize(bytes) {
-    if (bytes < 1024) return bytes + " bytes";
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(3) + " KiB";
-    else if (bytes < 1073741824) return (bytes / 1048576).toFixed(3) + " MiB";
-    else return (bytes / 1073741824).toFixed(3) + " GiB";
-  }
-
-  return formatByteSize(sizeOf(obj));
-}
-
-window.memorySizeOf = memorySizeOf;
-
 document.body.innerHTML = `
     <div id="loading">
       <div id="progBarContainer">
@@ -833,7 +792,8 @@ function removeImageToolTip(e) {
         appearance: "ios",
       },
     ],
-    [`${e.clientX}px`, `${e.clientY}px`]
+    [`${e.clientX}px`, `${e.clientY}px`],
+    true
   );
 }
 
@@ -1234,7 +1194,8 @@ async function updateAndSaveNotesLocally() {
 function syncStatus(dbSave) {
   if (reservedNames.some((e) => e.data.name === note.name)) {
     try {
-      document.getElementById(`book__${note.name}`).firstChild.innerText = note.name;
+      document.getElementById(`book__${note.name}`).firstChild.innerText =
+        note.name;
       document.title = note.name;
       areNotesSavedIcon.style.filter = "grayscale(1)";
     } catch (err) {
@@ -1258,7 +1219,8 @@ function syncStatus(dbSave) {
       synced.setContent(`Notes were saved at ${note.timeOfSave}`);
       document.title = note.name;
       try {
-        document.getElementById(`book__${note.name}`).firstChild.innerText = note.name;
+        document.getElementById(`book__${note.name}`).firstChild.innerText =
+          note.name;
       } catch (err) {
         // console.log(err);
       }
@@ -1346,18 +1308,17 @@ function createTab(txt, shouldOpen) {
   }
 
   const div = document.createElement("div");
-  const tabName = document.createElement("span")
-  tabName.classList.add("tabName")
+  const tabName = document.createElement("span");
+  tabName.classList.add("tabName");
   tabName.innerText = txt;
   div.appendChild(tabName);
-  console.log("WAHT THE FUCK")
 
-  const exitButton = document.createElement("span")
+  const exitButton = document.createElement("span");
   exitButton.setAttribute("data-bookname", txt);
-  exitButton.classList.add("tabExit")
+  exitButton.classList.add("tabExit");
   exitButton.innerText = "+";
-  addCloseTab(exitButton, true)
-  div.appendChild(exitButton)
+  addCloseTab(exitButton, true);
+  div.appendChild(exitButton);
 
   div.classList.add("tab");
   if (shouldOpen) {
@@ -1540,8 +1501,6 @@ async function createList() {
     }
   });
 }
-
-window.memorySizeOf = memorySizeOf;
 
 let listInMemory = null;
 
@@ -1849,7 +1808,7 @@ async function forceUpdateNotes() {
     const tabToClose = document.getElementById(`book__${note.name}`);
     tabToClose.removeEventListener("click", switchTab);
     tabToClose.removeEventListener("mouseup", closeTab);
-    tabToClose.children[1].removeEventListener("click", closeTab)
+    tabToClose.children[1].removeEventListener("click", closeTab);
     tabToClose.remove();
   } catch (err) {
     console.log(err);
@@ -1991,9 +1950,14 @@ function delContextMenu() {
   try {
     document.getElementById("contextMenu").remove();
   } catch (err) {}
+  mainContainer.removeEventListener("click", delContextMenu);
+  mainContainer.removeEventListener("contextmenu", delContextMenu);
+  toolBar.removeEventListener("click", delContextMenu);
+  toolBar.removeEventListener("contextmenu", delContextMenu);
+  document.removeEventListener("wheel", delContextMenu);
 }
 
-function contextMenu(e, button, position) {
+function contextMenu(e, button, position, noScroll) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
@@ -2019,6 +1983,15 @@ function contextMenu(e, button, position) {
   });
   if (menu.firstChild) {
     mainContainer.after(menu);
+    mainContainer.addEventListener("click", delContextMenu, { once: true });
+    mainContainer.addEventListener("contextmenu", delContextMenu, {
+      once: true,
+    });
+    toolBar.addEventListener("click", delContextMenu, { once: true });
+    toolBar.addEventListener("contextmenu", delContextMenu, { once: true });
+    if (noScroll) {
+      document.addEventListener("wheel", delContextMenu, { once: true });
+    }
   } else {
     return 0;
   }
@@ -2056,6 +2029,10 @@ async function showPagePreview(e, customText) {
       );
   menu.appendChild(preview);
   mainContainer.after(menu);
+  mainContainer.addEventListener("click", delContextMenu, { once: true });
+  mainContainer.addEventListener("contextmenu", delContextMenu, { once: true });
+  toolBar.addEventListener("click", delContextMenu, { once: true });
+  toolBar.addEventListener("contextmenu", delContextMenu, { once: true });
 }
 
 function scrollCM(e) {
@@ -2539,7 +2516,8 @@ function showFlashcards(noAnimation) {
               appearance: "ios",
             },
           ],
-          [`${e.clientX}px`, `${e.clientY}px`]
+          [`${e.clientX}px`, `${e.clientY}px`],
+          true
         );
       });
       cardFront.classList.add("cardFront");
@@ -2890,6 +2868,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   while (taskList.firstChild) {
     taskList.firstChild.remove();
   }
+  // this isn't good honestly
   if (lookingAtPast) {
     document.getElementById("seePast").setAttribute("data-enabled", "true");
     document.getElementById("seePast").value = "View Active Tasks";
@@ -2947,7 +2926,8 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
             appearance: "ios",
           },
         ],
-        [`${e.clientX}px`, `${e.clientY}px`]
+        [`${e.clientX}px`, `${e.clientY}px`],
+        true
       );
     });
 
@@ -2977,8 +2957,8 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
         function () {
           const audio = new Audio("/assets/ding.mp3");
           audio.play();
-          checkbox.classList.add("fade");
-          checkbox.addEventListener(
+          this.classList.add("fade");
+          this.addEventListener(
             "animationend",
             function () {
               this.parentElement.parentElement.remove();
@@ -3085,7 +3065,8 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
 
   if (!taskList.innerHTML) {
     taskList.classList.add("grid");
-    taskList.innerHTML = "<i>Tasks will appear here.</i>";
+    taskList.innerHTML =
+      "<i style = 'margin-bottom: auto; opacity: .5;'>Tasks will appear here.</i>";
   } else {
     taskList.classList.remove("grid");
   }
@@ -3115,7 +3096,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   }
 }
 
-function showTodo(hereForInsertion) {
+function showTodo(hereForInsertion, constraint) {
   if (
     hereForInsertion &&
     reservedNames.some((e) => e.data.name === note.name)
@@ -3294,7 +3275,7 @@ function showTodo(hereForInsertion) {
     },
   });
   calendar.render();
-  renderTaskList(false, taskList);
+  renderTaskList(false, taskList, note.name);
 
   bookDiffExitContainer.addEventListener("click", closePopupWindow, {
     once: true,
@@ -3653,8 +3634,8 @@ document.addEventListener("keydown", (e) => {
 });
 
 // main note area
-mainContainer.addEventListener("click", delContextMenu);
-mainContainer.addEventListener("contextmenu", delContextMenu);
+// mainContainer.addEventListener("click", delContextMenu);
+// mainContainer.addEventListener("contextmenu", delContextMenu);
 notesPreviewArea.addEventListener("click", (e) => {
   wikiSearch(e);
 });
@@ -4009,8 +3990,8 @@ areNotesSavedIcon.addEventListener("click", (e) => {
     },
   ]);
 });
-toolBar.addEventListener("click", delContextMenu);
-toolBar.addEventListener("contextmenu", delContextMenu);
+// toolBar.addEventListener("click", delContextMenu);
+// toolBar.addEventListener("contextmenu", delContextMenu);
 toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
 
 // side bar and list

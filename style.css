@@ -12,7 +12,7 @@
 body {
   margin: 0px;
   overflow: hidden;
-  background: var(--body) !important;
+  background: var(--body);
 }
 
 @supports (font-variation-settings: normal) {
@@ -225,10 +225,9 @@ a {
   padding-left: 5px;
   border-radius: 3px;
   outline: none;
-  white-space: nowrap;
   display: block;
+  white-space: nowrap;
   overflow: hidden;
-  flex-grow: 1;
 }
 
 .down {
@@ -1434,7 +1433,7 @@ blockquote:hover {
   padding: 3px;
   background: var(--quizlet-purple);
   color: var(--quizlet-font);
-  width: auto;
+  width: 100%;
   cursor: pointer;
   border-radius: 3px;
   transition: 0.25s;
@@ -1444,6 +1443,7 @@ blockquote:hover {
   flex: 0 0 auto;
   font-size: 13px;
   text-decoration: none;
+  user-select: none;
 }
 
 .filter:hover {
@@ -1466,7 +1466,7 @@ blockquote:hover {
 }
 
 #addTaskContainer input, #addTaskContainer textarea {
-  height: 1.8em;
+  min-height: 1.8em;
   width: 100%;
   padding: 3px;
   background: var(--misc-buttons);
@@ -1494,7 +1494,7 @@ blockquote:hover {
 }
 
 #addTaskContainer textarea {
-  height: 100px;
+  min-height: 100px;
   resize: none;
   font-size: 14px;
 }
@@ -1508,6 +1508,7 @@ blockquote:hover {
   width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 3px;
   padding: 10px 3px 3px 3px;
   overflow-y: auto;
@@ -1525,8 +1526,10 @@ blockquote:hover {
 }
 
 .task {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--quizlet-purple);
-  padding: 3px;
+  padding: 3px 3px 5px 3px;
   border-radius: 3px;
   display: flex;
   flex-direction: column;
@@ -1538,6 +1541,8 @@ blockquote:hover {
   flex: 0 0 auto;
   min-height: 3em;
   justify-content: center;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
 
 .task div {
@@ -1728,11 +1733,23 @@ blockquote:hover {
 }
 
 /* https://codepen.io/oltika/pen/WGLZyb */
-.grid {
+.fcCardList.grid {
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 0.5;
+  opacity: .5;
+}
+
+.grid {
+  justify-content: space-between;
+}
+
+.grid i {
+  text-align: center;
+}
+
+.grid .filter {
+  margin-bottom: auto;
 }
 
 .topOverflow {
