@@ -340,7 +340,7 @@ a {
   background: var(--notes-background);
   border-radius: 3px;
   box-sizing: border-box;
-  padding: 0 8px 0 8px;
+  padding: 0 5px 0 8px;
   height: 100%;
   width: 8rem;
   overflow: hidden;
@@ -893,7 +893,7 @@ blockquote:hover {
 }
 
 #contextMenu {
-  overflow-y: hidden;
+  overflow-y: auto;
   width: 175px;
   background: var(--context-menu);
   position: fixed;
@@ -1304,16 +1304,10 @@ blockquote:hover {
   overflow-x: auto;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-  cursor: pointer;
   box-shadow: rgba(129, 129, 129, 0.25) 0px 30px 60px -12px inset,
     rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
   background: var(--misc-buttons);
   transition: 0.25s;
-}
-
-.fcCardList:hover {
-  box-shadow: rgba(207, 206, 206, 0.25) 0px 30px 60px -12px inset,
-    rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
 }
 
 .fcCardList .cardFront {
@@ -1326,6 +1320,12 @@ blockquote:hover {
   box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
     rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   opacity: 1;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.fcCardList .cardFront:hover {
+  opacity: .75;
 }
 
 .fcCardList .cardFront::before {

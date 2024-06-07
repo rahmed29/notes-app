@@ -51,8 +51,7 @@ var upload = multer({
       file.mimetype == "image/png" ||
       file.mimetype == "image/jpeg" ||
       file.mimetype == "image/webp" ||
-      file.mimetype == "image/gif" ||
-      file.mimetype == "application/pdf"
+      file.mimetype == "image/gif"
     ) {
       cb(null, true);
     }

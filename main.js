@@ -42,7 +42,7 @@ document.body.innerHTML = `
       </div>
 
       <div id="yellowButtons">
-        <div id="flashcardsPrac" data-pos="hidden">
+        <div id="flashcardsPrac">
           <span id="flashcardsPracEmoji">
             <img
               draggable="false"
@@ -52,13 +52,13 @@ document.body.innerHTML = `
           </span>
         </div>
 
-        <div id="openCalendar" class="gone" data-pos="hidden" data-text="">
+        <div id="openCalendar" class="gone" data-text="">
           <span id="openCalendarEmoji">
             <img draggable="false" class="emoji" src="/assets/icons/calendar_3d.png" />
           </span>
         </div>
 
-        <div id="stickyNotes" class="gone" data-pos="hidden" data-text="">
+        <div id="stickyNotes" class="gone" data-text="">
           <textarea id="stickyNotesTextArea" autocomplete="false"></textarea>
           <span id="stickyNotesEmoji">
             <img draggable="false" class="emoji" src="/assets/icons/memo_3d.png" />
@@ -171,7 +171,7 @@ document.body.innerHTML = `
         <div id="sideBarRetractList"></div>
         <a id="goHome" class="whereTo">/</a>
       </div>
-      <div id="listOfBooks" data-pos="shown">
+      <div id="listOfBooks">
         <div id="searchItem">
           <input placeholder="Search..." id="searchBar" />
         </div>
@@ -189,7 +189,6 @@ document.body.innerHTML = `
             id="notesTextArea"
             class="syncscroll"
             name="myElements"
-            data-vim="false"
           >
             <pre id="editor"></pre>
           </div>
@@ -571,14 +570,14 @@ const anonTooltips = [
   },
 ];
 
-anonTooltips.forEach((obj) => {
+anonTooltips.forEach((obj) =>
   tippy(obj.name, {
     arrow: false,
     animation: "shift-toward-subtle",
     content: obj.content,
     placement: "bottom",
-  });
-});
+  })
+);
 
 // current theme
 let currTheme = null;
@@ -712,10 +711,8 @@ const dropzone = new Dropzone(document.body, {
   url: "/api/save/images",
   paramName: "avatar",
   clickable: false,
-  acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
-  error: () => {
-    notyf.error("An error occurred when saving an image");
-  },
+  acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
+  error: () => notyf.error("An error occurred when saving an image"),
   success: (file, response) => {
     file.previewElement.remove();
     editor.insert(`![](${response})`);
@@ -958,25 +955,21 @@ async function defineCmd() {
     // },
     {
       name: "Import Sticky Note",
-      handler: () => {
-        insertStickyNote();
-      },
+      handler: () => insertStickyNote(),
     },
     {
       name: "Insert Calendar Event",
-      handler: () => {
-        showTodo(true);
-      },
+      handler: () => showTodo(true),
     },
     {
       name: "Toggle Vim Mode",
       handler: () => {
-        if (notesTextArea.getAttribute("data-vim") === "true") {
+        if (notesTextArea.hasAttribute("data-vim")) {
           editor.setKeyboardHandler("ace/keyboard/vscode");
-          notesTextArea.setAttribute("data-vim", "false");
+          notesTextArea.removeAttribute("data-vim");
         } else {
           editor.setKeyboardHandler("ace/keyboard/vim");
-          notesTextArea.setAttribute("data-vim", "true");
+          notesTextArea.setAttribute("data-vim", "");
         }
       },
     },
@@ -989,9 +982,7 @@ async function defineCmd() {
               .split("_")
               .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
               .join(" "),
-            handler: () => {
-              changeTheme(e.name);
-            },
+            handler: () => changeTheme(e.name),
           };
         })
         .sort((a, b) => {
@@ -1056,7 +1047,7 @@ async function defineCmd() {
 
   c = new CommandPal({
     hotkey: "ctrl+space",
-    placeholder: `Search...`,
+    placeholder: "Search...",
     commands: commands,
   });
   c.start();
@@ -1244,14 +1235,14 @@ function syncStatus(dbSave) {
 }
 
 function formatNonText(ele) {
-  for (const node of ele.querySelectorAll(".reference")) {
+  for (const node of ele.getElementsByClassName("reference")) {
     node.setAttribute("data-bookname", node.innerText);
     node.setAttribute("data-page", 0);
-    node.addEventListener("click", switchWrapper);
+    node.addEventListener("click", switchTab);
     previewHandlers.push({
       element: node,
       type: "click",
-      listener: switchWrapper,
+      listener: switchTab,
     });
     node.addEventListener("mouseover", referToolTip);
     previewHandlers.push({
@@ -1260,7 +1251,7 @@ function formatNonText(ele) {
       listener: referToolTip,
     });
   }
-  for (const node of ele.querySelectorAll("img")) {
+  for (const node of ele.getElementsByTagName("img")) {
     node.addEventListener("contextmenu", removeImageToolTip);
     previewHandlers.push({
       element: node,
@@ -1342,9 +1333,7 @@ function createTab(txt, shouldOpen) {
 
 // loading workspace from last session
 function createWorkspace() {
-  Array.from(savedWS).forEach((noteName) => {
-    createTab(noteName);
-  });
+  Array.from(savedWS).forEach((noteName) => createTab(noteName));
   list.style.width = `${parseInt(localStorage.getItem("/listSize") || 300)}px`;
   if (localStorage.getItem("/listShown") === "false") {
     hideList();
@@ -1355,15 +1344,14 @@ function createWorkspace() {
 
 // for tabs
 function switchTab() {
-  switchNote(this.getAttribute("data-bookname"));
-}
-
-// for list
-function switchWrapper() {
-  switchNote(
-    this.getAttribute("data-bookname"),
-    parseInt(this.getAttribute("data-page"))
-  );
+  if (this.hasAttribute("data-page")) {
+    switchNote(
+      this.getAttribute("data-bookname"),
+      parseInt(this.getAttribute("data-page"))
+    );
+  } else {
+    switchNote(this.getAttribute("data-bookname"));
+  }
 }
 
 // function to switch between notes.
@@ -1449,16 +1437,16 @@ async function switchNote(noteName, page) {
 // creating the tree list
 function dropWrapper(e) {
   e.stopPropagation();
-  if (this.getAttribute("data-pos") === "down") {
+  if (this.hasAttribute("data-down")) {
     droppedFolders.delete(this.parentNode.getAttribute("data-bookname"));
     this.nextElementSibling.style.display = "none";
     this.classList.remove("down");
-    this.setAttribute("data-pos", "up");
+    this.removeAttribute("data-down");
   } else {
     droppedFolders.add(this.parentNode.getAttribute("data-bookname"));
     this.nextElementSibling.style.display = "flex";
     this.classList.add("down");
-    this.setAttribute("data-pos", "down");
+    this.setAttribute("data-down", "");
   }
   const arrayFromSet = Array.from(droppedFolders);
   localStorage.setItem("/fileStructure", JSON.stringify(arrayFromSet));
@@ -1543,8 +1531,8 @@ function nestedList(obj, allNotes) {
     const a = document.createElement("a");
     a.setAttribute("data-page", i);
     a.setAttribute("data-bookname", obj.name);
-    a.addEventListener("click", switchWrapper);
-    listHandlers.push({ element: a, type: "click", listener: switchWrapper });
+    a.addEventListener("click", switchTab);
+    listHandlers.push({ element: a, type: "click", listener: switchTab });
     // }
     if (!removeMD(obj.excerpt[i])) {
       a.innerHTML = "<i>Empty Page</i>";
@@ -1581,11 +1569,9 @@ function nestedList(obj, allNotes) {
     });
   }
   if (droppedFolders.has(obj.name)) {
-    folderName.setAttribute("data-pos", "down");
+    folderName.setAttribute("data-down", "");
     ul.style.display = "flex";
     folderName.classList.add("down");
-  } else {
-    folderName.setAttribute("data-pos", "up");
   }
   folder.appendChild(ul);
   return folder;
@@ -1657,7 +1643,7 @@ function hideList() {
   workspace.style.width = "calc(100% - 20px";
   bottomLeftGeneralInfo.style.left = "25px";
   list.style.display = "none";
-  list.setAttribute("data-pos", "hidden");
+  list.removeAttribute("data-shown");
   border.style.display = "none";
   tabs.style.marginLeft = "0px";
   localStorage.setItem("/listShown", "false");
@@ -1669,7 +1655,7 @@ function showList() {
   }px)`;
   bottomLeftGeneralInfo.style.left =
     parseInt(localStorage.getItem("/listSize") || 300) + 25 + "px";
-  list.setAttribute("data-pos", "shown");
+  list.setAttribute("data-shown", "");
   list.style.display = "flex";
   border.style.display = "inline";
   tabs.style.marginLeft = "-5px";
@@ -1677,7 +1663,7 @@ function showList() {
 }
 
 function toggleList() {
-  if (list.getAttribute("data-pos") === "shown") {
+  if (list.hasAttribute("data-shown")) {
     hideList();
   } else {
     showList();
@@ -1902,12 +1888,12 @@ async function deleteNoteBookFromDb() {
     method: "DELETE",
   });
   if (noteDeleteStatus.ok) {
-    notyf.success(`Notebook has been deleted from the database`);
+    notyf.success("Notebook has been deleted from the database");
 
     library.get(note.name).parents.forEach((parent) => {
       try {
         library.get(parent).children = library
-          .get(parents)
+          .get(parent)
           .children.filter((e) => e !== note.name);
         library.get(parent).family = library
           .get(parent)
@@ -2213,7 +2199,7 @@ function hideStickyNotes() {
 }
 
 async function initializeStickyNotes() {
-  const response = await fetch(`/api/get/notebooks/sticky__notes`);
+  const response = await fetch("/api/get/notebooks/sticky__notes");
   if (response.ok) {
     let json = await response.json();
     stickyNotesTextArea.value = json["data"]["content"][0];
@@ -2226,7 +2212,7 @@ async function initializeStickyNotes() {
 
 // flashcards
 async function initializeFlashcards() {
-  const response = await fetch(`/api/get/notebooks/flash__cards`);
+  const response = await fetch("/api/get/notebooks/flash__cards");
   if (response.ok) {
     let json = await response.json();
     flashcards = JSON.parse(json["data"]["content"][0]);
@@ -2284,9 +2270,7 @@ function flashcardMode() {
   aibutton.classList.add("fcButtons");
   const generated = document.createElement("button");
   generated.innerText = "✨ Generate Cards";
-  generated.addEventListener("click", () => {
-    AIFlashcards();
-  });
+  generated.addEventListener("click", () => AIFlashcards(), { once: true });
   aibutton.appendChild(generated);
   fcArea.appendChild(aibutton);
   const cardFront = document.createElement("div");
@@ -2323,13 +2307,7 @@ function flashcardMode() {
   );
   const exit = document.createElement("button");
   exit.innerText = "❌ Exit";
-  exit.addEventListener(
-    "click",
-    () => {
-      leaveFlashcardMode();
-    },
-    { once: true }
-  );
+  exit.addEventListener("click", () => leaveFlashcardMode(), { once: true });
   buttons.appendChild(save);
   buttons.appendChild(exit);
   cardFront.addEventListener("focus", function () {
@@ -2456,18 +2434,23 @@ function showFlashcards(noAnimation) {
         left: this.scrollLeft + e.deltaY,
       });
     });
-    cards.addEventListener(
-      "click",
-      () => {
-        study([e.shift()], e);
-      },
-      { once: true }
-    );
     cards.classList.add("fcCardList");
 
     e.forEach((card) => {
       num.innerText = parseInt(num.innerText) + 1;
       const cardFront = document.createElement("div");
+      cardFront.addEventListener(
+        "click",
+        () =>
+          study(
+            e.splice(
+              e.findIndex((obj) => obj.id === card.id),
+              1
+            ),
+            e
+          ),
+        { once: true }
+      );
       cardFront.addEventListener("contextmenu", function (e) {
         contextMenu(
           e,
@@ -2656,9 +2639,7 @@ function editCardsHelper(cardArr) {
     exit.innerText = "❌ Exit";
     exit.addEventListener(
       "click",
-      () => {
-        editCardsRejection(new Error("Unsaved"));
-      },
+      () => editCardsRejection(new Error("Unsaved")),
       { once: true }
     );
     buttonContainer.appendChild(exit);
@@ -2690,9 +2671,7 @@ function study(cardArr, allCards) {
   const leave = document.createElement("div");
   leave.classList.add("reset");
   leave.innerText = "❌ Exit";
-  leave.addEventListener("click", () => {
-    showFlashcards(true);
-  });
+  leave.addEventListener("click", () => showFlashcards(true));
   options.appendChild(leave);
 
   const reset = document.createElement("div");
@@ -2720,15 +2699,15 @@ function study(cardArr, allCards) {
   const skip = document.createElement("div");
   skip.classList.add("reset");
   skip.innerText = "⏩ Skip";
-  skip.addEventListener("click", () => {
-    study([allCards.shift(), ...cardArr], allCards);
-  });
+  skip.addEventListener("click", () =>
+    study([allCards.shift(), ...cardArr], allCards)
+  );
   options.appendChild(skip);
 
   const reshuffle = document.createElement("div");
   reshuffle.classList.add("reset");
   reshuffle.innerText = "🔀 Shuffle";
-  reshuffle.addEventListener("click", (e) => {
+  reshuffle.addEventListener("click", () => {
     const shuffled = shuffle([cardArr.shift(), ...allCards]);
     notyf.success("Cards were shuffled");
     study([shuffled.shift(), ...cardArr], shuffled);
@@ -2801,7 +2780,7 @@ let taskTippys = [];
 // Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
-  const response = await fetch(`/api/get/notebooks/todo__list`);
+  const response = await fetch("/api/get/notebooks/todo__list");
   if (response.ok) {
     let json = await response.json();
     events = JSON.parse(json["data"]["content"][0]);
@@ -2870,10 +2849,10 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   }
   // this isn't good honestly
   if (lookingAtPast) {
-    document.getElementById("seePast").setAttribute("data-enabled", "true");
+    document.getElementById("seePast").setAttribute("data-enabled", "");
     document.getElementById("seePast").value = "View Active Tasks";
   } else {
-    document.getElementById("seePast").setAttribute("data-enabled", "false");
+    document.getElementById("seePast").removeAttribute("data-enabled");
     document.getElementById("seePast").value = "View Completed Tasks";
   }
   const lookAt = lookingAtPast ? pastEvents : events;
@@ -2899,7 +2878,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     event.classList.add("task");
     event.id = `task__${task.id}`;
 
-    event.addEventListener("contextmenu", (e) => {
+    event.addEventListener("contextmenu", (e) =>
       contextMenu(
         e,
         [
@@ -2928,8 +2907,8 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
         ],
         [`${e.clientX}px`, `${e.clientY}px`],
         true
-      );
-    });
+      )
+    );
 
     const eventTop = document.createElement("div");
 
@@ -3043,17 +3022,13 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     if (lookingAtPast) {
       eventBottom.addEventListener(
         "click",
-        () => {
-          renderTaskList(true, taskList, task.extendedProps.category);
-        },
+        () => renderTaskList(true, taskList, task.extendedProps.category),
         { once: true }
       );
     } else {
       eventBottom.addEventListener(
         "click",
-        () => {
-          renderTaskList(false, taskList, task.extendedProps.category);
-        },
+        () => renderTaskList(false, taskList, task.extendedProps.category),
         { once: true }
       );
     }
@@ -3077,26 +3052,18 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     div.innerText = `Category: ${constraint}`;
     taskList.prepend(div);
     if (lookingAtPast) {
-      div.addEventListener(
-        "click",
-        () => {
-          renderTaskList(true, taskList);
-        },
-        { once: true }
-      );
+      div.addEventListener("click", () => renderTaskList(true, taskList), {
+        once: true,
+      });
     } else {
-      div.addEventListener(
-        "click",
-        () => {
-          renderTaskList(false, taskList);
-        },
-        { once: true }
-      );
+      div.addEventListener("click", () => renderTaskList(false, taskList), {
+        once: true,
+      });
     }
   }
 }
 
-function showTodo(hereForInsertion, constraint) {
+function showTodo(hereForInsertion) {
   if (
     hereForInsertion &&
     reservedNames.some((e) => e.data.name === note.name)
@@ -3129,9 +3096,7 @@ function showTodo(hereForInsertion, constraint) {
           const evInList = document.getElementById(`task__${info.event.id}`);
           evInList.addEventListener(
             "animationend",
-            () => {
-              evInList.classList.remove("getHighlighted");
-            },
+            () => evInList.classList.remove("getHighlighted"),
             {
               once: true,
             }
@@ -3205,10 +3170,9 @@ function showTodo(hereForInsertion, constraint) {
   const seePast = document.createElement("input");
   seePast.id = "seePast";
   seePast.setAttribute("type", "button");
-  seePast.setAttribute("data-enabled", "false");
   seePast.value = "View Completed Tasks";
   seePast.addEventListener("click", function () {
-    if (this.getAttribute("data-enabled") === "false") {
+    if (!this.hasAttribute("data-enabled")) {
       renderTaskList(true, taskList);
     } else {
       renderTaskList(false, taskList);
@@ -3480,6 +3444,8 @@ async function nestNote(child, parent) {
     } else {
       notyf.error("An error occurred when nesting a notebook");
     }
+  } else {
+    notyf.error("Something went wrong");
   }
 }
 
@@ -3516,6 +3482,8 @@ async function relinquishNote(child, parent) {
     } else {
       notyf.error("An error occurred when relinquishing a notebook");
     }
+  } else {
+    notyf.error("Something went wrong")
   }
 }
 
@@ -3634,25 +3602,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 // main note area
-// mainContainer.addEventListener("click", delContextMenu);
-// mainContainer.addEventListener("contextmenu", delContextMenu);
-notesPreviewArea.addEventListener("click", (e) => {
-  wikiSearch(e);
-});
-// notesPreviewArea.addEventListener("scroll", function () {
-//   if (this.scrollTop > 0) {
-//     tabs.classList.add("topOverflow")
-//   } else {
-//     tabs.classList.remove("topOverflow")
-//   }
-// })
-// notesTextArea.addEventListener("scroll", function () {
-//   if (this.scrollTop > 0) {
-//     tabs.classList.add("topOverflow")
-//   } else {
-//     tabs.classList.remove("topOverflow")
-//   }
-// })
+notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
 
 // toolbar
 document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
@@ -3838,7 +3788,7 @@ document.getElementById("icon2").addEventListener("click", (e) => {
     },
   ]);
 });
-document.getElementById("icon3").addEventListener("click", (e) => {
+document.getElementById("icon3").addEventListener("click", (e) =>
   contextMenu(e, [
     {
       text: "Delete Notebook",
@@ -3872,12 +3822,12 @@ document.getElementById("icon3").addEventListener("click", (e) => {
       },
       appearance: "ios",
     },
-  ]);
-});
+  ])
+);
 document
   .getElementById("getFile1")
   .addEventListener("change", insertAndSaveImage);
-document.getElementById("icon5").addEventListener("click", (e) => {
+document.getElementById("icon5").addEventListener("click", (e) =>
   contextMenu(e, [
     {
       text: "◨ Split",
@@ -3906,21 +3856,19 @@ document.getElementById("icon5").addEventListener("click", (e) => {
       },
       appearance: "ios",
     },
-  ]);
-});
-document.getElementById("icon6").addEventListener("click", () => {
-  handlePageMovement(true, 1, false);
-});
-document.getElementById("icon7").addEventListener("click", (e) => {
-  handlePageMovement(false, 1, false, e);
-});
-brain.addEventListener("click", (e) => {
+  ])
+);
+document
+  .getElementById("icon6")
+  .addEventListener("click", () => handlePageMovement(true, 1, false));
+document
+  .getElementById("icon7")
+  .addEventListener("click", (e) => handlePageMovement(false, 1, false, e));
+brain.addEventListener("click", (e) =>
   contextMenu(e, [
     {
       text: "Toggle Wiki Search",
-      click: () => {
-        toggleWikiSearch();
-      },
+      click: () => toggleWikiSearch(),
       appearance: "ios",
     },
     {
@@ -3957,12 +3905,12 @@ brain.addEventListener("click", (e) => {
       },
       appearance: "ios",
     },
-  ]);
-});
+  ])
+);
 areNotesSavedIcon.addEventListener("animationend", function () {
   this.classList.remove("saved");
 });
-areNotesSavedIcon.addEventListener("click", (e) => {
+areNotesSavedIcon.addEventListener("click", (e) =>
   contextMenu(e, [
     {
       text: "More Details",
@@ -3988,33 +3936,25 @@ areNotesSavedIcon.addEventListener("click", (e) => {
       },
       appearance: "ios",
     },
-  ]);
-});
-// toolBar.addEventListener("click", delContextMenu);
-// toolBar.addEventListener("contextmenu", delContextMenu);
+  ])
+);
 toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
 
 // side bar and list
 document
   .getElementById("leftMostSideBar")
-  .addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-  });
+  .addEventListener("contextmenu", (e) => e.preventDefault());
 document
   .getElementById("sideBarRetractList")
   .addEventListener("click", toggleList);
-document.getElementById("newPage").addEventListener("click", () => {
-  jumpToDesiredPage(note.content.length);
-});
-morePages.addEventListener("click", (e) => {
-  showMorePages(e);
-});
-document.getElementById("goHome").addEventListener("click", () => {
-  switchNote("home", 0);
-});
-list.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-});
+document
+  .getElementById("newPage")
+  .addEventListener("click", () => jumpToDesiredPage(note.content.length));
+morePages.addEventListener("click", (e) => showMorePages(e));
+document
+  .getElementById("goHome")
+  .addEventListener("click", () => switchNote("home", 0));
+list.addEventListener("contextmenu", (e) => e.preventDefault());
 document
   .getElementById("searchItem")
   .children[0].addEventListener("input", function () {
@@ -4046,9 +3986,11 @@ document.getElementById("loading").addEventListener(
   },
   { once: true }
 );
-document.getElementById("openCommandPal").addEventListener("click", () => {
-  document.getElementsByClassName("mobile-button")[0].click();
-});
+document
+  .getElementById("openCommandPal")
+  .addEventListener("click", () =>
+    document.getElementsByClassName("mobile-button")[0].click()
+  );
 
 // onload functions
 window.addEventListener(
@@ -4080,12 +4022,8 @@ window.addEventListener(
         hideStickyNotes();
       }
     });
-    openCalendar.addEventListener("click", () => {
-      showTodo(false);
-    });
-    flashcardPrac.addEventListener("click", () => {
-      showFlashcards();
-    });
+    openCalendar.addEventListener("click", () => showTodo(false));
+    flashcardPrac.addEventListener("click", () => showFlashcards());
 
     for (let i = 0, n = brDots.children.length; i < n; i++) {
       const dotFunctions = ["Flashcards", "Calendar", "Sticky Note"];
@@ -4106,7 +4044,11 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    log(`Load time: ${Date.now() - startTime}ms!`);
+    log(
+      `Welcome to [Notes taking app] Version 1.2, we loaded everything in ${
+        Date.now() - startTime
+      }ms.`
+    );
   },
   { once: true }
 );
