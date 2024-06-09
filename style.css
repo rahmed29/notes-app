@@ -15,6 +15,10 @@ body {
   background: var(--body);
 }
 
+body * {
+  scrollbar-color: var(--main-accent) rgba(0, 0, 0, 0);
+}
+
 @supports (font-variation-settings: normal) {
   :root {
     font-family: InterVariable, sans-serif;
@@ -1180,13 +1184,27 @@ blockquote:hover {
   bottom: 0%;
   position: absolute;
   width: 100vw;
-  background: var(--quizlet-purple);
+  background: var(--quizlet-purple-accents);
   display: flex;
   justify-content: center;
   align-items: center;
   color: var(--quizlet-font);
   font-size: 13px;
   padding: 3px;
+}
+
+.flashcardMode #fill * {
+  cursor: pointer;
+}
+
+.fcSelection {
+  transition: .15s;
+  background: var(--quizlet-purple);
+  color: var(--quizlet-font);
+}
+
+.fcSelection::marker {
+  color: var(--notes-color);
 }
 
 .flashcardMode #mainContainer {
@@ -1301,7 +1319,8 @@ blockquote:hover {
   height: 100%;
   padding: 1%;
   gap: 5px;
-  overflow-x: auto;
+  overflow-x: scroll;
+  overflow-y: hidden;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   box-shadow: rgba(129, 129, 129, 0.25) 0px 30px 60px -12px inset,
@@ -1573,6 +1592,18 @@ blockquote:hover {
   white-space: nowrap;
 }
 
+.taskTitle {
+  box-sizing: border-box;
+  outline: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0);
+}
+
+.taskTitle:focus {
+  border-color: var(--quizlet-font);
+}
+
 .taskMoreInfo {
   padding: 3px;
   width: 1em;
@@ -1645,6 +1676,31 @@ blockquote:hover {
 .fc-day-today .fc-daygrid-day-number {
   color: var(--highlight-color) !important;
 } */
+
+#isEncrypted {
+  z-index: 1;
+  bottom: 0;
+  margin-bottom: 5px;
+  left: 50%;
+  width: auto;
+  height: auto;
+  background: var(--popup-header);
+  border-radius: 6px;
+  box-shadow: var(--floating-bs);
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  cursor: default;
+  user-select: none;
+  transform: translate(-50%, 0%);
+}
+
+#isEncrypted span {
+  font-size: 10px;
+  color: var(--main-accent);
+}
 
 /* https://stackoverflow.com/a/69970674 */
 #wikipediaBrainAnimation {

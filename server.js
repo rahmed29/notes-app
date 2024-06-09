@@ -78,7 +78,7 @@ const Item = mongoose.model("Item", {
   children: [String],
   parents: [String],
   date: String,
-  saved: Boolean,
+  isEncrypted: Boolean,
 });
 
 app.use(bodyParser.json());
@@ -88,12 +88,8 @@ app.set("view engine", "ejs");
 //   try {
 //     const result = await Item.find();
 //     result.forEach(async (notebook) => {
-//       if (notebook.name === "flash__cards") {
-//         notebook.parents = [];
-//         notebook.children = [];
-//         notebook.saved = true;
+//         notebook.isEncrypted = false;
 //         await notebook.save();
-//       }
 //     })
 //     res.status(500).json({ status: "Complete" });
 //   } catch (err) {
@@ -116,7 +112,7 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
 });
 
 app.post("/api/save/notebooks", async (req, res) => {
-  const { name, content, date } = req.body;
+  const { name, content, date, isEncrypted } = req.body;
   if (!name || !content || name === "home") {
     return res
       .status(400)
@@ -131,14 +127,14 @@ app.post("/api/save/notebooks", async (req, res) => {
         children: [],
         parents: [],
         date,
-        saved: true,
+        isEncrypted: isEncrypted || false,
       });
       await newItem.save();
       res.status(201).json({ status: "Created" });
     } else if (existingItem.name === name) {
       existingItem.content = content;
       existingItem.date = date;
-      existingItem.saved = true;
+      existingItem.isEncrypted = isEncrypted || false 
       await existingItem.save();
       res.status(204).json({ status: "Updated" });
     }
@@ -183,18 +179,18 @@ app.get("/api/get/list/", async (req, res) => {
       notebook.name !== "todo__list" &&
       notebook.name !== "flash__cards"
     ) {
-      let excerpts = notebook.content.map((page) => {
-        const name =
-          page.indexOf("\n") === -1
-            ? page
-            : page.substring(0, page.indexOf("\n"));
-        return name;
-      });
       data.push({
         name: notebook.name,
-        excerpt: excerpts,
+        excerpt: notebook.content.map((page) => {
+          const name =
+            page.indexOf("\n") === -1
+              ? page
+              : page.substring(0, page.indexOf("\n"));
+          return name;
+        }),
         children: notebook.children,
         parents: notebook.parents,
+        isEncrypted: notebook.isEncrypted,
       });
     }
   }
