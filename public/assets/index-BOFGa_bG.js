@@ -329,7 +329,7 @@ l0,-`+(r+144)+`c-2,-159.3,-10,-310.7,-24,-454c-53.3,-528,-210,-949.7,
       </div>
     </div>
 
-    <div id="isEncrypted"><span>●</span> 🔐</div>
+    <div id="isEncrypted"><span>Encrypted ✓</span></div>
 
     <div id="wikipediaBrainAnimation"></div>
 

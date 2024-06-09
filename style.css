@@ -1222,7 +1222,8 @@ blockquote:hover {
 .flashcardMode #tabs,
 .flashcardMode #toolBar,
 .flashcardMode #bottomRightTools,
-.flashcardMode #bottomLeftGeneralInfo {
+.flashcardMode #bottomLeftGeneralInfo,
+.flashcardMode #isEncrypted {
   display: none !important;
 }
 
@@ -1691,14 +1692,15 @@ blockquote:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 4px;
+  padding: 5px;
   cursor: default;
   user-select: none;
   transform: translate(-50%, 0%);
 }
 
 #isEncrypted span {
-  font-size: 10px;
+  font-size: 11px;
+  font-family: monospace;
   color: var(--main-accent);
 }
 

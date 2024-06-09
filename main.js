@@ -44,7 +44,7 @@ document.body.innerHTML = `
       </div>
     </div>
 
-    <div id="isEncrypted"><span>●</span> 🔐</div>
+    <div id="isEncrypted"><span>Encrypted ✓</span></div>
 
     <div id="wikipediaBrainAnimation"></div>
 
@@ -1987,6 +1987,8 @@ async function deleteNoteBookFromDb() {
     note.children = [];
     note.parents = [];
     note.family = [];
+    note.isEncrypted = false;
+    note.password = null;
     flashcards = flashcards.filter((e) => e.subject !== note.name);
     syncStatus(note.dbSave);
   } else {
