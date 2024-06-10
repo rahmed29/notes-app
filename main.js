@@ -32,7 +32,7 @@ function checkKey(cipher, key) {
 
 function decryptMsg(cipher, key) {
   const bytes = CryptoJS.AES.decrypt(cipher, key);
-  return bytes.toString(CryptoJS.enc.Utf8)
+  return bytes.toString(CryptoJS.enc.Utf8);
 }
 
 window.decryptMsg = decryptMsg;
@@ -747,7 +747,7 @@ const dropzone = new Dropzone(document.body, {
     file.previewElement.remove();
     editor.insert(`![](${response})`);
     updateAndSaveNotesLocally();
-    // saveNoteBookToDb();
+    // saveNoteBookToDb(note.name);
     updateList();
   },
 });
@@ -764,7 +764,7 @@ async function insertAndSaveImage() {
       editor.insert(`![](${response})`);
       updateAndSaveNotesLocally();
       updateList();
-      // saveNoteBookToDb();
+      // saveNoteBookToDb(note.name);
     } else {
       notyf.error("An error occurred when saving an image");
     }
@@ -781,7 +781,7 @@ async function deleteImageFromDb(image) {
   if (imageDelete.ok) {
     editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
     updateAndSaveNotesLocally();
-    // saveNoteBookToDb();
+    // saveNoteBookToDb(note.name);
     updateList();
   } else {
     notyf.error("An error occurred when deleting an image");
@@ -918,7 +918,7 @@ async function defineCmd() {
     },
     {
       name: "Save Notebook",
-      handler: () => saveNoteBookToDb(),
+      handler: () => saveNoteBookToDb(note.name),
     },
     {
       name: "Insert Image",
@@ -958,7 +958,7 @@ async function defineCmd() {
       children: [
         {
           name: "Confirm",
-          handler: () => deleteNoteBookFromDb(),
+          handler: () => deleteNoteBookFromDb(note.name),
         },
       ],
     },
@@ -1149,7 +1149,10 @@ function accents() {
 
 async function updateAndSaveNotesLocally() {
   note.content[note.pgN] = editor.getValue();
-  if (!reservedNames.some((e) => e.data.name === note.name) && !note.isEncrypted) {
+  if (
+    !reservedNames.some((e) => e.data.name === note.name) &&
+    !note.isEncrypted
+  ) {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus(note.dbSave);
@@ -1388,31 +1391,33 @@ async function switchNote(noteName, page) {
   };
   try {
     if (data.isEncrypted && data.password == null) {
-      data.password = prompt(`Enter your password for notebook: ${noteName}`)
+      data.password = prompt(`Enter your password for notebook: ${noteName}`);
       if (data.password == null) {
         switching = false;
-        switchNote("home")
+        switchNote("home");
         return;
       }
       if (checkKey(data.content[0], data.password)) {
-        data.content = data.content.map((cipher) => JSON.parse(decryptMsg(cipher, data.password)).msg)
-        document.getElementById("isEncrypted").style.display = "flex"
+        data.content = data.content.map(
+          (cipher) => JSON.parse(decryptMsg(cipher, data.password)).msg
+        );
+        document.getElementById("isEncrypted").style.display = "flex";
       } else {
-        notyf.error("Incorrect Password")
+        notyf.error("Incorrect Password");
         switching = false;
-        switchNote("home")
+        switchNote("home");
         return;
       }
     } else if (data.isEncrypted) {
-        // data.content = data.content.map((cipher) => decryptMsg(cipher, data.password))
-        document.getElementById("isEncrypted").style.display = "flex"
+      // data.content = data.content.map((cipher) => decryptMsg(cipher, data.password))
+      document.getElementById("isEncrypted").style.display = "flex";
     } else {
-      document.getElementById("isEncrypted").style.display = "none"
+      document.getElementById("isEncrypted").style.display = "none";
     }
   } catch (err) {
     switching = false;
     switchNote("home");
-    notyf.error("Something went wrong. Try again in a second")
+    notyf.error("Something went wrong. Try again in a second");
     return;
   }
   try {
@@ -1423,8 +1428,10 @@ async function switchNote(noteName, page) {
   lastNote = note;
   note = {};
   note.name = noteName.replaceAll("/", "");
-  note.isEncrypted = data.isEncrypted
-  note.content = note.isEncrypted ? data.content : JSON.parse(localStorage.getItem(noteName)) || data.content;
+  note.isEncrypted = data.isEncrypted;
+  note.content = note.isEncrypted
+    ? data.content
+    : JSON.parse(localStorage.getItem(noteName)) || data.content;
   note.pgN = page < note.content.length ? page : note.content.length - 1;
   note.password = note.isEncrypted ? data.password : null;
   note.dbSave = data.dbSave || data.content;
@@ -1469,6 +1476,7 @@ async function switchNote(noteName, page) {
 // creating the tree list
 function dropWrapper(e) {
   e.stopPropagation();
+  delContextMenu();
   if (this.hasAttribute("data-down")) {
     droppedFolders.delete(this.parentNode.getAttribute("data-bookname"));
     this.nextElementSibling.style.display = "none";
@@ -1548,6 +1556,12 @@ function nestedList(obj, allNotes) {
   folder.classList.add("item");
   const folderName = document.createElement("div");
   folderName.classList.add("folderName");
+  folderName.addEventListener("contextmenu", listContextMenu);
+  listHandlers.push({
+    element: folderName,
+    type: "contextmenu",
+    listener: listContextMenu,
+  });
   folderName.addEventListener("click", dropWrapper);
   listHandlers.push({
     element: folderName,
@@ -1568,7 +1582,7 @@ function nestedList(obj, allNotes) {
     // }
     if (!removeMD(obj.excerpt[i])) {
       a.innerHTML = "<i>Empty Page</i>";
-    } else if (obj.isEncrypted){
+    } else if (obj.isEncrypted) {
       a.innerHTML = "<i>Encrypted Page</i>";
     } else {
       a.innerText = removeMD(obj.excerpt[i]);
@@ -1843,10 +1857,10 @@ async function forceUpdateNotes() {
   notyf.success("Notes were pulled from database");
 }
 
-async function copyBook(newName) {
+async function copyBook(newName, bookToCopy) {
   const existingItem = await fetch(`/api/get/notebooks/${newName}`);
-  if (existingItem.status === 404 && newName) {
-    const thisItem = await fetch(`/api/get/notebooks/${note.name}`);
+  if (existingItem.status === 404 && newName && bookToCopy) {
+    const content = await getAnyBookContent(bookToCopy, "content");
     const save = await fetch("/api/save/notebooks/", {
       method: "POST",
       headers: {
@@ -1854,12 +1868,15 @@ async function copyBook(newName) {
       },
       body: JSON.stringify({
         name: newName,
-        content: note.content,
+        content,
         date: new Date().toLocaleString(),
       }),
     });
     if (save.ok) {
-      localStorage.setItem(newName, localStorage.getItem(note.name));
+      localStorage.setItem(newName, JSON.stringify(content));
+      if (library.get(newName)) {
+        library.get(newName).content = content;
+      }
       updateList();
       switchNote(newName, 0);
     } else {
@@ -1879,11 +1896,16 @@ function deletePage() {
 }
 
 function decryptCurrentBook() {
-  if (note.isEncrypted && confirm("This will immediately save your notebook in an unencrypted state. Proceed?")) {
+  if (
+    note.isEncrypted &&
+    confirm(
+      "This will immediately save your notebook in an unencrypted state. Proceed?"
+    )
+  ) {
     note.isEncrypted = false;
     note.password = null;
-    saveNoteBookToDb();
-    document.getElementById("isEncrypted").style.display = "none"
+    saveNoteBookToDb(note.name);
+    document.getElementById("isEncrypted").style.display = "none";
   }
 }
 
@@ -1892,110 +1914,127 @@ function encryptCurrentBook() {
     note.password = prompt("Enter a password");
     if (note.password != null) {
       note.isEncrypted = true;
-      saveNoteBookToDb();
-      document.getElementById("isEncrypted").style.display = "flex"
+      saveNoteBookToDb(note.name);
+      document.getElementById("isEncrypted").style.display = "flex";
+      localStorage.removeItem(note.name);
     } else {
-      notyf.error("Note was not encrypted")
+      notyf.error("Note was not encrypted");
     }
   } else {
-    notyf.error("Note is already encrypted")
+    notyf.error("Note is already encrypted");
   }
 }
 
 window.encryptCurrentBook = encryptCurrentBook;
 
-async function saveNoteBookToDb() {
+async function saveNoteBookToDb(noteName) {
   if (
-    note.name.includes("%") ||
-    reservedNames.some((e) => e.data.name === note.name)
+    noteName.includes("%") ||
+    reservedNames.some((e) => e.data.name === noteName)
   ) {
     notyf.error("Something went wrong");
     return;
   }
-  // note.content[note.pgN] = editor.getValue();
-  note.content = getWrittenPages(note.content);
-  if (!note.isEncrypted) {
-    localStorage.setItem(note.name, JSON.stringify(note.content));
-  }
-
-  const saveStatus = await fetch("/api/save/notebooks/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: note.name,
-      content: !note.isEncrypted ? note.content : note.content.map((page) => encryptMsg(page, note.password)),
-      date: new Date().toLocaleString(),
-      isEncrypted: note.isEncrypted,
-    }),
-  });
-  if (saveStatus.ok) {
-    areNotesSavedIcon.classList.add("saved");
-    note.dbSave = [...note.content];
-    if (note.pgN > note.content.length - 1) {
-      jumpToDesiredPage(note.content.length - 1);
-    } else {
-      accents(false);
+  let desiredNote;
+  if (library.get(noteName)) {
+    desiredNote = library.get(noteName);
+    desiredNote.content = getWrittenPages(note.content);
+    if (!desiredNote.isEncrypted) {
+      localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }
-    note.saved = true;
-    note.timeOfSave = new Date().toLocaleString();
-    syncStatus(note.dbSave);
-    notyf.success("Notebook was saved");
-  } else {
-    notyf.error("An error occurred when saving a notebook");
+    const saveStatus = await fetch("/api/save/notebooks/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: desiredNote.name,
+        content: !desiredNote.isEncrypted
+          ? desiredNote.content
+          : desiredNote.content.map((page) =>
+              encryptMsg(page, desiredNote.password)
+            ),
+        date: new Date().toLocaleString(),
+        isEncrypted: desiredNote.isEncrypted,
+      }),
+    });
+    if (saveStatus.ok) {
+      if (desiredNote.name === note.name) {
+        areNotesSavedIcon.classList.add("saved");
+        desiredNote.dbSave = [...desiredNote.content];
+        if (desiredNote.pgN > desiredNote.content.length - 1) {
+          jumpToDesiredPage(desiredNote.content.length - 1);
+        } else {
+          accents(false);
+        }
+        desiredNote.saved = true;
+        desiredNote.timeOfSave = new Date().toLocaleString();
+        syncStatus(desiredNote.dbSave);
+      } else {
+        desiredNote.dbSave = [...desiredNote.content];
+        desiredNote.saved = true;
+        desiredNote.timeOfSave = new Date().toLocaleString();
+      }
+      notyf.success("Notebook was saved");
+    } else {
+      notyf.error("An error occurred when saving a notebook");
+    }
+    updateList();
+    defineCmd();
   }
-  updateList();
-  defineCmd();
 }
 
-async function deleteNoteBookFromDb() {
-  const noteDeleteStatus = await fetch(`/api/delete/notebooks/${note.name}`, {
+async function deleteNoteBookFromDb(noteName) {
+  const noteDeleteStatus = await fetch(`/api/delete/notebooks/${noteName}`, {
     method: "DELETE",
   });
   if (noteDeleteStatus.ok) {
     notyf.success("Notebook has been deleted from the database");
 
-    library.get(note.name).parents.forEach((parent) => {
-      try {
-        library.get(parent).children = library
-          .get(parent)
-          .children.filter((e) => e !== note.name);
-        library.get(parent).family = library
-          .get(parent)
-          .family.filter((e) => e !== note.name);
-      } catch (err) {
-        // console.log(err);
-      }
-    });
+    if (library.get(noteName)) {
+      const noteinMem = library.get(noteName);
+      noteinMem.parents.forEach((parent) => {
+        try {
+          library.get(parent).children = library
+            .get(parent)
+            .children.filter((e) => e !== noteName);
+          library.get(parent).family = library
+            .get(parent)
+            .family.filter((e) => e !== noteName);
+        } catch (err) {
+          // console.log(err);
+        }
+      });
 
-    library.get(note.name).children.forEach((child) => {
-      try {
-        library.get(child).parents = library
-          .get(child)
-          .parents.filter((e) => e !== note.name);
-        library.get(child).family = library
-          .get(child)
-          .family.filter((e) => e !== note.name);
-      } catch (err) {
-        // console.log(err);
-      }
-    });
+      noteinMem.children.forEach((child) => {
+        try {
+          library.get(child).parents = library
+            .get(child)
+            .parents.filter((e) => e !== noteName);
+          library.get(child).family = library
+            .get(child)
+            .family.filter((e) => e !== noteName);
+        } catch (err) {
+          // console.log(err);
+        }
+      });
 
-    note.dbSave = [];
-    note.saved = false;
-    note.children = [];
-    note.parents = [];
-    note.family = [];
-    note.isEncrypted = false;
-    note.password = null;
-    flashcards = flashcards.filter((e) => e.subject !== note.name);
+      noteinMem.dbSave = [];
+      noteinMem.saved = false;
+      noteinMem.children = [];
+      noteinMem.parents = [];
+      noteinMem.family = [];
+      noteinMem.isEncrypted = false;
+      noteinMem.password = null;
+    }
+
+    flashcards = flashcards.filter((e) => e.subject !== noteName);
     syncStatus(note.dbSave);
+    updateList();
+    defineCmd();
   } else {
     notyf.error("An error occurred when deleting a notebook");
   }
-  updateList();
-  defineCmd();
 }
 
 // context menu
@@ -2012,11 +2051,247 @@ function delContextMenu() {
   document.removeEventListener("wheel", delContextMenu);
 }
 
+function listContextMenu(e, toolBar) {
+  contextMenu(
+    e,
+    [
+      toolBar
+        ? {
+            text: "Open Notebook",
+            click: function () {
+              let hasTyped = false;
+              const storeHTML = this.innerHTML;
+              this.classList.add("currPage");
+              this.style.fontStyle = "italic";
+              this.innerText = "Enter book name";
+              this.contentEditable = true;
+              this.focus();
+              this.addEventListener(
+                "beforeinput",
+                function () {
+                  hasTyped = true;
+                  this.innerText = "";
+                },
+                { once: true }
+              );
+              this.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (hasTyped) {
+                    switchNote(this.innerText.replaceAll("/", ""));
+                    delContextMenu();
+                  } else {
+                    delContextMenu();
+                  }
+                }
+              });
+              this.addEventListener(
+                "blur",
+                function () {
+                  this.contentEditable = false;
+                  this.innerHTML = storeHTML;
+                  this.classList.remove("currPage");
+                  this.style.fontStyle = "inherit";
+                  this.innerText = "Open Notebook";
+                },
+                { once: true }
+              );
+            },
+            appearance: "ios",
+          }
+        : {
+            attr: this.innerText,
+            text: "Open Notebook",
+            click: function () {
+              switchNote(this.getAttribute("data-props"));
+              delContextMenu();
+            },
+            appearance: "ios",
+          },
+      toolBar
+        ? null
+        : {
+            attr: toolBar ? "" : this.innerText,
+            text: "Delete Notebook",
+            click: function () {
+              this.innerText = "Confirm";
+              this.classList.add("rios");
+              this.addEventListener(
+                "click",
+                function () {
+                  deleteNoteBookFromDb(
+                    toolBar ? note.name : this.getAttribute("data-props")
+                  );
+                  delContextMenu();
+                },
+                { once: true }
+              );
+            },
+            appearance: "ios",
+          },
+      {
+        attr: toolBar ? "" : this.innerText,
+        text: "Relinquish Notebook",
+        click: async function () {
+          const noteName = toolBar
+            ? note.name
+            : this.getAttribute("data-props");
+          const buttons = (await getAnyBookContent(noteName, "parents")).map(
+            (parent) => {
+              return {
+                text: parent,
+                click: () => {
+                  relinquishNote(noteName, parent);
+                  delContextMenu();
+                },
+                appearance: "ios",
+              };
+            }
+          );
+          contextMenu(e, buttons, [
+            document.getElementById("contextMenu").style.left,
+            document.getElementById("contextMenu").style.top,
+          ]);
+        },
+        appearance: "ios",
+      },
+      {
+        attr: toolBar ? "" : this.innerText,
+        text: "Nest Notebook",
+        click: async function (e) {
+          const noteName = toolBar
+            ? note.name
+            : this.getAttribute("data-props");
+          const family = await getFamily(noteName);
+          const json = await getList();
+          const buttons = json.reduce((arr, e) => {
+            if (e.name !== noteName && !family.includes(e.name)) {
+              arr.push({
+                text: e.name,
+                click: () => {
+                  nestNote(noteName, e.name);
+                  delContextMenu();
+                },
+                appearance: "ios",
+              });
+            }
+            return arr;
+          }, []);
+          contextMenu(e, buttons, [
+            document.getElementById("contextMenu").style.left,
+            document.getElementById("contextMenu").style.top,
+          ]);
+        },
+        appearance: "ios",
+      },
+      {
+        attr: toolBar ? "" : this.innerText,
+        text: "Create Child",
+        click: function () {
+          const noteName = toolBar
+            ? note.name
+            : this.getAttribute("data-props");
+          let hasTyped = false;
+          const storeHTML = this.innerHTML;
+          this.classList.add("currPage");
+          this.style.fontStyle = "italic";
+          this.innerText = "Enter child name";
+          this.contentEditable = true;
+          this.focus();
+          this.addEventListener(
+            "beforeinput",
+            function () {
+              this.innerText = "";
+
+              hasTyped = true;
+            },
+            { once: true }
+          );
+          this.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (hasTyped) {
+                createChild(noteName, this.innerText.replaceAll("/", ""));
+                delContextMenu();
+              } else {
+                delContextMenu();
+              }
+            }
+          });
+          this.addEventListener(
+            "blur",
+            function () {
+              this.contentEditable = false;
+              this.innerHTML = storeHTML;
+              this.classList.remove("currPage");
+              this.style.fontStyle = "inherit";
+              this.innerText = "Create Child";
+            },
+            { once: true }
+          );
+        },
+        appearance: "ios",
+      },
+      {
+        attr: toolBar ? "" : this.innerText,
+        text: "Copy Notebook",
+        click: function () {
+          let hasTyped = false;
+          const storeHTML = this.innerHTML;
+          this.classList.add("currPage");
+          this.style.fontStyle = "italic";
+          this.innerText = "Enter copy name";
+          this.contentEditable = true;
+          this.focus();
+          this.addEventListener(
+            "beforeinput",
+            function () {
+              this.innerText = "";
+
+              hasTyped = true;
+            },
+            { once: true }
+          );
+          this.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (hasTyped) {
+                copyBook(
+                  this.innerText.replaceAll("/", ""),
+                  toolBar ? note.name : this.getAttribute("data-props")
+                );
+                delContextMenu();
+              } else {
+                delContextMenu();
+              }
+            }
+          });
+          this.addEventListener(
+            "blur",
+            function () {
+              this.contentEditable = false;
+              this.innerHTML = storeHTML;
+              this.classList.remove("currPage");
+              this.style.fontStyle = "inherit";
+              this.innerText = "Copy Notebook";
+            },
+            { once: true }
+          );
+        },
+        appearance: "ios",
+      },
+    ],
+    toolBar ? null : [`${e.clientX}px`, `${e.clientY}px`],
+    !toolBar
+  );
+}
+
 function contextMenu(e, button, position, noScroll) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
   const menu = document.createElement("div");
+  menu.addEventListener("contextmenu", (e) => e.preventDefault());
   menu.id = "contextMenu";
   if (position) {
     menu.style.left = position[0];
@@ -2026,15 +2301,17 @@ function contextMenu(e, button, position, noScroll) {
     menu.style.top = `75px`;
   }
   button.forEach((option) => {
-    const item = document.createElement("div");
-    if (option.attr) {
-      item.setAttribute("data-props", option.attr);
+    if (option) {
+      const item = document.createElement("div");
+      if (option.attr) {
+        item.setAttribute("data-props", option.attr);
+      }
+      item.classList.add("contextMenuItem");
+      item.innerText = option.text;
+      item.addEventListener("click", option.click);
+      item.classList.add(option.appearance);
+      menu.appendChild(item);
     }
-    item.classList.add("contextMenuItem");
-    item.innerText = option.text;
-    item.addEventListener("click", option.click);
-    item.classList.add(option.appearance);
-    menu.appendChild(item);
   });
   if (menu.firstChild) {
     mainContainer.after(menu);
@@ -2347,8 +2624,9 @@ function flashcardMode() {
   hideList();
   const alert = document.createElement("div");
   alert.id = "fcAlert";
-  alert.innerText =
-    `You are in flashcard mode. Click some text to add it to the focused side of the card. ${note.isEncrypted ? "Flashcards are NOT encrypted!" : ""}`;
+  alert.innerText = `You are in flashcard mode. Click some text to add it to the focused side of the card. ${
+    note.isEncrypted ? "Flashcards are NOT encrypted!" : ""
+  }`;
   mainContainer.after(alert);
   wikiEnabled = false;
   brain.classList.add("grayscale");
@@ -2672,9 +2950,9 @@ function editCardsHelper(cardArr) {
   return new Promise((resolve, reject) => {
     // Make rejection available globally and reject it when closing popup
     editCardsRejection = reject;
-    copy.map((card, i) => {;
+    copy.map((card, i) => {
       const oneCard = document.createElement("div");
-      oneCard.setAttribute("data-order", i+1);
+      oneCard.setAttribute("data-order", i + 1);
       oneCard.classList.add("editableCard");
 
       const cardFront = document.createElement("div");
@@ -3423,7 +3701,7 @@ function editingWindow(choice) {
       break;
     case "write":
       mode.innerText = "W";
-      editor.setReadOnly(note.readOnly ? true : false);
+      editor.setReadOnly(note.readOnly);
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.add("writeMode");
       notesAreaContainer.classList.remove("splitMode");
@@ -3431,7 +3709,7 @@ function editingWindow(choice) {
       break;
     default:
       mode.innerText = "S";
-      editor.setReadOnly(note.readOnly ? true : false);
+      editor.setReadOnly(note.readOnly);
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.remove("writeMode");
       notesAreaContainer.classList.add("splitMode");
@@ -3486,8 +3764,14 @@ async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getAncestors(bookName, optionalPreFetchedData);
-    const descendants = await getDescendants(bookName, optionalPreFetchedData);
+    const ancestors = await getAncestors(
+      bookName,
+      optionalPreFetchedData || false
+    );
+    const descendants = await getDescendants(
+      bookName,
+      optionalPreFetchedData || false
+    );
     const response = Array.from(ancestors).concat(Array.from(descendants));
     return response;
   }
@@ -3514,7 +3798,7 @@ async function createChild(parent, child) {
     });
     if (saveStatus.ok) {
       await nestNote(child, parent);
-      switchNote(newName, 0);
+      switchNote(child, 0);
     } else {
       notyf.error("An error occurred when saving a notebook");
     }
@@ -3529,18 +3813,14 @@ async function nestNote(child, parent) {
       method: "POST",
     });
     if (result.ok) {
-      try {
+      if (library.get(child)) {
         library.get(child)["parents"].push(parent);
         library.get(child)["family"].push(parent);
-      } catch (err) {
-        // console.log(err);
       }
 
-      try {
+      if (library.get(parent)) {
         library.get(parent)["children"].push(child);
         library.get(parent)["family"].push(child);
-      } catch (err) {
-        // console.log(err);
       }
 
       updateList();
@@ -3596,7 +3876,10 @@ async function AIFlashcards() {
   let generatedCards = [];
   loading();
   const response =
-    (await chatGPT(editor.getValue(), "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions, do not label the columns however. Do not use any HTML tags.")) || "";
+    (await chatGPT(
+      editor.getValue(),
+      "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions, do not label the columns however. Do not use any HTML tags."
+    )) || "";
   const shadow = document.createElement("div");
   shadow.innerHTML = format(response);
   let count = 0;
@@ -3635,7 +3918,7 @@ async function AIFlashcards() {
 
 async function chatGPT(content, prompt) {
   if (note.isEncrypted) {
-    notyf.error("AI Features are unavailable on encrypted notebooks")
+    notyf.error("AI Features are unavailable on encrypted notebooks");
     return null;
   }
   const response = await fetch("/api/chatGPT", {
@@ -3695,7 +3978,7 @@ async function AISUmmary() {
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
     e.preventDefault();
-    saveNoteBookToDb();
+    saveNoteBookToDb(note.name);
   } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
     e.preventDefault();
     cycleViewPreferences();
@@ -3707,188 +3990,9 @@ notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
 
 // toolbar
 document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
-document.getElementById("icon2").addEventListener("click", (e) => {
-  e.preventDefault();
-  contextMenu(e, [
-    {
-      text: "Open Notebook",
-      click: function () {
-        let hasTyped = false;
-        const storeHTML = this.innerHTML;
-        this.classList.add("currPage");
-        this.style.fontStyle = "italic";
-        this.innerText = "Enter book name";
-        this.contentEditable = true;
-        this.focus();
-        this.addEventListener(
-          "beforeinput",
-          function () {
-            hasTyped = true;
-            this.innerText = "";
-          },
-          { once: true }
-        );
-        this.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (hasTyped) {
-              switchNote(this.innerText.replaceAll("/", ""));
-              delContextMenu();
-            } else {
-              delContextMenu();
-            }
-          }
-        });
-        this.addEventListener(
-          "blur",
-          function () {
-            this.contentEditable = false;
-            this.innerHTML = storeHTML;
-            this.classList.remove("currPage");
-            this.style.fontStyle = "inherit";
-            this.innerText = "Open Notebook";
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Relinquish Notebook",
-      click: async (e) => {
-        const buttons = (await getAnyBookContent(note.name, "parents")).map(
-          (parent) => {
-            return {
-              text: parent,
-              click: () => {
-                relinquishNote(note.name, parent);
-                delContextMenu();
-              },
-              appearance: "ios",
-            };
-          }
-        );
-        contextMenu(e, buttons, [
-          document.getElementById("contextMenu").style.left,
-          document.getElementById("contextMenu").style.top,
-        ]);
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Nest Notebook",
-      click: async (e) => {
-        const family = await getFamily(note.name);
-        const json = await getList();
-        const buttons = json.reduce((arr, e) => {
-          if (e.name !== note.name && !family.includes(e.name)) {
-            arr.push({
-              text: e.name,
-              click: () => {
-                nestNote(note.name, e.name);
-                delContextMenu();
-              },
-              appearance: "ios",
-            });
-          }
-          return arr;
-        }, []);
-        contextMenu(e, buttons, [
-          document.getElementById("contextMenu").style.left,
-          document.getElementById("contextMenu").style.top,
-        ]);
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Create Child",
-      click: function () {
-        let hasTyped = false;
-        const storeHTML = this.innerHTML;
-        this.classList.add("currPage");
-        this.style.fontStyle = "italic";
-        this.innerText = "Enter child name";
-        this.contentEditable = true;
-        this.focus();
-        this.addEventListener(
-          "beforeinput",
-          function () {
-            this.innerText = "";
-
-            hasTyped = true;
-          },
-          { once: true }
-        );
-        this.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (hasTyped) {
-              createChild(note.name, this.innerText.replaceAll("/", ""));
-              delContextMenu();
-            } else {
-              delContextMenu();
-            }
-          }
-        });
-        this.addEventListener(
-          "blur",
-          function () {
-            this.contentEditable = false;
-            this.innerHTML = storeHTML;
-            this.classList.remove("currPage");
-            this.style.fontStyle = "inherit";
-            this.innerText = "Copy Notebook";
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Copy Notebook",
-      click: function () {
-        let hasTyped = false;
-        const storeHTML = this.innerHTML;
-        this.classList.add("currPage");
-        this.style.fontStyle = "italic";
-        this.innerText = "Enter copy name";
-        this.contentEditable = true;
-        this.focus();
-        this.addEventListener(
-          "beforeinput",
-          function () {
-            this.innerText = "";
-
-            hasTyped = true;
-          },
-          { once: true }
-        );
-        this.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (hasTyped) {
-              copyBook(this.innerText.replaceAll("/", ""));
-            } else {
-              delContextMenu();
-            }
-          }
-        });
-        this.addEventListener(
-          "blur",
-          function () {
-            this.contentEditable = false;
-            this.innerHTML = storeHTML;
-            this.classList.remove("currPage");
-            this.style.fontStyle = "inherit";
-            this.innerText = "Copy Notebook";
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-  ]);
-});
+document
+  .getElementById("icon2")
+  .addEventListener("click", (e) => listContextMenu(e, true));
 document.getElementById("icon3").addEventListener("click", (e) =>
   contextMenu(e, [
     {
@@ -3899,7 +4003,7 @@ document.getElementById("icon3").addEventListener("click", (e) =>
         this.addEventListener(
           "click",
           () => {
-            deleteNoteBookFromDb();
+            deleteNoteBookFromDb(note.name);
             delContextMenu();
           },
           { once: true }
@@ -4049,6 +4153,20 @@ areNotesSavedIcon.addEventListener("click", (e) =>
       },
       appearance: "ios",
     },
+    note.isEncrypted ? {
+      text: "Change Password",
+      click: () => {
+        const newPassword = prompt("Enter a new password")
+        if (newPassword != null) {
+          note.password = newPassword;
+          saveNoteBookToDb(note.name);
+        } else {
+          notyf.error("Password was not changed")
+        }
+        delContextMenu();
+      },
+      appearance: "ios",
+    } : null,
   ])
 );
 toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
