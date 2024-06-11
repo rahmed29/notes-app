@@ -44,8 +44,6 @@ document.body.innerHTML = `
       </div>
     </div>
 
-    <div id="isEncrypted"><span>Encrypted ✓</span></div>
-
     <div id="wikipediaBrainAnimation"></div>
 
     <div id="bottomRightTools">
@@ -583,20 +581,6 @@ const anonTooltips = [
     name: "#openCommandPal",
     content: "Command Palette",
   },
-  {
-    name: "#isEncrypted",
-    content: `
-    <div class = "pagePreviewContainer">
-      <b>Things to note about encrypted notebooks:</b>
-      <ul>
-        <li>Unsaved progress will be thrown away and not saved to local storage</li>
-        <li>Notes will be encrypted with your password on the client side before being saved. If you lose your password, you lose your notes</li>
-        <li>Uploaded images and flashcards will <b>NOT</b> be encrypted</li>
-        <li>AI Features will be disabled</li>
-      </ul>
-    </div>
-    `,
-  },
 ];
 
 anonTooltips.forEach((obj) =>
@@ -781,7 +765,9 @@ async function deleteImageFromDb(image) {
   if (imageDelete.ok) {
     editor.session.setValue(editor.getValue().replaceAll(imageInText, ""));
     updateAndSaveNotesLocally();
-    // saveNoteBookToDb(note.name);
+    // if (!note.readOnly) {
+    //   saveNoteBookToDb(note.name);
+    // }
     updateList();
   } else {
     notyf.error("An error occurred when deleting an image");
@@ -793,10 +779,10 @@ function removeImageToolTip(e) {
     e,
     [
       {
-        attr: this.src.substring(this.src.indexOf("/uploads/") + 9),
+        attr: this.src.substring(this.src),
         text: "Open Image",
         click: function () {
-          window.open(`/uploads/${this.getAttribute("data-props")}`, "_blank");
+          window.open(`${this.getAttribute("data-props")}`, "_blank");
           delContextMenu();
         },
         appearance: "ios",
@@ -1261,7 +1247,8 @@ function formatNonText(ele) {
 }
 
 function closeTab(e) {
-  const compare = this.className?.includes("tabExit") ? 1 : e.button;
+  delContextMenu();
+  const compare = this.className.includes("tabExit") ? 1 : e.button;
   if (compare === 1) {
     e.stopPropagation();
     e.preventDefault();
@@ -1273,7 +1260,7 @@ function closeTab(e) {
     localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
     this.removeEventListener("click", switchTab);
     this.removeEventListener("mouseup", closeTab);
-    if (this.className?.includes("tabExit")) {
+    if (this.className.includes("tabExit")) {
       this.parentElement.remove();
     } else {
       this.remove();
@@ -1343,6 +1330,12 @@ function createWorkspace() {
 
 // for tabs
 function switchTab() {
+  if (
+    this.className.includes("reference") &&
+    document.getElementById("fcAlert")
+  ) {
+    return;
+  }
   if (this.hasAttribute("data-page")) {
     switchNote(
       this.getAttribute("data-bookname"),
@@ -1401,7 +1394,7 @@ async function switchNote(noteName, page) {
         data.content = data.content.map(
           (cipher) => JSON.parse(decryptMsg(cipher, data.password)).msg
         );
-        document.getElementById("isEncrypted").style.display = "flex";
+        notesAreaContainer.classList.add("isEncrypted")
       } else {
         notyf.error("Incorrect Password");
         switching = false;
@@ -1410,9 +1403,9 @@ async function switchNote(noteName, page) {
       }
     } else if (data.isEncrypted) {
       // data.content = data.content.map((cipher) => decryptMsg(cipher, data.password))
-      document.getElementById("isEncrypted").style.display = "flex";
+      notesAreaContainer.classList.add("isEncrypted")
     } else {
-      document.getElementById("isEncrypted").style.display = "none";
+      notesAreaContainer.classList.remove("isEncrypted")
     }
   } catch (err) {
     switching = false;
@@ -1699,8 +1692,8 @@ function hideList() {
 
 function showList() {
   workspace.style.width = `calc(100% - 25px - ${
-    localStorage.getItem("/listSize") || 300
-  }px)`;
+    localStorage.getItem("/listSize") || "300px"
+  })`;
   bottomLeftGeneralInfo.style.left =
     parseInt(localStorage.getItem("/listSize") || 300) + 25 + "px";
   list.setAttribute("data-shown", "");
@@ -1905,7 +1898,7 @@ function decryptCurrentBook() {
     note.isEncrypted = false;
     note.password = null;
     saveNoteBookToDb(note.name);
-    document.getElementById("isEncrypted").style.display = "none";
+    notesAreaContainer.classList.remove("isEncrypted")
   }
 }
 
@@ -1915,10 +1908,8 @@ function encryptCurrentBook() {
     if (note.password != null) {
       note.isEncrypted = true;
       saveNoteBookToDb(note.name);
-      document.getElementById("isEncrypted").style.display = "flex";
+      notesAreaContainer.classList.add("isEncrypted")
       localStorage.removeItem(note.name);
-    } else {
-      notyf.error("Note was not encrypted");
     }
   } else {
     notyf.error("Note is already encrypted");
@@ -2315,6 +2306,10 @@ function contextMenu(e, button, position, noScroll) {
   });
   if (menu.firstChild) {
     mainContainer.after(menu);
+    if (parseInt(menu.style.top) + menu.scrollHeight >= window.innerHeight) {
+      menu.style.marginTop = `-${menu.scrollHeight}px`;
+      menu.style.transformOrigin = "bottom";
+    }
     mainContainer.addEventListener("click", delContextMenu, { once: true });
     mainContainer.addEventListener("contextmenu", delContextMenu, {
       once: true,
@@ -2341,7 +2336,7 @@ async function showPagePreview(e, customText) {
   const leftAmount =
     e.currentTarget.id.substring(0, "whereTo".length) === "whereTo"
       ? 30
-      : parseInt(list.style.width.replace("px", "")) + 30;
+      : parseInt(list.style.width) + 30;
   const page = e.currentTarget.getAttribute("data-page");
   const menu = document.createElement("div");
   menu.id = "contextMenu";
@@ -2598,7 +2593,7 @@ async function saveFlashcards() {
 let fcLastNode = null;
 
 function fcId(e) {
-  if (e.target.id !== "fill") {
+  if (e.target.id !== "fill" && e.target.id !== "notesPreviewArea") {
     try {
       fcLastNode.classList.remove("fcSelection");
     } catch (err) {}
@@ -2998,7 +2993,6 @@ function editCardsHelper(cardArr) {
       "click",
       () => {
         resolve(copy);
-        notyf.success("Changes were saved");
         editCardsRejection = null;
       },
       { once: true }
@@ -3010,7 +3004,6 @@ function editCardsHelper(cardArr) {
       "click",
       () => {
         editCardsRejection(new Error("Unsaved"));
-        notyf.error("Changes were not saved");
       },
       { once: true }
     );
@@ -3198,14 +3191,26 @@ function formatHDate(dateStr) {
     "December",
   ];
 
-  const suffixes = ["th", "st", "nd", "rd"];
+  // const suffixes = ["th", "st", "nd", "rd"];
   const dateParts = dateStr.split("-");
   const year = dateParts[0];
-  const month = months[parseInt(dateParts[1], 10) - 1];
-  const day = parseInt(dateParts[2], 10);
+  const month = months[parseInt(dateParts[1]) - 1];
+  const day = parseInt(dateParts[2]);
 
-  let suffix =
-    suffixes[day % 10 > 3 ? 0 : (day % 100) - (day % 10) != 10 ? day % 10 : 0];
+  let suffix;
+  switch (day % 10) {
+    case 1:
+      suffix = "st";
+      break;
+    case 2:
+      suffix = "nd";
+      break;
+    case 3:
+      suffix = "rd";
+      break;
+    default:
+      suffix = "th";
+  }
 
   return DOMPurify.sanitize(`${month} ${day}${suffix}, ${year}`);
 }
@@ -3342,7 +3347,6 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
       ) {
         task.title = this.innerText.replaceAll("\n", "");
         saveTodo();
-        notyf.success("Changes were saved");
       } else {
         this.innerText = task.title;
       }
@@ -4153,20 +4157,20 @@ areNotesSavedIcon.addEventListener("click", (e) =>
       },
       appearance: "ios",
     },
-    note.isEncrypted ? {
-      text: "Change Password",
-      click: () => {
-        const newPassword = prompt("Enter a new password")
-        if (newPassword != null) {
-          note.password = newPassword;
-          saveNoteBookToDb(note.name);
-        } else {
-          notyf.error("Password was not changed")
+    note.isEncrypted
+      ? {
+          text: "Change Password",
+          click: () => {
+            const newPassword = prompt("Enter a new password");
+            if (newPassword != null) {
+              note.password = newPassword;
+              saveNoteBookToDb(note.name);
+            }
+            delContextMenu();
+          },
+          appearance: "ios",
         }
-        delContextMenu();
-      },
-      appearance: "ios",
-    } : null,
+      : null,
   ])
 );
 toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -4201,7 +4205,7 @@ border.addEventListener("mousedown", () => {
   document.addEventListener(
     "mouseup",
     () => {
-      localStorage.setItem("/listSize", list.style.width.replace("px", ""));
+      localStorage.setItem("/listSize", list.style.width);
       border.classList.remove("currPage");
       document.body.style.cursor = "inherit";
       mainContainer.style.userSelect = "inherit";
