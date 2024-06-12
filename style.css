@@ -493,8 +493,8 @@ a {
   content: "🔏";
   position: absolute;
   margin: 5px 0 0 5px;
-  background: var(--code);
-  border-radius: 7px;
+  background: var(--body);
+  border-radius: 50%;
   padding: 3px;
   display: flex;
   justify-content: center;
