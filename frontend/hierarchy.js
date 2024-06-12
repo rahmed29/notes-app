@@ -7,7 +7,7 @@ import {
 import { updateList } from "./list_utils";
 import { defineCmd } from "./cmd_pal";
 
-export { getFamily, nestNote, relinquishNote, createChild, copyBook };
+export { getFamily, nestNote, relinquishNote, createChild };
 
 // 'hierarchy' stuff
 async function getAncestors(bookName, optionalPreFetchedData) {
@@ -156,33 +156,5 @@ async function relinquishNote(child, parent) {
     }
   } else {
     notyf.error("Something went wrong");
-  }
-}
-
-async function copyBook(newName, bookToCopy) {
-  const existingItem = await fetch(`/api/get/notebooks/${newName}`);
-  if (existingItem.status === 404 && newName && bookToCopy) {
-    const content = await getAnyBookContent(bookToCopy, "content");
-    const save = await fetch("/api/save/notebooks/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: newName,
-        content,
-        date: new Date().toLocaleString(),
-      }),
-    });
-    if (save.ok) {
-      localStorage.setItem(newName, JSON.stringify(content));
-      if (library.get(newName)) {
-        library.get(newName).content = content;
-      }
-      updateList();
-      switchNote(newName, 0);
-    } else {
-      notyf.error("An error occurred when saving a notebook");
-    }
   }
 }

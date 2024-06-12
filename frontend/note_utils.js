@@ -23,6 +23,7 @@ export {
   deletePage,
   saveNoteBookToDb,
   deleteNoteBookFromDb,
+  copyBook
 };
 
 // debounce when switching notes
@@ -434,5 +435,37 @@ async function deleteNoteBookFromDb(noteName) {
     defineCmd();
   } else {
     notyf.error("An error occurred when deleting a notebook");
+  }
+}
+
+async function copyBook(newName, bookToCopy) {
+  const existingItem = await fetch(`/api/get/notebooks/${newName}`);
+  if (existingItem.status === 404 && newName && bookToCopy) {
+    if (library.get(bookToCopy) && library.get(bookToCopy).isEncrypted) {
+      notyf.error("Encrypted notebooks can't be copied")
+      return;
+    }
+    const content = await getAnyBookContent(bookToCopy, "content");
+    const save = await fetch("/api/save/notebooks/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: newName,
+        content,
+        date: new Date().toLocaleString(),
+      }),
+    });
+    if (save.ok) {
+      localStorage.setItem(newName, JSON.stringify(content));
+      if (library.get(newName)) {
+        library.get(newName).content = content;
+      }
+      updateList();
+      switchNote(newName, 0);
+    } else {
+      notyf.error("An error occurred when saving a notebook");
+    }
   }
 }

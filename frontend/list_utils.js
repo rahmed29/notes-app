@@ -1,9 +1,9 @@
 import { listContainer, list, uploadFolder, workspace, border, tabs, bottomLeftGeneralInfo } from "../main";
 import { contextMenu, delContextMenu } from "./context_menu";
-import { switchNote, deleteNoteBookFromDb, getAnyBookContent, reservedNames, note } from "./note_utils";
+import { switchNote, deleteNoteBookFromDb, getAnyBookContent, reservedNames, note, copyBook } from "./note_utils";
 import { format, removeMD } from "./text_formatting";
 import { switchTab } from "./tabs";
-import { getFamily, nestNote, relinquishNote, createChild, copyBook } from "./hierarchy";
+import { getFamily, nestNote, relinquishNote, createChild } from "./hierarchy";
 
 export {
   createList,
@@ -305,6 +305,7 @@ function listContextMenu(e, toolBar) {
               this.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (hasTyped) {
                     switchNote(this.innerText.replaceAll("/", ""));
                     delContextMenu();
@@ -438,6 +439,7 @@ function listContextMenu(e, toolBar) {
           this.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
               e.preventDefault();
+              e.stopPropagation();
               if (hasTyped) {
                 createChild(noteName, this.innerText.replaceAll("/", ""));
                 delContextMenu();
@@ -483,6 +485,7 @@ function listContextMenu(e, toolBar) {
           this.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
               e.preventDefault();
+              e.stopPropagation();
               if (hasTyped) {
                 copyBook(
                   this.innerText.replaceAll("/", ""),

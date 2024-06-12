@@ -1,5 +1,7 @@
 import { mainContainer, toolBar, bottomRightTools } from "../main";
 
+export { contextMenu, delContextMenu };
+
 // context menu
 // takes in an event object, an array of objects representing items in the context menu, and optionally an array representing a x and y coordinate for the context menu to be located
 
@@ -65,5 +67,3 @@ function contextMenu(e, button, position, noScroll) {
     return;
   }
 }
-
-export { contextMenu, delContextMenu };
