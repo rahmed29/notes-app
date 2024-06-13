@@ -224,12 +224,18 @@ function nestedList(obj, allNotes) {
 }
 
 function showImagePreview(e) {
-  showPagePreview(e, `![](${e.target.getAttribute("data-href")})`);
+  showPagePreview(e, `![](${this.getAttribute("data-href")})`);
 }
 
 function goToImagePreview(e) {
+  const occ = Object.entries(localStorage).reduce((str, e) => {
+    if (JSON.stringify(e[1]).includes(this.getAttribute("data-href"))) {
+      str += `- :ref[${e[0]}]\n`;
+    }
+    return str;
+  }, "**Possible Occurrences:**\n");
   reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [
-    `![](${e.target.getAttribute("data-href")})`,
+    `![](${this.getAttribute("data-href")})\n\n${occ}`,
   ];
   switchNote("Image-Preview");
 }

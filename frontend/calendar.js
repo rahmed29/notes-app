@@ -9,7 +9,7 @@ import tippy from "tippy.js";
 import { contextMenu, delContextMenu } from "./context_menu";
 import { formatHDate } from "./text_formatting";
 import { note, reservedNames } from "./note_utils";
-import { editor } from "../main";
+import { mainContainer, editor } from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
 
 export {
@@ -47,8 +47,9 @@ function showTodo(hereForInsertion) {
     return;
   }
 
-  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
-  mainContainer.after(bookDiffPopup);
+  const { bookDiffPopup, bookDiffContent, modalContainer } =
+    createPopupWindow();
+  mainContainer.after(modalContainer);
 
   const todoContainer = document.createElement("div");
   todoContainer.id = "todoContainer";
@@ -213,8 +214,6 @@ function showTodo(hereForInsertion) {
   });
   calendar.render();
   renderTaskList(false, taskList);
-
-  mainContainer.addEventListener("click", closePopupWindow, { once: true });
 }
 
 async function initializeTodo() {

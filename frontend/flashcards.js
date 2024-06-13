@@ -4,7 +4,7 @@ import { showList, hideList } from "./list_utils";
 import { note } from "./note_utils";
 import { chatGPT, loading, stopLoading } from "./chat_gpt";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
-import { brain } from "../main";
+import { mainContainer, brain } from "../main";
 import { format } from "./text_formatting";
 
 export {
@@ -15,7 +15,7 @@ export {
   flashcardMode,
   leaveFlashcardMode,
   filterFlashcards,
-  setRejectToNull
+  setRejectToNull,
 };
 
 let editCardsRejection = null;
@@ -52,7 +52,7 @@ async function AIFlashcards() {
     stopLoading();
     leaveFlashcardMode();
     try {
-      generatedCards = await editCardsHelper(generatedCards);
+      generatedCards = await editCardsHelper(generatedCards, true);
       flashcards = flashcards.concat(generatedCards);
       saveFlashcards();
       showFlashcards(true);
@@ -62,11 +62,10 @@ async function AIFlashcards() {
       }
     }
   } else {
-    notyf.error("Flashcards could not be generated properly");
+    notyf.error("Flashcards could not be generated properly. Try again later");
     stopLoading();
     leaveFlashcardMode();
   }
-  console.log("safely exited");
 }
 
 // flashcards
@@ -124,7 +123,7 @@ function fcId(e) {
 }
 
 function fcPop(e) {
-  if (e.target.id !== "fill") {
+  if (e.target.id !== "fill" && e.target.id !== "notesPreviewArea") {
     currCard.innerText = e.target.innerText;
   }
 }
@@ -238,9 +237,10 @@ function leaveFlashcardMode() {
 }
 
 function showFlashcards(noAnimation) {
-  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
+  const { bookDiffPopup, bookDiffContent, modalContainer } =
+    createPopupWindow();
   if (noAnimation != null && noAnimation) {
-    bookDiffPopup.style.animation = "none";
+    modalContainer.style.animation = "none";
   }
   const organized = flashcards.reduce(
     (arr2d, e) => {
@@ -408,7 +408,7 @@ function showFlashcards(noAnimation) {
     bookDiffContent.appendChild(wrapper);
   });
 
-  mainContainer.after(bookDiffPopup);
+  mainContainer.after(modalContainer);
 }
 
 function shuffle(array) {
@@ -445,17 +445,19 @@ async function editCards(cardArr) {
       showFlashcards(true);
     }
   }
-  console.log("safely exited");
 }
 
-function editCardsHelper(cardArr) {
+function editCardsHelper(cardArr, yesAnimation) {
   if (cardArr.length === 0) {
     return;
   }
 
-  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
-  bookDiffPopup.style.animation = "none";
-  mainContainer.after(bookDiffPopup);
+  const { bookDiffPopup, bookDiffContent, modalContainer } =
+    createPopupWindow();
+  if (!yesAnimation) {
+    modalContainer.style.animation = "none";
+  }
+  mainContainer.after(modalContainer);
 
   const h2 = document.createElement("h2");
   h2.innerText = "Flashcard Editor";
@@ -536,9 +538,10 @@ function editCardsHelper(cardArr) {
 }
 
 function study(cardArr, allCards) {
-  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
-  bookDiffPopup.style.animation = "none";
-  mainContainer.after(bookDiffPopup);
+  const { bookDiffPopup, bookDiffContent, modalContainer } =
+    createPopupWindow();
+  modalContainer.style.animation = "none";
+  mainContainer.after(modalContainer);
 
   if (!cardArr[0]) {
     showFlashcards(true);

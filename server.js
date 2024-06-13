@@ -141,7 +141,7 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
 
 app.post("/api/save/notebooks", async (req, res) => {
   const { name, content, date, isEncrypted } = req.body;
-  if (!name || !content || name === "home" || !validNoteName.test(noteName)) {
+  if (!name || !content || name === "home" || !validNoteName.test(name)) {
     return res.status(400).json({ error: "Malformed request body." });
   }
   try {

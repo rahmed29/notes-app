@@ -986,18 +986,28 @@ blockquote:hover {
   color: var(--main-accent) !important;
 }
 
+#popupModal {
+  z-index: 2;
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, .25);
+  backdrop-filter: blur(2px);
+  animation: fade .5s;
+}
+
 #bookDiffPopup {
   border-radius: 6px;
   resize: both;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   height: 95%;
   width: 85%;
   max-width: 1600px;
   transition: 0.25s;
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1005,7 +1015,6 @@ blockquote:hover {
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
     rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
     rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-  animation: fade 0.25s ease;
 }
 
 #bookDiffContent .fcButtons button {
@@ -1038,7 +1047,7 @@ blockquote:hover {
   display: flex;
   align-items: center;
   justify-content: end;
-  background: var(--popup-header);
+  background: var(--notes-background);
   backdrop-filter: blur(5px);
   height: 20px;
   width: 100%;
@@ -1091,7 +1100,7 @@ blockquote:hover {
 /* flashcard mode */
 #fcArea {
   position: absolute;
-  bottom: 0;
+  top: 0;
   right: 0;
   width: 20vw;
   height: calc(100vh - 17px);
@@ -1177,16 +1186,11 @@ blockquote:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
 }
 
-.fcButtons button:hover {
-  transform: translateY(-1px);
-}
-
 .fcButtons button:active {
   background-color: var(--notes-color) !important;
   border-color: rgba(0, 0, 0, 0.15);
   box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
   color: var(--notes-background);
-  transform: translateY(0);
 }
 
 #fcAlert {

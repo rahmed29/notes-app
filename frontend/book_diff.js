@@ -1,4 +1,4 @@
-import { createPopupWindow } from "./popup";
+import { createPopupWindow, closePopupWindow } from "./popup";
 import { contextMenu, delContextMenu } from "./context_menu";
 import { mainContainer } from "../main";
 import { note } from "./note_utils";
@@ -28,7 +28,8 @@ function getDiff(one, other) {
 }
 
 function showBookDiffPopup() {
-  const { bookDiffPopup, bookDiffContent } = createPopupWindow();
+  const { bookDiffPopup, bookDiffContent, modalContainer } =
+    createPopupWindow();
   const timesToRepeat =
     note.dbSave.length > note.content.length
       ? note.dbSave.length
@@ -78,5 +79,5 @@ function showBookDiffPopup() {
     }
     bookDiffContent.appendChild(pageDiff);
   }
-  mainContainer.after(bookDiffPopup);
+  mainContainer.after(modalContainer);
 }

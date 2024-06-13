@@ -14,7 +14,7 @@ function delContextMenu() {
   toolBar.removeEventListener("click", delContextMenu);
   toolBar.removeEventListener("contextmenu", delContextMenu);
   bottomRightTools.removeEventListener("click", delContextMenu);
-  document.removeEventListener("wheel", delContextMenu);
+  bottomRightTools.removeEventListener("contextmenu", delContextMenu);
 }
 
 function contextMenu(e, button, position, noScroll) {

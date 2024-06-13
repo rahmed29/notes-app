@@ -6,14 +6,20 @@ import { editCardsRejection, setRejectToNull } from "./flashcards";
 
 export { createPopupWindow, closePopupWindow };
 
-// TODO: Wrap in modal container that takes up entire page
 function createPopupWindow() {
   closePopupWindow();
+  const modalContainer = document.createElement("div");
+  modalContainer.id = "popupModal";
+  modalContainer.addEventListener("click", (e) => {
+    closePopupWindow();
+  });
   const bookDiffPopup = document.createElement("div");
-  bookDiffPopup.addEventListener("click", () => {
+  bookDiffPopup.addEventListener("click", (e) => {
     delContextMenu();
     hideStickyNotes();
+    e.stopPropagation();
   });
+  modalContainer.appendChild(bookDiffPopup);
   bookDiffPopup.id = "bookDiffPopup";
   const bookDiffHeader = document.createElement("div");
   bookDiffHeader.id = "bookDiffHeader";
@@ -30,14 +36,14 @@ function createPopupWindow() {
   bookDiffExitContainer.addEventListener("click", closePopupWindow, {
     once: true,
   });
-  mainContainer.addEventListener("click", closePopupWindow, { once: true });
+  // mainContainer.addEventListener("click", closePopupWindow, { once: true });
   editor.session.on("change", closePopupWindow);
-  return { bookDiffPopup, bookDiffContent };
+  return { bookDiffPopup, bookDiffContent, modalContainer };
 }
 
 function closePopupWindow() {
   try {
-    document.getElementById("bookDiffPopup").remove();
+    document.getElementById("popupModal").remove();
   } catch (err) {
     // console.log(err);
   }
@@ -58,6 +64,6 @@ function closePopupWindow() {
     // console.log(err);
   }
   clearTaskTippys();
-  mainContainer.removeEventListener("click", closePopupWindow);
+  // mainContainer.removeEventListener("click", closePopupWindow);
   editor.session.off("change", closePopupWindow);
 }
