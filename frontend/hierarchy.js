@@ -9,60 +9,46 @@ import { defineCmd } from "./cmd_pal";
 
 export { getFamily, nestNote, relinquishNote, createChild };
 
-// 'hierarchy' stuff
-async function getAncestors(bookName, optionalPreFetchedData) {
-  let response = new Set();
-  const parents =
-    optionalPreFetchedData.parents ||
-    (await getAnyBookContent(bookName, "parents")) ||
-    [];
-
-  if (parents.length === 0) {
-    return response;
-  }
-
-  parents.forEach(async (parent) => {
-    response.add(parent);
-    response = new Set([...response, ...(await getAncestors(parent, {}))]);
-  });
-
-  return response;
-}
-
-async function getDescendants(bookName, optionalPreFetchedData) {
-  let response = new Set();
-  const children =
-    optionalPreFetchedData.children ||
-    (await getAnyBookContent(bookName, "children")) ||
-    [];
-
-  if (children.length === 0) {
-    return response;
-  }
-
-  children.forEach(async (child) => {
-    response.add(child);
-    response = new Set([...response, ...(await getDescendants(child, {}))]);
-  });
-
-  return response;
-}
-
+// not actually "family", but rather all descendants and ancestors. If possible, grabs from memory. This function is needed when nesting notebooks to prevent infinite recursion in the list
 async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getAncestors(
+    const ancestors = await getFamilyOneWay(
       bookName,
+      "parents",
       optionalPreFetchedData || false
     );
-    const descendants = await getDescendants(
+    const descendants = await getFamilyOneWay(
       bookName,
+      "children",
       optionalPreFetchedData || false
     );
     const response = Array.from(ancestors).concat(Array.from(descendants));
     return response;
   }
+}
+
+async function getFamilyOneWay(bookName, direction, optionalPreFetchedData) {
+  let response = new Set();
+  const branch =
+    optionalPreFetchedData.parents ||
+    (await getAnyBookContent(bookName, direction)) ||
+    [];
+
+  if (branch.length === 0) {
+    return response;
+  }
+
+  branch.forEach(async (member) => {
+    response.add(member);
+    response = new Set([
+      ...response,
+      ...(await getFamilyOneWay(member, direction, {})),
+    ]);
+  });
+
+  return response;
 }
 
 async function createChild(parent, child) {

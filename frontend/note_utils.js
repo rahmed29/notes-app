@@ -1,7 +1,7 @@
 import { listInMemory, updateList } from "./list_utils";
 import { closePopupWindow } from "./popup";
 import { editor } from "../main";
-import { accents, syncStatus } from "./dom_formatting";
+import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { defineCmd } from "./cmd_pal";
 import { createTab, switchTab, closeTab } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
@@ -23,7 +23,7 @@ export {
   deletePage,
   saveNoteBookToDb,
   deleteNoteBookFromDb,
-  copyBook
+  copyBook,
 };
 
 // debounce when switching notes
@@ -113,7 +113,7 @@ function setCurrNote(input) {
   note = input;
 }
 
-// note creation and deletion stuff
+// Returns desired info of any given book. If possible, takes it from memory
 async function getAnyBookContent(bookName, desiredInfo) {
   if (reservedNames.some((e) => e.data.name === bookName)) {
     if (desiredInfo === "_data") {
@@ -442,7 +442,7 @@ async function copyBook(newName, bookToCopy) {
   const existingItem = await fetch(`/api/get/notebooks/${newName}`);
   if (existingItem.status === 404 && newName && bookToCopy) {
     if (library.get(bookToCopy) && library.get(bookToCopy).isEncrypted) {
-      notyf.error("Encrypted notebooks can't be copied")
+      notyf.error("Encrypted notebooks can't be copied");
       return;
     }
     const content = await getAnyBookContent(bookToCopy, "content");

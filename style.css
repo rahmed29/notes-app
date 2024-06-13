@@ -263,7 +263,7 @@ a {
   width: 100%;
   margin-bottom: -5px;
   margin-left: -5px;
-  padding: 3px .25em 0 5px;
+  padding: 3px 0.25em 0 5px;
   height: 2em;
   border-top-style: solid;
   border-width: 1px;
@@ -573,7 +573,7 @@ a {
   font-size: 17px;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
-  line-height: 2em;
+  line-height: 1.5em;
 }
 
 .katex-html {
@@ -581,7 +581,6 @@ a {
 }
 
 mark {
-  padding: 0 .3em 0 .3em;
   background: var(--highlight);
   color: var(--highlight-color);
 }
@@ -700,7 +699,6 @@ blockquote {
 blockquote:hover {
   background: var(--code);
 }
-
 
 /* This needs media query. looks rly bad when even slightly zoomed in */
 .note-calendar-wrapper {
@@ -924,16 +922,6 @@ blockquote:hover {
   gap: 3px;
   height: auto;
   transform-origin: top;
-  animation: openMenu .15s;
-}
-
-@keyframes openMenu {
-  from {
-    transform: scaleY(0);
-  }
-  to {
-    transform: scaleY(1);
-  }
 }
 
 #contextMenu a {
@@ -1074,7 +1062,7 @@ blockquote:hover {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  transition: .5s;
+  transition: 0.5s;
 }
 
 #bookDiffContent h2 {
@@ -1167,7 +1155,8 @@ blockquote:hover {
   box-sizing: border-box;
   cursor: pointer;
   display: inline-flex;
-  font-family: Inter;
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
   font-size: 16px;
   font-weight: 600;
   justify-content: center;
@@ -1177,7 +1166,6 @@ blockquote:hover {
   text-decoration: none;
   transition: all 250ms;
   user-select: none;
-  -webkit-user-select: none;
   touch-action: manipulation;
   vertical-align: baseline;
   width: auto;
@@ -1221,7 +1209,7 @@ blockquote:hover {
 }
 
 .fcSelection {
-  transition: .15s;
+  transition: 0.15s;
   background: var(--quizlet-purple) !important;
   color: var(--quizlet-font);
 }
@@ -1363,11 +1351,11 @@ blockquote:hover {
     rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   opacity: 1;
   cursor: pointer;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .fcCardList .cardFront:hover {
-  opacity: .75;
+  opacity: 0.75;
 }
 
 .fcCardList .cardFront::before {
@@ -1507,7 +1495,8 @@ blockquote:hover {
   align-items: center;
 }
 
-#addTaskContainer input, #addTaskContainer textarea {
+#addTaskContainer input,
+#addTaskContainer textarea {
   min-height: 1.8em;
   width: 100%;
   padding: 3px;
@@ -1526,13 +1515,13 @@ blockquote:hover {
   font-style: italic;
 }
 :-moz-placeholder {
-  font-style: italic;  
+  font-style: italic;
 }
 ::-moz-placeholder {
-  font-style: italic;  
+  font-style: italic;
 }
-:-ms-input-placeholder {  
-  font-style: italic; 
+:-ms-input-placeholder {
+  font-style: italic;
 }
 
 #addTaskContainer textarea {
@@ -1541,7 +1530,8 @@ blockquote:hover {
   font-size: 14px;
 }
 
-#addTaskContainer input:focus,  #addTaskContainer textarea:focus {
+#addTaskContainer input:focus,
+#addTaskContainer textarea:focus {
   background: var(--hovers);
 }
 
@@ -1597,7 +1587,8 @@ blockquote:hover {
   content: " - ";
 }
 
-.taskCategory, .taskDueDate {
+.taskCategory,
+.taskDueDate {
   max-width: 50cqw;
   white-space: nowrap;
 }
@@ -1610,7 +1601,8 @@ blockquote:hover {
   word-wrap: break-word;
 }
 
-.taskTitle, .taskCategory {
+.taskTitle,
+.taskCategory {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1793,7 +1785,7 @@ blockquote:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .grid {

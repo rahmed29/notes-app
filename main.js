@@ -7,20 +7,50 @@ import "notyf/notyf.min.css";
 import Dropzone from "dropzone";
 import DOMPurify from "dompurify";
 import { changeTheme } from "./frontend/theming.js";
-import { note, switchNote, forceUpdateNotes, deletePage, saveNoteBookToDb, deleteNoteBookFromDb } from "./frontend/note_utils.js"
-import { updateList, search, resizeList, toggleList, listContextMenu } from "./frontend/list_utils.js";
-import { contextMenu, delContextMenu } from "./frontend/context_menu.js"
+import {
+  note,
+  switchNote,
+  forceUpdateNotes,
+  deletePage,
+  saveNoteBookToDb,
+  deleteNoteBookFromDb,
+} from "./frontend/note_utils.js";
+import {
+  updateList,
+  search,
+  resizeList,
+  toggleList,
+  listContextMenu,
+  showMorePages,
+} from "./frontend/list_utils.js";
+import { contextMenu, delContextMenu } from "./frontend/context_menu.js";
 import { initializeTodo, showTodo } from "./frontend/calendar.js";
-import { jumpToDesiredPage, handlePageMovement, updateAndSaveNotesLocally} from "./frontend/dom_formatting.js"
+import {
+  jumpToDesiredPage,
+  handlePageMovement,
+  updateAndSaveNotesLocally,
+} from "./frontend/dom_formatting.js";
 import { createWorkspace } from "./frontend/tabs.js";
 import { initializeFlashcards } from "./frontend/flashcards.js";
-import { saveStickyNotes, showStickyNotes, hideStickyNotes, initializeStickyNotes, insertStickyNote } from "./frontend/sticky_note.js";
+import {
+  saveStickyNotes,
+  showStickyNotes,
+  hideStickyNotes,
+  initializeStickyNotes,
+  insertStickyNote,
+} from "./frontend/sticky_note.js";
 import { showFlashcards, flashcardMode } from "./frontend/flashcards.js";
 import { toggleWikiSearch, wikiSearch } from "./frontend/wikipedia.js";
 import { showBookDiffPopup } from "./frontend/book_diff.js";
-import { cycleViewPreferences, editingWindow } from "./frontend/editing_window.js";
+import {
+  cycleViewPreferences,
+  editingWindow,
+} from "./frontend/editing_window.js";
 import { insertAndSaveImage } from "./frontend/images.js";
-import { encryptCurrentBook, decryptCurrentBook } from "./frontend/encryption.js";
+import {
+  encryptCurrentBook,
+  decryptCurrentBook,
+} from "./frontend/encryption.js";
 import { AISUmmary } from "./frontend/chat_gpt.js";
 
 window.DOMPurify = DOMPurify;
@@ -215,7 +245,9 @@ export const listContainer = document.getElementById("listContainer");
 export const wikipediaBrainAnimation = document.getElementById(
   "wikipediaBrainAnimation"
 );
-export const bottomLeftGeneralInfo = document.getElementById("bottomLeftGeneralInfo");
+export const bottomLeftGeneralInfo = document.getElementById(
+  "bottomLeftGeneralInfo"
+);
 export const generalInfoPageNumberEle = document.getElementById(
   "generalInfoPageNumber"
 );
@@ -224,7 +256,9 @@ export const morePages = document.getElementById("morePages");
 export const toolBar = document.getElementById("toolBar");
 export const brain = document.getElementById("icon8");
 export const border = document.getElementById("border");
-export const stickyNotesTextArea = document.getElementById("stickyNotesTextArea");
+export const stickyNotesTextArea = document.getElementById(
+  "stickyNotesTextArea"
+);
 export const stickyNotes = document.getElementById("stickyNotes");
 export const workspace = document.getElementById("workspace");
 export const tabs = document.getElementById("tabs");
@@ -241,12 +275,12 @@ export const bottomRightTools = document.getElementById("bottomRightTools");
 export const progBar = document.getElementById("progBar");
 
 export const editor = ace.edit("editor");
-  // editor.setTheme("ace/theme/chrome");
-  editor.setOptions({
-    maxLines: Infinity,
-  });
-  editor.renderer.setShowGutter(false);
-  editor.setOption("showPrintMargin", false);
+// editor.setTheme("ace/theme/chrome");
+editor.setOptions({
+  maxLines: Infinity,
+});
+editor.renderer.setShowGutter(false);
+editor.setOption("showPrintMargin", false);
 
 // tooltips
 export const wikipediaTippy = tippy([brain], {

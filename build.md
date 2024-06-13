@@ -1,9 +1,9 @@
-After building, delete current js and css files from dist folder.
+After building, if you already have a public folder, delete the old JS and CSS files
 
-Then, rename dist folder to public
+Delete public and desktop.ejs, and move index.html to views folder and rename desktop.ejs (will remove the need for .ejs eventually)
 
-Then, move index.html to views folder and rename to desktop.ejs (i will change this eventually, no longer have a need for ejs files)
+Make sure src-min (ace editor) dir exists in assets folder. You can download it from the ace editor repo on github. You can safely remove any modes other than markdown mode.
 
-Make sure src-min (ace editor) dir exists in assets folder
+Also, make sure ./public/uploads exists
 
 I think that's it. lol.

@@ -6,7 +6,6 @@ import { jumpToDesiredPage } from "./dom_formatting";
 
 export { showBookDiffPopup };
 
-// book diff popup
 function getDiff(one, other) {
   let span = null;
 

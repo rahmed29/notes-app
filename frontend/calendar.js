@@ -76,11 +76,9 @@ function showTodo(hereForInsertion) {
               once: true,
             }
           );
-          evInList.classList.add("getHighlighted"); // Add the class that animates
+          evInList.classList.add("getHighlighted");
           evInList.scrollIntoView();
-        } catch (err) {
-          // console.log(err);
-        }
+        } catch (err) {}
       };
 
   calendar = new Calendar(calendarContainer, {
@@ -216,14 +214,9 @@ function showTodo(hereForInsertion) {
   calendar.render();
   renderTaskList(false, taskList);
 
-  //   bookDiffExitContainer.addEventListener("click", closePopupWindow, {
-  //     once: true,
-  //   });
   mainContainer.addEventListener("click", closePopupWindow, { once: true });
-  // document.addEventListener("keydown", hidePopups)
 }
 
-// Todo stuff
 async function initializeTodo() {
   // Todo data is stored in an inaccessible notebook. The active tasks are stored in the 'content' and the completed tasks are stored in the 'date'
   const response = await fetch("/api/get/notebooks/todo__list");
@@ -287,7 +280,6 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
       if (date1 > date1) {
         return -1;
       }
-      // names must be equal
       return;
     });
   }

@@ -4,9 +4,9 @@ import { delContextMenu } from "./context_menu";
 import { hideStickyNotes } from "./sticky_note";
 import { editCardsRejection, setRejectToNull } from "./flashcards";
 
-export { createPopupWindow, closePopupWindow } 
+export { createPopupWindow, closePopupWindow };
 
-// popup ui
+// TODO: Wrap in modal container that takes up entire page
 function createPopupWindow() {
   closePopupWindow();
   const bookDiffPopup = document.createElement("div");
@@ -14,7 +14,6 @@ function createPopupWindow() {
     delContextMenu();
     hideStickyNotes();
   });
-  document.body.classList.add("poppedUp");
   bookDiffPopup.id = "bookDiffPopup";
   const bookDiffHeader = document.createElement("div");
   bookDiffHeader.id = "bookDiffHeader";
@@ -59,7 +58,6 @@ function closePopupWindow() {
     // console.log(err);
   }
   clearTaskTippys();
-  document.body.classList.remove("poppedUp");
   mainContainer.removeEventListener("click", closePopupWindow);
   editor.session.off("change", closePopupWindow);
 }

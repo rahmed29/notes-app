@@ -267,24 +267,6 @@ function createPageNumbers() {
   currPage.classList.add("currPage");
 }
 
-async function showMorePages(e) {
-  const buttons = note.content.reduce((arr, e, i) => {
-    if (i >= 9) {
-      const app = i === note.pgN ? "currPage" : "random";
-      arr.push({
-        text: `Page ${i}`,
-        click: (e) => {
-          jumpToDesiredPage(i);
-          showMorePages(e);
-        },
-        appearance: app,
-      });
-    }
-    return arr;
-  }, []);
-  contextMenu(e, buttons, ["21px", `${topLeftPageNumber.scrollHeight + 5}px`]);
-}
-
 function removeImageToolTip(e) {
   contextMenu(
     e,

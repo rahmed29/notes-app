@@ -7,6 +7,34 @@ import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
 
+async function getFamilyOneWay(bookName, direction) {
+  let response = new Set();
+  const branch = (await Item.findOne({ name: bookName })[direction]) || [];
+
+  if (branch.length === 0) {
+    return response;
+  }
+
+  branch.forEach(async (member) => {
+    response.add(member);
+    response = new Set([
+      ...response,
+      ...(await getFamilyOneWay(member, direction)),
+    ]);
+  });
+
+  return response;
+}
+
+async function getFamily(bookName) {
+  const ancestors = await getFamilyOneWay(bookName, "parents");
+  const descendants = await getFamilyOneWay(bookName, "children");
+  const response = Array.from(ancestors).concat(Array.from(descendants));
+  return response;
+}
+
+const validNoteName = /^[a-zA-Z0-9-_]+$/;
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -113,10 +141,8 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
 
 app.post("/api/save/notebooks", async (req, res) => {
   const { name, content, date, isEncrypted } = req.body;
-  if (!name || !content || name === "home") {
-    return res
-      .status(400)
-      .json({ error: "Both a name and content are required." });
+  if (!name || !content || name === "home" || !validNoteName.test(noteName)) {
+    return res.status(400).json({ error: "Malformed request body." });
   }
   try {
     const existingItem = await Item.findOne({ name });
@@ -134,7 +160,7 @@ app.post("/api/save/notebooks", async (req, res) => {
     } else if (existingItem.name === name) {
       existingItem.content = content;
       existingItem.date = date;
-      existingItem.isEncrypted = isEncrypted || false 
+      existingItem.isEncrypted = isEncrypted || false;
       await existingItem.save();
       res.status(204).json({ status: "Updated" });
     }
@@ -196,47 +222,6 @@ app.get("/api/get/list/", async (req, res) => {
   }
   res.status(200).json({ data });
 });
-
-async function getAncestors(bookName) {
-  let response = new Set();
-  const book = await Item.findOne({ name: bookName });
-  const parents = book.parents;
-
-  if (!parents[0]) {
-    return response;
-  }
-
-  parents.forEach(async (parent) => {
-    response.add(parent);
-    response = new Set([...response, ...(await getAncestors(parent))]);
-  });
-
-  return response;
-}
-
-async function getDescendants(bookName) {
-  let response = new Set();
-  const book = await Item.findOne({ name: bookName });
-  const children = book.children;
-
-  if (!children[0]) {
-    return response;
-  }
-
-  children.forEach(async (child) => {
-    response.add(child);
-    response = new Set([...response, ...(await getDescendants(child))]);
-  });
-
-  return response;
-}
-
-async function getFamily(bookName) {
-  const ancestors = await getAncestors(bookName);
-  const descendants = await getDescendants(bookName);
-  const response = Array.from(ancestors).concat(Array.from(descendants));
-  return response;
-}
 
 app.post("/api/nest/:child/:parent", async (req, res) => {
   const child = req.params.child;

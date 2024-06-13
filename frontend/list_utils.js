@@ -1,9 +1,26 @@
-import { listContainer, list, uploadFolder, workspace, border, tabs, bottomLeftGeneralInfo } from "../main";
+import {
+  listContainer,
+  list,
+  uploadFolder,
+  workspace,
+  border,
+  tabs,
+  bottomLeftGeneralInfo,
+  topLeftPageNumber,
+} from "../main";
 import { contextMenu, delContextMenu } from "./context_menu";
-import { switchNote, deleteNoteBookFromDb, getAnyBookContent, reservedNames, note, copyBook } from "./note_utils";
+import {
+  switchNote,
+  deleteNoteBookFromDb,
+  getAnyBookContent,
+  reservedNames,
+  note,
+  copyBook,
+} from "./note_utils";
 import { format, removeMD } from "./text_formatting";
 import { switchTab } from "./tabs";
 import { getFamily, nestNote, relinquishNote, createChild } from "./hierarchy";
+import { jumpToDesiredPage } from "./dom_formatting";
 
 export {
   createList,
@@ -18,6 +35,7 @@ export {
   scrollCM,
   listInMemory,
   listContextMenu,
+  showMorePages,
 };
 
 let listHandlers = [];
@@ -33,6 +51,24 @@ const root = {
   excerpt: [],
   parents: [],
 };
+
+async function showMorePages(e) {
+  const buttons = note.content.reduce((arr, e, i) => {
+    if (i >= 9) {
+      const app = i === note.pgN ? "currPage" : "random";
+      arr.push({
+        text: `Page ${i}`,
+        click: (e) => {
+          jumpToDesiredPage(i);
+          showMorePages(e);
+        },
+        appearance: app,
+      });
+    }
+    return arr;
+  }, []);
+  contextMenu(e, buttons, ["21px", `${topLeftPageNumber.scrollHeight + 5}px`]);
+}
 
 // creating the tree list
 function dropWrapper(e) {
@@ -91,6 +127,7 @@ async function createList() {
   });
 }
 
+// cache the list in memory for any functions that need a list of notebooks
 let listInMemory = null;
 
 async function getList() {
@@ -280,52 +317,71 @@ function toggleList() {
 }
 
 function listContextMenu(e, toolBar) {
+  function cmInput() {
+    const noteName = toolBar
+      ? note.name
+      : JSON.parse(this.getAttribute("data-props"))[1];
+    let hasTyped = false;
+    const storeHTML = this.innerHTML;
+    this.classList.add("currPage");
+    this.style.fontStyle = "italic";
+    this.innerText = `Enter ${
+      JSON.parse(this.getAttribute("data-props"))[0]
+    } name`;
+    this.contentEditable = true;
+    this.focus();
+    this.addEventListener(
+      "beforeinput",
+      function () {
+        hasTyped = true;
+        this.innerText = "";
+      },
+      { once: true }
+    );
+    this.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.contentEditable = false;
+        if (hasTyped) {
+          switch (JSON.parse(this.getAttribute("data-props"))[0]) {
+            case "book":
+              switchNote(this.innerText.replaceAll("/", ""));
+              break;
+            case "copy":
+              copyBook(this.innerText.replaceAll("/", ""), noteName);
+              break;
+            case "child":
+              createChild(noteName, this.innerText.replaceAll("/", ""));
+          }
+          delContextMenu();
+        } else {
+          delContextMenu();
+        }
+      } else if (e.key === "Escape") {
+        this.blur();
+      }
+    });
+    this.addEventListener(
+      "blur",
+      function () {
+        this.contentEditable = false;
+        this.innerHTML = storeHTML;
+        this.classList.remove("currPage");
+        this.style.fontStyle = "inherit";
+        this.innerText = "Open Notebook";
+      },
+      { once: true }
+    );
+  }
+
   contextMenu(
     e,
     [
       toolBar
         ? {
+            attr: JSON.stringify(["book"]),
             text: "Open Notebook",
-            click: function () {
-              let hasTyped = false;
-              const storeHTML = this.innerHTML;
-              this.classList.add("currPage");
-              this.style.fontStyle = "italic";
-              this.innerText = "Enter book name";
-              this.contentEditable = true;
-              this.focus();
-              this.addEventListener(
-                "beforeinput",
-                function () {
-                  hasTyped = true;
-                  this.innerText = "";
-                },
-                { once: true }
-              );
-              this.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (hasTyped) {
-                    switchNote(this.innerText.replaceAll("/", ""));
-                    delContextMenu();
-                  } else {
-                    delContextMenu();
-                  }
-                }
-              });
-              this.addEventListener(
-                "blur",
-                function () {
-                  this.contentEditable = false;
-                  this.innerHTML = storeHTML;
-                  this.classList.remove("currPage");
-                  this.style.fontStyle = "inherit";
-                  this.innerText = "Open Notebook";
-                },
-                { once: true }
-              );
-            },
+            click: cmInput,
             appearance: "ios",
           }
         : {
@@ -414,101 +470,19 @@ function listContextMenu(e, toolBar) {
         appearance: "ios",
       },
       {
-        attr: toolBar ? "" : this.innerText,
+        attr: toolBar
+          ? JSON.stringify(["child"])
+          : JSON.stringify(["child", this.innerText]),
         text: "Create Child",
-        click: function () {
-          const noteName = toolBar
-            ? note.name
-            : this.getAttribute("data-props");
-          let hasTyped = false;
-          const storeHTML = this.innerHTML;
-          this.classList.add("currPage");
-          this.style.fontStyle = "italic";
-          this.innerText = "Enter child name";
-          this.contentEditable = true;
-          this.focus();
-          this.addEventListener(
-            "beforeinput",
-            function () {
-              this.innerText = "";
-
-              hasTyped = true;
-            },
-            { once: true }
-          );
-          this.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation();
-              if (hasTyped) {
-                createChild(noteName, this.innerText.replaceAll("/", ""));
-                delContextMenu();
-              } else {
-                delContextMenu();
-              }
-            }
-          });
-          this.addEventListener(
-            "blur",
-            function () {
-              this.contentEditable = false;
-              this.innerHTML = storeHTML;
-              this.classList.remove("currPage");
-              this.style.fontStyle = "inherit";
-              this.innerText = "Create Child";
-            },
-            { once: true }
-          );
-        },
+        click: cmInput,
         appearance: "ios",
       },
       {
-        attr: toolBar ? "" : this.innerText,
+        attr: toolBar
+          ? JSON.stringify(["copy"])
+          : JSON.stringify(["copy", this.innerText]),
         text: "Copy Notebook",
-        click: function () {
-          let hasTyped = false;
-          const storeHTML = this.innerHTML;
-          this.classList.add("currPage");
-          this.style.fontStyle = "italic";
-          this.innerText = "Enter copy name";
-          this.contentEditable = true;
-          this.focus();
-          this.addEventListener(
-            "beforeinput",
-            function () {
-              this.innerText = "";
-
-              hasTyped = true;
-            },
-            { once: true }
-          );
-          this.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation();
-              if (hasTyped) {
-                copyBook(
-                  this.innerText.replaceAll("/", ""),
-                  toolBar ? note.name : this.getAttribute("data-props")
-                );
-                delContextMenu();
-              } else {
-                delContextMenu();
-              }
-            }
-          });
-          this.addEventListener(
-            "blur",
-            function () {
-              this.contentEditable = false;
-              this.innerHTML = storeHTML;
-              this.classList.remove("currPage");
-              this.style.fontStyle = "inherit";
-              this.innerText = "Copy Notebook";
-            },
-            { once: true }
-          );
-        },
+        click: cmInput,
         appearance: "ios",
       },
     ],
