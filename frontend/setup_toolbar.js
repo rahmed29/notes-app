@@ -16,6 +16,7 @@ import { showTodo } from "./calendar";
 import { flashcardMode } from "./flashcards";
 import { encryptCurrentBook, decryptCurrentBook } from "./encryption";
 import { insertAndSaveImage } from "./images";
+import { listContextMenu } from "./list_utils";
 
 export default setupToolbar;
 
