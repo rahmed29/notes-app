@@ -233,7 +233,7 @@ async function initializeTodo() {
 
 async function saveTodo() {
   const response = await fetch("/api/save/notebooks/", {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

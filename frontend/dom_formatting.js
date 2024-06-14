@@ -100,7 +100,7 @@ function accents() {
     editor.setSession(note.aceSessions[note.pgN]);
   }
   // editor.session.setValue(note.content[note.pgN]);
-  window.history.replaceState({}, "", `${note.name}?${note.pgN + 1}`);
+  window.history.replaceState(null, null, `/${note.name}?${note.pgN + 1}`);
   updateAndSaveNotesLocally();
   createPageNumbers();
   editor.focus();

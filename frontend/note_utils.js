@@ -7,6 +7,7 @@ import { createTab, switchTab, closeTab } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
 import { filterFlashcards } from "./flashcards";
+import validNoteName from "../validNoteName";
 
 export {
   savedWS,
@@ -35,8 +36,6 @@ let library = new Map();
 let lastNote = null;
 let note = null;
 
-const validNoteName = /^[a-zA-Z0-9-_]+$/;
-
 // notebook names that aren't allowed because they are being used for other stuff
 const reservedNames = [
   {
@@ -47,7 +46,7 @@ const reservedNames = [
       ],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
   {
@@ -58,7 +57,7 @@ const reservedNames = [
       ],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
   {
@@ -69,7 +68,7 @@ const reservedNames = [
       ],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
   {
@@ -80,7 +79,7 @@ const reservedNames = [
       ],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
   {
@@ -89,7 +88,7 @@ const reservedNames = [
       content: ["This notebook name is reserved for AI Summaries. Sorry!"],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
   {
@@ -100,7 +99,7 @@ const reservedNames = [
       ],
       children: [],
       parents: [],
-      saved: false,
+      isEncrypted: false,
     },
   },
 ];
@@ -171,6 +170,9 @@ async function getAnyBookContent(bookName, desiredInfo) {
 async function switchNote(noteName, page) {
   if (!validNoteName.test(noteName)) {
     notyf.error("Invalid note name");
+    if (!note) {
+      switchNote("home");
+    }
     return;
   }
   closePopupWindow();
@@ -330,7 +332,7 @@ function deletePage() {
 
 async function saveNoteBookToDb(noteName) {
   if (
-    noteName.includes("%") ||
+    !validNoteName.test(noteName) ||
     reservedNames.some((e) => e.data.name === noteName)
   ) {
     notyf.error("Something went wrong");
@@ -344,7 +346,7 @@ async function saveNoteBookToDb(noteName) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }
     const saveStatus = await fetch("/api/save/notebooks/", {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -447,7 +449,7 @@ async function copyBook(newName, bookToCopy) {
     }
     const content = await getAnyBookContent(bookToCopy, "content");
     const save = await fetch("/api/save/notebooks/", {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },

@@ -7,29 +7,10 @@ import "notyf/notyf.min.css";
 import Dropzone from "dropzone";
 import DOMPurify from "dompurify";
 import { changeTheme } from "./frontend/theming.js";
-import {
-  note,
-  switchNote,
-  forceUpdateNotes,
-  deletePage,
-  saveNoteBookToDb,
-  deleteNoteBookFromDb,
-} from "./frontend/note_utils.js";
-import {
-  updateList,
-  search,
-  resizeList,
-  toggleList,
-  listContextMenu,
-  showMorePages,
-} from "./frontend/list_utils.js";
-import { contextMenu, delContextMenu } from "./frontend/context_menu.js";
+import { note, switchNote, saveNoteBookToDb } from "./frontend/note_utils.js";
+import { updateList } from "./frontend/list_utils.js";
 import { initializeTodo, showTodo } from "./frontend/calendar.js";
-import {
-  jumpToDesiredPage,
-  handlePageMovement,
-  updateAndSaveNotesLocally,
-} from "./frontend/dom_formatting.js";
+import { updateAndSaveNotesLocally } from "./frontend/dom_formatting.js";
 import { createWorkspace } from "./frontend/tabs.js";
 import { initializeFlashcards } from "./frontend/flashcards.js";
 import {
@@ -37,21 +18,15 @@ import {
   showStickyNotes,
   hideStickyNotes,
   initializeStickyNotes,
-  insertStickyNote,
 } from "./frontend/sticky_note.js";
-import { showFlashcards, flashcardMode } from "./frontend/flashcards.js";
-import { toggleWikiSearch, wikiSearch } from "./frontend/wikipedia.js";
-import { showBookDiffPopup } from "./frontend/book_diff.js";
+import { showFlashcards } from "./frontend/flashcards.js";
+import { wikiSearch } from "./frontend/wikipedia.js";
 import {
   cycleViewPreferences,
   editingWindow,
 } from "./frontend/editing_window.js";
-import { insertAndSaveImage } from "./frontend/images.js";
-import {
-  encryptCurrentBook,
-  decryptCurrentBook,
-} from "./frontend/encryption.js";
-import { AISUmmary } from "./frontend/chat_gpt.js";
+import setupToolbar from "./frontend/setup_toolbar.js";
+import setupList from "./frontend/setup_list.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -419,241 +394,6 @@ document.addEventListener("keydown", (e) => {
 // main note area
 notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
 
-// toolbar
-document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
-document
-  .getElementById("icon2")
-  .addEventListener("click", (e) => listContextMenu(e, true));
-document.getElementById("icon3").addEventListener("click", (e) =>
-  contextMenu(e, [
-    {
-      text: "Delete Notebook",
-      click: function () {
-        this.classList.add("rios");
-        this.innerText = "Confirm";
-        this.addEventListener(
-          "click",
-          () => {
-            deleteNoteBookFromDb(note.name);
-            delContextMenu();
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Delete This Page",
-      click: function () {
-        this.classList.add("rios");
-        this.innerText = "Confirm";
-        this.addEventListener(
-          "click",
-          () => {
-            deletePage();
-            delContextMenu();
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-  ])
-);
-document
-  .getElementById("getFile1")
-  .addEventListener("change", insertAndSaveImage);
-document.getElementById("icon5").addEventListener("click", (e) =>
-  contextMenu(e, [
-    {
-      text: "◨ Split",
-      click: () => {
-        localStorage.setItem("/viewPref", "split");
-        editingWindow("split");
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    {
-      text: "◼ Read",
-      click: () => {
-        localStorage.setItem("/viewPref", "read");
-        editingWindow("read");
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    {
-      text: "◻ Write",
-      click: () => {
-        localStorage.setItem("/viewPref", "write");
-        editingWindow("write");
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-  ])
-);
-document
-  .getElementById("icon6")
-  .addEventListener("click", () => handlePageMovement(true, 1, false));
-document
-  .getElementById("icon7")
-  .addEventListener("click", (e) => handlePageMovement(false, 1, false, e));
-brain.addEventListener("click", (e) =>
-  contextMenu(e, [
-    {
-      text: "Toggle Wiki Search",
-      click: () => toggleWikiSearch(),
-      appearance: "ios",
-    },
-    {
-      text: "AI Summary",
-      click: async function () {
-        this.innerText = "Loading...";
-        await AISUmmary();
-        this.style.pointerEvents = "inherit";
-        this.innerText = "AI Summary";
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Insert Sticky Note",
-      click: () => {
-        insertStickyNote();
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Insert Calendar Event",
-      click: () => {
-        showTodo(true);
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Create Flashcards",
-      click: () => {
-        flashcardMode();
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-  ])
-);
-areNotesSavedIcon.addEventListener("animationend", function () {
-  this.classList.remove("saved");
-});
-areNotesSavedIcon.addEventListener("click", (e) =>
-  contextMenu(e, [
-    {
-      text: "More Details",
-      click: () => {
-        showBookDiffPopup();
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    {
-      text: "Force Update",
-      click: function () {
-        this.innerText = "Confirm";
-        this.classList.add("rios");
-        this.addEventListener(
-          "click",
-          function () {
-            forceUpdateNotes();
-            delContextMenu();
-          },
-          { once: true }
-        );
-      },
-      appearance: "ios",
-    },
-    {
-      text: note.isEncrypted ? "Decrypt Notebook" : "Encrypt Notebook",
-      click: () => {
-        if (note.isEncrypted) {
-          decryptCurrentBook();
-        } else {
-          encryptCurrentBook();
-        }
-        delContextMenu();
-      },
-      appearance: "ios",
-    },
-    note.isEncrypted
-      ? {
-          text: "Change Password",
-          click: () => {
-            const newPassword = prompt("Enter a new password");
-            if (newPassword != null) {
-              note.password = newPassword;
-              saveNoteBookToDb(note.name);
-            }
-            delContextMenu();
-          },
-          appearance: "ios",
-        }
-      : null,
-  ])
-);
-toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
-
-// side bar and list
-document
-  .getElementById("leftMostSideBar")
-  .addEventListener("contextmenu", (e) => e.preventDefault());
-document
-  .getElementById("sideBarRetractList")
-  .addEventListener("click", toggleList);
-document
-  .getElementById("newPage")
-  .addEventListener("click", () => jumpToDesiredPage(note.content.length));
-morePages.addEventListener("click", (e) => showMorePages(e));
-document
-  .getElementById("goHome")
-  .addEventListener("click", () => switchNote("home", 0));
-list.addEventListener("contextmenu", (e) => e.preventDefault());
-document
-  .getElementById("searchItem")
-  .children[0].addEventListener("input", function () {
-    search(this.value);
-  });
-uploadFolder.addEventListener("click", function () {
-  this.parentNode.classList.toggle("down");
-});
-border.addEventListener("mousedown", () => {
-  delContextMenu();
-  mainContainer.style.userSelect = "none";
-  document.addEventListener("mousemove", resizeList);
-  document.addEventListener(
-    "mouseup",
-    () => {
-      localStorage.setItem("/listSize", list.style.width);
-      border.classList.remove("currPage");
-      document.body.style.cursor = "inherit";
-      mainContainer.style.userSelect = "inherit";
-      document.removeEventListener("mousemove", resizeList);
-    },
-    { once: true }
-  );
-});
-document.getElementById("loading").addEventListener(
-  "animationend",
-  function () {
-    this.remove();
-  },
-  { once: true }
-);
-document
-  .getElementById("openCommandPal")
-  .addEventListener("click", () =>
-    document.getElementsByClassName("mobile-button")[0].click()
-  );
-
 // bottom right tools
 bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
 
@@ -661,6 +401,10 @@ bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
 window.addEventListener(
   "load",
   async () => {
+    // more event listeners, there's a lot of them so they are in their own files "setup_toolbar" and "setup_list" respectively
+    setupToolbar();
+    setupList();
+
     const startTime = Date.now();
     changeTheme(localStorage.getItem("/theme") || "chrome");
     createWorkspace();

@@ -95,7 +95,7 @@ async function saveFlashcards() {
       card.front && card.front !== "\n" && card.back && card.back !== "\n"
   );
   const response = await fetch("/api/save/notebooks/", {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

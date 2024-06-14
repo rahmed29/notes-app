@@ -23,7 +23,7 @@ function insertStickyNote() {
 // sticky note
 async function saveStickyNotes() {
   const saveStatus = await fetch("/api/save/notebooks/", {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

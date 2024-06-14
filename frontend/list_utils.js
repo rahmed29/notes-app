@@ -233,7 +233,7 @@ function goToImagePreview(e) {
       str += `- :ref[${e[0]}]\n`;
     }
     return str;
-  }, "**Possible Occurrences:**\n");
+  }, "**Occurrences in local storage:**\n");
   reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [
     `![](${this.getAttribute("data-href")})\n\n${occ}`,
   ];
@@ -351,20 +351,20 @@ function listContextMenu(e, toolBar) {
         if (hasTyped) {
           switch (JSON.parse(this.getAttribute("data-props"))[0]) {
             case "book":
-              switchNote(this.innerText.replaceAll("/", ""));
+              switchNote(this.innerText);
               break;
             case "copy":
-              copyBook(this.innerText.replaceAll("/", ""), noteName);
+              copyBook(this.innerText, noteName);
               break;
             case "child":
-              createChild(noteName, this.innerText.replaceAll("/", ""));
+              createChild(noteName, this.innerText);
           }
           delContextMenu();
         } else {
           delContextMenu();
         }
       } else if (e.key === "Escape") {
-        this.blur();
+        delContextMenu();
       }
     });
     this.addEventListener(

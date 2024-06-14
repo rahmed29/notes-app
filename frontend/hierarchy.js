@@ -60,7 +60,7 @@ async function createChild(parent, child) {
     !reservedNames.some((e) => e.data.name === parent)
   ) {
     const saveStatus = await fetch("/api/save/notebooks/", {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -84,7 +84,7 @@ async function createChild(parent, child) {
 async function nestNote(child, parent) {
   if (child && parent && !reservedNames.some((e) => e.data.name === child)) {
     const result = await fetch(`/api/nest/${child}/${parent}`, {
-      method: "POST",
+      method: "PATCH",
     });
     if (result.ok) {
       if (library.get(child)) {
@@ -110,7 +110,7 @@ async function nestNote(child, parent) {
 async function relinquishNote(child, parent) {
   if (child && parent) {
     const result = await fetch(`/api/relinquish/${child}/${parent}`, {
-      method: "POST",
+      method: "PATCH",
     });
     if (result.ok) {
       try {

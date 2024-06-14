@@ -6,6 +6,7 @@ import fs from "fs";
 import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
+import validNoteName from "./validNoteName.js";
 
 async function getFamilyOneWay(bookName, direction) {
   let response = new Set();
@@ -32,8 +33,6 @@ async function getFamily(bookName) {
   const response = Array.from(ancestors).concat(Array.from(descendants));
   return response;
 }
-
-const validNoteName = /^[a-zA-Z0-9-_]+$/;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -125,6 +124,10 @@ app.set("view engine", "ejs");
 //   }
 // });
 
+app.get("/api/", async (req, res) => {
+  res.status(200).json({ status: "Welcome to the notes API." });
+});
+
 app.get("/api/get/notebooks/:name", async (req, res) => {
   const name = req.params.name;
   try {
@@ -139,7 +142,7 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
   }
 });
 
-app.post("/api/save/notebooks", async (req, res) => {
+app.put("/api/save/notebooks", async (req, res) => {
   const { name, content, date, isEncrypted } = req.body;
   if (!name || !content || name === "home" || !validNoteName.test(name)) {
     return res.status(400).json({ error: "Malformed request body." });
@@ -223,7 +226,7 @@ app.get("/api/get/list/", async (req, res) => {
   res.status(200).json({ data });
 });
 
-app.post("/api/nest/:child/:parent", async (req, res) => {
+app.patch("/api/nest/:child/:parent", async (req, res) => {
   const child = req.params.child;
   const parent = req.params.parent;
   if (!child || !parent || child === parent) {
@@ -262,7 +265,7 @@ app.post("/api/nest/:child/:parent", async (req, res) => {
   }
 });
 
-app.post("/api/relinquish/:child/:parent", async (req, res) => {
+app.patch("/api/relinquish/:child/:parent", async (req, res) => {
   const child = req.params.child;
   const parent = req.params.parent;
   if (!child || !parent) {
