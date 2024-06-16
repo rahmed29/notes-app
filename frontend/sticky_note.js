@@ -1,6 +1,6 @@
 import { closePopupWindow } from "./popup";
 import { note, reservedNames } from "./note_utils";
-import { editor } from "../main";
+import { editor, stickyNotes, openCalendar, mainContainer, stickyNotesTextArea, brDots } from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
 
 export {

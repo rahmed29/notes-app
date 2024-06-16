@@ -14,15 +14,20 @@ import { AISUmmary } from "./chat_gpt";
 import { insertStickyNote } from "./sticky_note";
 import { showTodo } from "./calendar";
 import { flashcardMode } from "./flashcards";
+import { showBookDiffPopup } from "./book_diff";
 import { encryptCurrentBook, decryptCurrentBook } from "./encryption";
 import { insertAndSaveImage } from "./images";
 import { listContextMenu } from "./list_utils";
+import themes from "./themes";
+import { changeTheme } from "./theming";
 
 export default setupToolbar;
 
 function setupToolbar() {
   // toolbar
-  document.getElementById("icon1").addEventListener("click", saveNoteBookToDb);
+  document
+    .getElementById("icon1")
+    .addEventListener("click", () => saveNoteBookToDb(note.name));
   document
     .getElementById("icon2")
     .addEventListener("click", (e) => listContextMenu(e, true));
@@ -60,7 +65,7 @@ function setupToolbar() {
         },
         appearance: "ios",
       },
-    ])
+    ], [`${e.clientX-160}px`, "75px"])
   );
   document
     .getElementById("getFile1")
@@ -68,7 +73,7 @@ function setupToolbar() {
   document.getElementById("icon5").addEventListener("click", (e) =>
     contextMenu(e, [
       {
-        text: "◨ Split",
+        text: "Split",
         click: () => {
           localStorage.setItem("/viewPref", "split");
           editingWindow("split");
@@ -77,7 +82,7 @@ function setupToolbar() {
         appearance: "ios",
       },
       {
-        text: "◼ Read",
+        text: "Read",
         click: () => {
           localStorage.setItem("/viewPref", "read");
           editingWindow("read");
@@ -86,7 +91,7 @@ function setupToolbar() {
         appearance: "ios",
       },
       {
-        text: "◻ Write",
+        text: "Write",
         click: () => {
           localStorage.setItem("/viewPref", "write");
           editingWindow("write");
@@ -94,7 +99,29 @@ function setupToolbar() {
         },
         appearance: "ios",
       },
-    ])
+      {
+        text: "Change theme",
+        click: () => {
+          const buttons = themes.map((e) => {
+            return {
+                text: e.name
+                .split("_")
+                .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
+                .join(" "),
+                click: () => {
+                  changeTheme(e.name);
+                },
+                appearance: "ios",
+              }
+          });
+          contextMenu(e, buttons, [
+            document.getElementById("contextMenu").style.left,
+            document.getElementById("contextMenu").style.top,
+          ]);
+        },
+        appearance: "ios",
+      },
+    ], [`${e.clientX-160}px`, "75px"])
   );
   document
     .getElementById("icon6")
@@ -143,7 +170,7 @@ function setupToolbar() {
         },
         appearance: "ios",
       },
-    ])
+    ], [`${e.clientX-160}px`, "75px"])
   );
   areNotesSavedIcon.addEventListener("animationend", function () {
     this.classList.remove("saved");
@@ -200,7 +227,7 @@ function setupToolbar() {
             appearance: "ios",
           }
         : null,
-    ])
+    ], [`${e.clientX-160}px`, "75px"])
   );
   toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
 }

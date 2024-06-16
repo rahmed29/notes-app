@@ -1,8 +1,10 @@
+import { note } from "./note_utils";
 import { mainContainer, list, uploadFolder, border } from "../main";
 import { jumpToDesiredPage } from "./dom_formatting";
 import { showMorePages, search, resizeList } from "./list_utils";
 import { switchNote } from "./note_utils";
 import { toggleList } from "./list_utils";
+import { delContextMenu } from "./context_menu";
 
 export default setupList;
 
@@ -53,9 +55,4 @@ function setupList() {
     },
     { once: true }
   );
-  document
-    .getElementById("openCommandPal")
-    .addEventListener("click", () =>
-      document.getElementsByClassName("mobile-button")[0].click()
-    );
 }

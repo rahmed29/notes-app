@@ -27,6 +27,7 @@ import {
 } from "./frontend/editing_window.js";
 import setupToolbar from "./frontend/setup_toolbar.js";
 import setupList from "./frontend/setup_list.js";
+import { delContextMenu } from "./frontend/context_menu.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -255,6 +256,9 @@ editor.setOptions({
   maxLines: Infinity,
 });
 editor.renderer.setShowGutter(false);
+// disable ace editor command palette
+editor.commands.bindKey("F1", null);
+editor.commands.bindKey("ctrl+f", null);
 editor.setOption("showPrintMargin", false);
 
 // tooltips
@@ -396,6 +400,16 @@ notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
 
 // bottom right tools
 bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// open command pal
+document.getElementById("openCommandPal").addEventListener("click", () => {
+  delContextMenu(); 
+  document.getElementsByClassName("mobile-button")[0].click()
+});
+
+// tabs
+tabs.addEventListener("contextmenu", (e) => e.preventDefault())
+
 
 // onload functions
 window.addEventListener(

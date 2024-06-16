@@ -72,12 +72,12 @@ function showTodo(hereForInsertion) {
           const evInList = document.getElementById(`task__${info.event.id}`);
           evInList.addEventListener(
             "animationend",
-            () => evInList.classList.remove("getHighlighted"),
+            () => evInList.classList.remove("taskFlashes"),
             {
               once: true,
             }
           );
-          evInList.classList.add("getHighlighted");
+          evInList.classList.add("taskFlashes");
           evInList.scrollIntoView();
         } catch (err) {}
       };
@@ -313,9 +313,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
             },
             appearance: "ios",
           },
-        ],
-        [`${e.clientX}px`, `${e.clientY}px`],
-        true
+        ]
       )
     );
 

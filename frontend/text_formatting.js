@@ -92,7 +92,7 @@ function ref(d) {
   if (d.type !== "textDirective") return false;
 
   this.tag("<span");
-  this.tag(' class="reference"');
+  this.tag(` class="reference" data-bookname="${d.label}" data-page="0"`);
 
   this.tag(">");
   this.raw(DOMPurify.sanitize(d.label) || "");

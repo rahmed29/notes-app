@@ -46,14 +46,14 @@ async function defineCmd() {
   const family = await getFamily(note.name);
   const json = await getList();
   const cmdList = json.map((e) => ({
-    name: `${e.name}`,
+    name: `📓 ${e.name}`,
     handler: () => switchNote(e.name),
   }));
 
   const cmdNest = json.reduce((arr, e) => {
     if (e.name !== note.name && !family.includes(e.name)) {
       arr.push({
-        name: `${e.name}`,
+        name: `📓 ${e.name}`,
         handler: () => nestNote(note.name, e.name),
       });
     }
@@ -62,85 +62,85 @@ async function defineCmd() {
 
   const cmdRel = (await getAnyBookContent(note.name, "parents")).map(
     (parent) => ({
-      name: `${parent}`,
+      name: `📓 ${parent}`,
       handler: () => relinquishNote(note.name, parent),
     })
   );
 
   let commands = [
     {
-      name: "New Page",
+      name: "📃 New Page",
       handler: () => jumpToDesiredPage(note.content.length),
     },
     {
-      name: "Go to Page",
+      name: "📄 Go to Page",
       children: cmdPgs,
     },
     {
-      name: "Open Notebook",
+      name: "📖 Open Notebook",
       children: cmdList,
     },
     {
-      name: "Save Notebook",
+      name: "💾 Save Notebook",
       handler: () => saveNoteBookToDb(note.name),
     },
     {
-      name: "Insert Image",
+      name: "🖼️ Insert Image",
       handler: () => document.getElementById("getFile1").click(),
     },
     {
-      name: "Nest Notebook",
+      name: "📂 Nest Notebook",
       children: cmdNest,
     },
     {
-      name: "Relinquish Notebook",
+      name: "🫗 Relinquish Notebook",
       children: cmdRel,
     },
     {
-      name: "Compare Local Notes to DB",
+      name: "🔍 Compare Local Notes to DB",
       handler: () => showBookDiffPopup(),
     },
     {
-      name: "AI Summary",
+      name: "✨ AI Summary",
       handler: () => AISUmmary(),
     },
     {
-      name: "Create Flashcards",
+      name: "🃏 Create Flashcards",
       handler: () => flashcardMode(),
     },
     {
-      name: "Delete This Page",
+      name: "🗑️ Delete This Page",
       children: [
         {
-          name: "Confirm",
+          name: "❓ Confirm",
           handler: () => deletePage(),
         },
       ],
     },
     {
-      name: "Delete Notebook",
+      name: "🗑️ Delete Notebook",
       children: [
         {
-          name: "Confirm",
+          name: "❓ Confirm",
           handler: () => deleteNoteBookFromDb(note.name),
         },
       ],
     },
     {
-      name: "Force Update Notebook",
+      name: "🪠 Force Update Notebook",
       children: [
         {
-          name: "Confirm",
+          name: "❓ Confirm",
           handler: () => forceUpdateNotes(),
         },
       ],
     },
     {
-      name: "Practice Flashcards",
+      name: "📇 Practice Flashcards",
       handler: () => showFlashcards(),
     },
     {
-      name: "Open Calendar",
+      name: "📅 Open Calendar",
       handler: () => showTodo(false),
     },
     // {
@@ -148,15 +148,15 @@ async function defineCmd() {
     //   handler: () => showStickyNotes(),
     // },
     {
-      name: "Import Sticky Note",
+      name: "✈️ Import Sticky Note",
       handler: () => insertStickyNote(),
     },
     {
-      name: "Insert Calendar Event",
+      name: "✈️ Insert Calendar Event",
       handler: () => showTodo(true),
     },
     {
-      name: "Toggle Vim Mode",
+      name: "⌨️ Toggle Vim Mode",
       handler: () => {
         if (notesTextArea.hasAttribute("data-vim")) {
           editor.setKeyboardHandler("ace/keyboard/vscode");
@@ -168,7 +168,7 @@ async function defineCmd() {
       },
     },
     {
-      name: "Change Theme",
+      name: "🌃 Change Theme",
       children: themes.map((e) => {
         return {
           name: e.name
@@ -180,24 +180,24 @@ async function defineCmd() {
       }),
     },
     {
-      name: "Switch View",
+      name: "👁️ Switch View",
       children: [
         {
-          name: "Split",
+          name: "🌗 Split",
           handler: () => {
             localStorage.setItem("/viewPref", "split");
             editingWindow("split");
           },
         },
         {
-          name: "Read",
+          name: "🌑 Read",
           handler: () => {
             localStorage.setItem("/viewPref", "read");
             editingWindow("read");
           },
         },
         {
-          name: "Write",
+          name: "🌕 Write",
           handler: () => {
             localStorage.setItem("/viewPref", "write");
             editingWindow("write");
@@ -206,11 +206,11 @@ async function defineCmd() {
       ],
     },
     {
-      name: "Toggle Wikipedia Search",
+      name: "🧠 Toggle Wikipedia Search",
       handler: () => toggleWikiSearch(),
     },
     {
-      name: "Toggle List",
+      name: "🌴 Toggle List",
       handler: () => toggleList(),
     },
   ];

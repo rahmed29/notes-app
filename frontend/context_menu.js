@@ -17,7 +17,7 @@ function delContextMenu() {
   bottomRightTools.removeEventListener("contextmenu", delContextMenu);
 }
 
-function contextMenu(e, button, position, noScroll) {
+function contextMenu(e, button, position) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
@@ -28,8 +28,8 @@ function contextMenu(e, button, position, noScroll) {
     menu.style.left = position[0];
     menu.style.top = position[1];
   } else {
-    menu.style.left = `${e.clientX - 160}px`;
-    menu.style.top = `75px`;
+    menu.style.left = `${e.clientX}px`;
+    menu.style.top = `${e.clientY}px`;
   }
   button.forEach((option) => {
     if (option) {
@@ -48,7 +48,9 @@ function contextMenu(e, button, position, noScroll) {
     mainContainer.after(menu);
     if (parseInt(menu.style.top) + menu.scrollHeight >= window.innerHeight) {
       menu.style.marginTop = `-${menu.scrollHeight}px`;
-      menu.style.transformOrigin = "bottom";
+    }
+    if (parseInt(menu.style.left) + menu.scrollWidth >= window.innerWidth) {
+      menu.style.marginLeft = `-${menu.scrollWidth}px`;
     }
     mainContainer.addEventListener("click", delContextMenu, { once: true });
     mainContainer.addEventListener("contextmenu", delContextMenu, {

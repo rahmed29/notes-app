@@ -1,4 +1,6 @@
 import {
+  mainContainer,
+  toolBar,
   listContainer,
   list,
   uploadFolder,
@@ -107,7 +109,7 @@ async function createList() {
     // names must be equal
     return;
   });
-  root.children = result.map((obj) => obj.name);
+  root.children = result.map((obj) => obj.name)
   const gigaFolder = nestedList(root, result).childNodes[1];
   gigaFolder.classList.add("gigaFolder");
   while (listContainer.firstChild) {
@@ -492,8 +494,7 @@ function listContextMenu(e, toolBar) {
         appearance: "ios",
       },
     ],
-    toolBar ? null : [`${e.clientX}px`, `${e.clientY}px`],
-    !toolBar
+    toolBar ? [`${e.clientX-160}px`, "75px"] : null
   );
 }
 

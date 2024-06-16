@@ -2,7 +2,7 @@ import { contextMenu, delContextMenu } from "./context_menu";
 import { createPopupWindow, closePopupWindow } from "./popup";
 import { showList, hideList } from "./list_utils";
 import { note } from "./note_utils";
-import { chatGPT, loading, stopLoading } from "./chat_gpt";
+import { chatGPT } from "./chat_gpt";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
 import { mainContainer, brain } from "../main";
 import { format } from "./text_formatting";
@@ -26,7 +26,6 @@ function setRejectToNull() {
 
 async function AIFlashcards() {
   let generatedCards = [];
-  loading();
   const response =
     (await chatGPT(
       note.content[note.pgN],
@@ -49,7 +48,6 @@ async function AIFlashcards() {
         count++;
       }
     }
-    stopLoading();
     leaveFlashcardMode();
     try {
       generatedCards = await editCardsHelper(generatedCards, true);
@@ -385,9 +383,7 @@ function showFlashcards(noAnimation) {
               },
               appearance: "ios",
             },
-          ],
-          [`${e.clientX}px`, `${e.clientY}px`],
-          true
+          ]
         );
       });
       cardFront.classList.add("cardFront");

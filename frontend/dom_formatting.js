@@ -79,7 +79,7 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
           },
           appearance: "ios",
         },
-      ]);
+      ], [`${e.clientX-160}px`, "75px"]);
     } else if (!(note.pgN + amount >= note.content.length)) {
       note.pgN += amount;
       accents();
@@ -194,8 +194,6 @@ function syncStatus(dbSave) {
 
 function formatNonText(ele) {
   for (const node of ele.getElementsByClassName("reference")) {
-    node.setAttribute("data-bookname", node.innerText);
-    node.setAttribute("data-page", 0);
     node.addEventListener("click", switchTab);
     previewHandlers.push({
       element: node,
@@ -297,9 +295,7 @@ function removeImageToolTip(e) {
         },
         appearance: "ios",
       },
-    ],
-    [`${e.clientX}px`, `${e.clientY}px`],
-    true
+    ]
   );
 }
 
@@ -331,7 +327,7 @@ async function referToolTip() {
                 this.getAttribute("data-bookname"),
                 "content"
               )
-            )[page]
+            )[parseInt(this.getAttribute("data-page"))]
           );
     lastDynamicTippy.setContent(
       `<div class = 'pagePreviewContainer'>${content}</div>`

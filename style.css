@@ -696,6 +696,10 @@ blockquote {
   margin: 0;
 }
 
+hr {
+  color: var(--notes-color);
+}
+
 blockquote:hover {
   background: var(--code);
 }
@@ -921,7 +925,6 @@ blockquote:hover {
   flex-direction: column;
   gap: 3px;
   height: auto;
-  transform-origin: top;
 }
 
 #contextMenu a {
@@ -996,9 +999,9 @@ blockquote:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, .25);
+  background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
-  animation: fade .5s;
+  animation: fade 0.5s;
 }
 
 #bookDiffPopup {
@@ -1557,8 +1560,8 @@ blockquote:hover {
   width: auto !important;
 }
 
-.getHighlighted {
-  animation: flashes 1s;
+.taskFlashes {
+  animation: taskFlashes 1s;
 }
 
 .task {
@@ -1889,7 +1892,7 @@ blockquote:hover {
   }
 }
 
-@keyframes flashes {
+@keyframes taskFlashes {
   0% {
     background: var(--highlight);
   }
@@ -2003,5 +2006,21 @@ blockquote:hover {
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@media print {
+  #listOfBooks,
+  #tabs,
+  #leftMostSideBar,
+  #toolBar,
+  #bottomRightTools,
+  #bottomLeftGeneralInfo,
+  #notesTextArea {
+    display: none !important;
+  }
+  #notesPreviewArea {
+    padding: 0 0 0 0 !important;
+    display: flex !important;
   }
 }

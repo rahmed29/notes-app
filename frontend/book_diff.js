@@ -61,7 +61,6 @@ function showBookDiffPopup() {
             appearance: "ios",
           },
         ],
-        [`${e.clientX}px`, `${e.clientY}px`]
       );
     });
     pageDiff.appendChild(h2);
