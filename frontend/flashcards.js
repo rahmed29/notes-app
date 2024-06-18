@@ -60,8 +60,9 @@ async function AIFlashcards() {
       }
     }
   } else {
-    notyf.error("Flashcards could not be generated properly. Try again later");
-    stopLoading();
+    if (!note.isEncrypted) {
+      notyf.error("Flashcards could not be generated properly. Try again later");
+    }
     leaveFlashcardMode();
   }
 }

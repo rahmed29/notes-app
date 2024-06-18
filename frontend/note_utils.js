@@ -294,15 +294,13 @@ async function switchNote(noteName, page) {
   switching = false;
 }
 
-function getWrittenPages(arr) {
-  const response = arr.reduce((arr, e) => {
-    if (e) {
-      arr.push(e);
-    }
-    return arr;
-  }, []);
+// a small wrapper function that filters an array with the given logic (or compares to an empty string by default), but won't return an empty array
+function getWrittenPages(arr, logic, defaultValue) {
+  logic = !logic ? (str) => str !== "" : logic;
+  defaultValue = defaultValue == null ? "" : defaultValue;
+  const response = arr.filter((e) => logic(e));
   if (!response.length) {
-    response.push("");
+    response.push(defaultValue);
   }
   return response;
 }
@@ -336,7 +334,7 @@ function deletePage() {
   }
 }
 
-async function saveNoteBookToDb(noteName) {
+async function saveNoteBookToDb(noteName, data) {
   if (
     !validNoteName.test(noteName) ||
     reservedNames.some((e) => e.data.name === noteName)
@@ -348,6 +346,11 @@ async function saveNoteBookToDb(noteName) {
   if (library.get(noteName)) {
     desiredNote = library.get(noteName);
     desiredNote.content = getWrittenPages(note.content);
+    desiredNote.aceSessions = getWrittenPages(
+      note.aceSessions,
+      (sesh) => sesh.getValue() !== "",
+      null
+    );
     if (!desiredNote.isEncrypted) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }

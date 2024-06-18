@@ -351,11 +351,8 @@ app.post("/api/chatGPT", async (req, res) => {
 });
 
 app.all("*", (req, res) => {
-  res
-    .status(404)
-    .send(
-      "<h1 style = 'text-align: center; font-family: arial; line-height: 100vh;'>404! Page not found</h1>"
-    );
+  res.status(404);
+  res.render("404.ejs");
 });
 
 app.listen(port, () => {
