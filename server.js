@@ -297,10 +297,12 @@ app.patch("/api/relinquish/:child/:parent", async (req, res) => {
 });
 
 app.get("/:name", async (req, res) => {
+  res.status(404);
   res.render("desktop.ejs");
 });
 
 app.get("/", (req, res) => {
+  res.status(301);
   res.redirect("/home");
 });
 

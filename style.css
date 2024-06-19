@@ -1105,6 +1105,7 @@ blockquote:hover {
   position: absolute;
   top: 0;
   right: 0;
+  min-width: 400px;
   width: 20vw;
   height: calc(100vh - 17px);
   box-sizing: border-box;
@@ -1227,6 +1228,7 @@ blockquote:hover {
 
 .flashcardMode #mainContainer {
   height: calc(100vh - 17px);
+  max-width: calc(100vw - 400px);
   width: 80vw;
   cursor: default;
 }

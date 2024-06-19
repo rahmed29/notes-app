@@ -6,28 +6,32 @@ import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import Dropzone from "dropzone";
 import DOMPurify from "dompurify";
-import { changeTheme } from "./frontend/theming.js";
-import { note, switchNote, saveNoteBookToDb } from "./frontend/note_utils.js";
-import { updateList } from "./frontend/list_utils.js";
-import { initializeTodo, showTodo } from "./frontend/calendar.js";
-import { updateAndSaveNotesLocally } from "./frontend/dom_formatting.js";
-import { createWorkspace } from "./frontend/tabs.js";
-import { initializeFlashcards } from "./frontend/flashcards.js";
+import { changeTheme } from "./frontend_modules/theming.js";
+import {
+  note,
+  switchNote,
+  saveNoteBookToDb,
+} from "./frontend_modules/note_utils.js";
+import { updateList } from "./frontend_modules/list_utils.js";
+import { initializeTodo, showTodo } from "./frontend_modules/calendar.js";
+import { updateAndSaveNotesLocally } from "./frontend_modules/dom_formatting.js";
+import { createWorkspace } from "./frontend_modules/tabs.js";
+import { initializeFlashcards } from "./frontend_modules/flashcards.js";
 import {
   saveStickyNotes,
   showStickyNotes,
   hideStickyNotes,
   initializeStickyNotes,
-} from "./frontend/sticky_note.js";
-import { showFlashcards } from "./frontend/flashcards.js";
-import { wikiSearch } from "./frontend/wikipedia.js";
+} from "./frontend_modules/sticky_note.js";
+import { showFlashcards } from "./frontend_modules/flashcards.js";
+import { wikiSearch } from "./frontend_modules/wikipedia.js";
 import {
   cycleViewPreferences,
   editingWindow,
-} from "./frontend/editing_window.js";
-import setupToolbar from "./frontend/setup_toolbar.js";
-import setupList from "./frontend/setup_list.js";
-import { delContextMenu } from "./frontend/context_menu.js";
+} from "./frontend_modules/editing_window.js";
+import setupToolbar from "./frontend_modules/setup_toolbar.js";
+import setupList from "./frontend_modules/setup_list.js";
+import { delContextMenu } from "./frontend_modules/context_menu.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -383,38 +387,36 @@ const dropzone = new Dropzone(document.body, {
   },
 });
 
-// Event listeners
-// doc
-document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
-    e.preventDefault();
-    saveNoteBookToDb(note.name);
-  } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
-    e.preventDefault();
-    cycleViewPreferences();
-  }
-});
-
-// main note area
-notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
-
-// bottom right tools
-bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
-
-// open command pal
-document.getElementById("openCommandPal").addEventListener("click", () => {
-  delContextMenu(); 
-  document.getElementsByClassName("mobile-button")[0].click()
-});
-
-// tabs
-tabs.addEventListener("contextmenu", (e) => e.preventDefault())
-
-
 // onload functions
 window.addEventListener(
   "load",
   async () => {
+    // Event listeners
+    // doc
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        saveNoteBookToDb(note.name);
+      } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
+        e.preventDefault();
+        cycleViewPreferences();
+      }
+    });
+
+    // main note area
+    notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
+
+    // bottom right tools
+    bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // open command pal
+    document.getElementById("openCommandPal").addEventListener("click", () => {
+      delContextMenu();
+      document.getElementsByClassName("mobile-button")[0].click();
+    });
+
+    // tabs
+    tabs.addEventListener("contextmenu", (e) => e.preventDefault());
     // more event listeners, there's a lot of them so they are in their own files "setup_toolbar" and "setup_list" respectively
     setupToolbar();
     setupList();
@@ -467,6 +469,7 @@ window.addEventListener(
     }
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
+    console.log(`Load time: ${Date.now() - startTime}ms`)
   },
   { once: true }
 );

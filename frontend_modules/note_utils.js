@@ -342,15 +342,23 @@ async function saveNoteBookToDb(noteName, data) {
     notyf.error("Something went wrong");
     return;
   }
-  let desiredNote;
   if (library.get(noteName)) {
-    desiredNote = library.get(noteName);
-    desiredNote.content = getWrittenPages(note.content);
-    desiredNote.aceSessions = getWrittenPages(
-      note.aceSessions,
-      (sesh) => sesh.getValue() !== "",
-      null
-    );
+    function prepareForSave(obj) {
+      const newContent = [];
+      const newSessions = [];
+      for (let i = 0; i < obj.content.length; i++) {
+        if (obj.content[i]) {
+          newContent.push(obj.content[i]);
+          newSessions.push(obj.aceSessions[i]);
+        }
+      }
+
+      obj.content = newContent;
+      obj.aceSessions = newSessions;
+    }
+
+    let desiredNote = library.get(noteName);
+    prepareForSave(desiredNote);
     if (!desiredNote.isEncrypted) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }

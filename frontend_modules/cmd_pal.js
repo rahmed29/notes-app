@@ -1,4 +1,4 @@
-import "../node_modules/command-pal/public/build/bundle.js";
+import "command-pal";
 import themes from "./themes/index.js";
 import {
   note,
@@ -19,9 +19,9 @@ import { toggleWikiSearch } from "./wikipedia.js";
 import { editingWindow } from "./editing_window.js";
 import { editor } from "../main.js";
 import { showTodo } from "./calendar.js";
-import { insertStickyNote } from "./sticky_note";
+import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
-import { showFlashcards } from "./flashcards.js";
+import { flashcardMode, showFlashcards } from "./flashcards.js";
 
 export { defineCmd };
 
