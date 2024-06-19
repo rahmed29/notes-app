@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 
+# I added
+/public/assets/ace-editor
 /micromark-extension-mark
 /public/uploads/*
 .env

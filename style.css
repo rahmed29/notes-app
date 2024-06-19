@@ -1222,6 +1222,11 @@ blockquote:hover {
   color: var(--quizlet-font);
 }
 
+.fcSelection * {
+  background: var(--quizlet-purple) !important;
+  color: var(--quizlet-font);
+}
+
 .fcSelection::marker {
   color: var(--notes-color);
 }
