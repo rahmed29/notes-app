@@ -1729,7 +1729,13 @@ blockquote:hover {
   visibility: visible;
 }
 
-.modal-container {
+.powerSearch .results {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.modal-container,
+.powerSearch {
   position: relative;
   margin: auto;
   /* padding: 4px; */
@@ -1746,7 +1752,8 @@ blockquote:hover {
   color: var(--notes-color);
 }
 
-#CommandPal .search {
+#CommandPal .search,
+.powerSearch input {
   padding: 1.25em;
   flex-grow: 1;
   flex-shrink: 0;
@@ -1765,7 +1772,8 @@ blockquote:hover {
   opacity: 0.5;
 }
 
-#CommandPal .item {
+#CommandPal .item,
+.powerSearch .item {
   padding: 0.75em 1em;
   display: flex;
   border-left: 2px solid transparent;
@@ -1778,13 +1786,17 @@ blockquote:hover {
   font-size: 14px;
 }
 
-#CommandPal .item:hover {
-  cursor: pointer;
-  background-color: var(--code);
-  outline: none;
+.powerSearch .item {
+  justify-content: space-between;
 }
 
-#CommandPal .item.selected {
+.powerSearch .finder {
+  position: relative;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#CommandPal .item.selected, #CommandPal .item:hover, .powerSearch .item:hover, .powerSearch .item.selected {
   cursor: pointer;
   background-color: var(--code);
   outline: none;

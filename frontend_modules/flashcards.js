@@ -4,8 +4,7 @@ import { showList, hideList } from "./list_utils";
 import { note } from "./note_utils";
 import { chatGPT } from "./chat_gpt";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
-import { mainContainer, brain } from "../main";
-import { format } from "./text_formatting";
+import { mainContainer, notesPreviewArea, brain } from "../main";
 
 export {
   initializeFlashcards,
@@ -26,28 +25,30 @@ function setRejectToNull() {
 
 async function AIFlashcards() {
   let generatedCards = [];
-  const response =
-    (await chatGPT(
+  let response =
+    ((await chatGPT(
       note.content[note.pgN],
-      "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions, do not label the columns however. Do not use any HTML tags."
-    )) || "";
-  const shadow = document.createElement("div");
-  shadow.innerHTML = format(response);
-  let count = 0;
-  if (shadow.getElementsByTagName("table")[0]) {
-    for (const td of shadow.getElementsByTagName("table")[0].rows) {
-      if (td.children[0].innerText && td.children[0].innerText) {
+      // this works well enough idk
+      "Create flashcards from this note. Provide me with a string where cards are separated by 3 colons (:::) and within those cards, the term and definition are separated by 3 plus signs (+++)"
+    )) || "").split(":::");
+  let count = 1;
+  if (Array.isArray(response) && response.length > 0) {
+    response.forEach((card) => {
+      card = card.split("+++");
+      const front = card[0]
+      const back = card[1]
+      if (front && back) {
         generatedCards.push({
           subject: note.name,
-          front: td.children[0].innerText.replaceAll("<br>", "\n"),
-          back: td.children[1].innerText.replaceAll("<br>", "\n"),
+          front,
+          back,
           id: Date.now() + count,
           ai_generated: true,
           learning: "unattempted",
         });
-        count++;
       }
-    }
+      count++;
+    });
     leaveFlashcardMode();
     try {
       generatedCards = await editCardsHelper(generatedCards, true);
@@ -61,7 +62,7 @@ async function AIFlashcards() {
     }
   } else {
     if (!note.isEncrypted) {
-      notyf.error("Flashcards could not be generated properly. Try again later");
+      notyf.error("Flashcards could not be generated");
     }
     leaveFlashcardMode();
   }
@@ -150,7 +151,7 @@ function flashcardMode() {
   aibutton.classList.add("fcButtons");
   const generated = document.createElement("button");
   generated.innerText = "✨ Generate Cards";
-  generated.addEventListener("click", () => AIFlashcards(), { once: true });
+  generated.addEventListener("click", AIFlashcards, { once: true });
   aibutton.appendChild(generated);
   fcArea.appendChild(aibutton);
   const cardFront = document.createElement("div");
@@ -236,7 +237,7 @@ function leaveFlashcardMode() {
 }
 
 function showFlashcards(noAnimation) {
-  const { bookDiffPopup, bookDiffContent, modalContainer } =
+  const [ bookDiffContent, modalContainer ] =
     createPopupWindow();
   if (noAnimation != null && noAnimation) {
     modalContainer.style.animation = "none";
@@ -338,54 +339,51 @@ function showFlashcards(noAnimation) {
         { once: true }
       );
       cardFront.addEventListener("contextmenu", function (e) {
-        contextMenu(
-          e,
-          [
-            {
-              attr: card.id,
-              text: `Edit Card`,
-              click: function () {
-                editCards([card]);
-                delContextMenu();
-              },
-              appearance: "ios",
+        contextMenu(e, [
+          {
+            attr: card.id,
+            text: `Edit Card`,
+            click: function () {
+              editCards([card]);
+              delContextMenu();
             },
-            {
-              attr: card.id,
-              text: `Reset Card`,
-              click: function () {
-                flashcards.find(
-                  (e) => e.id == this.getAttribute("data-props")
-                ).learning = "unattempted";
-                saveFlashcards();
-                delContextMenu();
-                showFlashcards(true);
-              },
-              appearance: "ios",
+            appearance: "ios",
+          },
+          {
+            attr: card.id,
+            text: `Reset Card`,
+            click: function () {
+              flashcards.find(
+                (e) => e.id == this.getAttribute("data-props")
+              ).learning = "unattempted";
+              saveFlashcards();
+              delContextMenu();
+              showFlashcards(true);
             },
-            {
-              attr: card.id,
-              text: `Delete Card`,
-              click: function () {
-                this.innerText = "Confirm";
-                this.classList.add("rios");
-                this.addEventListener(
-                  "click",
-                  function () {
-                    flashcards = flashcards.filter(
-                      (e) => e.id != this.getAttribute("data-props")
-                    );
-                    saveFlashcards();
-                    delContextMenu();
-                    showFlashcards(true);
-                  },
-                  { once: true }
-                );
-              },
-              appearance: "ios",
+            appearance: "ios",
+          },
+          {
+            attr: card.id,
+            text: `Delete Card`,
+            click: function () {
+              this.innerText = "Confirm";
+              this.classList.add("rios");
+              this.addEventListener(
+                "click",
+                function () {
+                  flashcards = flashcards.filter(
+                    (e) => e.id != this.getAttribute("data-props")
+                  );
+                  saveFlashcards();
+                  delContextMenu();
+                  showFlashcards(true);
+                },
+                { once: true }
+              );
             },
-          ]
-        );
+            appearance: "ios",
+          },
+        ]);
       });
       cardFront.classList.add("cardFront");
       cardFront.innerText = card.front;
@@ -449,7 +447,7 @@ function editCardsHelper(cardArr, yesAnimation) {
     return;
   }
 
-  const { bookDiffPopup, bookDiffContent, modalContainer } =
+  const [ bookDiffContent, modalContainer ] =
     createPopupWindow();
   if (!yesAnimation) {
     modalContainer.style.animation = "none";
@@ -535,7 +533,7 @@ function editCardsHelper(cardArr, yesAnimation) {
 }
 
 function study(cardArr, allCards) {
-  const { bookDiffPopup, bookDiffContent, modalContainer } =
+  const [ bookDiffContent, modalContainer ] =
     createPopupWindow();
   modalContainer.style.animation = "none";
   mainContainer.after(modalContainer);

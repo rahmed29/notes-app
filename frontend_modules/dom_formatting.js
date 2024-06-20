@@ -38,7 +38,6 @@ let lastDynamicTippy = null;
 let pageHandlers = [];
 let previewHandlers = [];
 
-// formatting things once you have selected a note and want to move around in it
 function jumpWrapper() {
   jumpToDesiredPage(this.getAttribute("data-page"));
 }
@@ -99,7 +98,6 @@ function accents() {
   } else {
     editor.setSession(note.aceSessions[note.pgN]);
   }
-  // editor.session.setValue(note.content[note.pgN]);
   window.history.replaceState(null, null, `/${note.name}?${note.pgN + 1}`);
   updateAndSaveNotesLocally();
   createPageNumbers();
@@ -115,8 +113,8 @@ async function updateAndSaveNotesLocally() {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus(note.dbSave);
-  previewHandlers = previewHandlers.reduce((arr, e) => {
-    e.element.removeEventListener(e.type, e.listener);
+  previewHandlers = previewHandlers.reduce((arr, { element, type, listener }) => {
+    element.removeEventListener(type, listener);
     return arr;
   }, []);
   const v = document.createElement("div");
@@ -219,8 +217,8 @@ function formatNonText(ele) {
 
 // page numbers on the left
 function createPageNumbers() {
-  pageHandlers = pageHandlers.reduce((arr, e) => {
-    e.element.removeEventListener(e.type, e.listener);
+  pageHandlers = pageHandlers.reduce((arr, { element, type, listener}) => {
+    element.removeEventListener(type, listener);
     return arr;
   }, []);
   while (topLeftPageNumber.firstChild) {
@@ -270,7 +268,7 @@ function removeImageToolTip(e) {
     e,
     [
       {
-        attr: this.src.substring(this.src),
+        attr: this.src,
         text: "Open Image",
         click: function () {
           window.open(`${this.getAttribute("data-props")}`, "_blank");
@@ -279,7 +277,7 @@ function removeImageToolTip(e) {
         appearance: "ios",
       },
       {
-        attr: this.src.substring(this.src.indexOf("/uploads/") + 9),
+        attr: this.src.slice(this.src.indexOf("/uploads/") + 9),
         text: "Delete Image",
         click: function () {
           this.classList.add("rios");
@@ -307,8 +305,7 @@ async function referToolTip() {
     // console.log(err);
   }
   delContextMenu();
-  const given = this;
-  lastDynamicTippy = tippy([given], {
+  lastDynamicTippy = tippy([this], {
     theme: currTheme.theme_type,
     animation: "shift-toward-subtle",
     content: "Loading...",

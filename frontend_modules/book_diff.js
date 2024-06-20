@@ -13,14 +13,14 @@ function getDiff(one, other) {
   const fragment = document.createDocumentFragment();
 
   diff.forEach((part) => {
-    const color = part.added
+    const [bgColor, textColor] = part.added
       ? ["#33ff96", "black"]
       : part.removed
       ? ["#ff5e5e", "black"]
       : ["rgba(0,0,0,0)", ""];
     span = document.createElement("span");
-    span.style.background = color[0];
-    span.style.color = color[1];
+    span.style.background = bgColor;
+    span.style.color = textColor;
     span.appendChild(document.createTextNode(part.value));
     fragment.appendChild(span);
   });
@@ -28,15 +28,11 @@ function getDiff(one, other) {
 }
 
 function showBookDiffPopup() {
-  const { bookDiffPopup, bookDiffContent, modalContainer } =
-    createPopupWindow();
-  const timesToRepeat =
-    note.dbSave.length > note.content.length
-      ? note.dbSave.length
-      : note.content.length;
+  const [ bookDiffContent, modalContainer] = createPopupWindow();
+  const timesToRepeat = Math.max(note.dbSave.length, note.content.length);
   const missingPage =
     timesToRepeat === note.dbSave.length ? note.dbSave : note.content;
-  const colorIndicator =
+  const [bgColor, textColor] =
     timesToRepeat === note.dbSave.length
       ? ["#ff5e5e", "black"]
       : ["#33ff96", "black"];
@@ -48,20 +44,17 @@ function showBookDiffPopup() {
       this.scrollIntoView();
     });
     h2.addEventListener("contextmenu", (e) => {
-      contextMenu(
-        e,
-        [
-          {
-            text: `Go to Page ${i + 1}`,
-            click: () => {
-              jumpToDesiredPage(i);
-              closePopupWindow();
-              delContextMenu();
-            },
-            appearance: "ios",
+      contextMenu(e, [
+        {
+          text: `Go to Page ${i + 1}`,
+          click: () => {
+            jumpToDesiredPage(i);
+            closePopupWindow();
+            delContextMenu();
           },
-        ],
-      );
+          appearance: "ios",
+        },
+      ]);
     });
     pageDiff.appendChild(h2);
     pageDiff.classList.add("pageDiff");
@@ -70,8 +63,8 @@ function showBookDiffPopup() {
     } catch (err) {
       const fragment = document.createDocumentFragment();
       const span = document.createElement("span");
-      span.style.background = colorIndicator[0];
-      span.style.color = colorIndicator[1];
+      span.style.background = bgColor;
+      span.style.color = textColor;
       span.appendChild(document.createTextNode(missingPage[i]));
       fragment.appendChild(span);
       pageDiff.appendChild(fragment);

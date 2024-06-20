@@ -1,8 +1,9 @@
-import { mainContainer, editor } from "../main";
+import { editor } from "../main";
 import { clearTaskTippys, datePicker, calendar } from "./calendar";
 import { delContextMenu } from "./context_menu";
 import { hideStickyNotes } from "./sticky_note";
 import { editCardsRejection, setRejectToNull } from "./flashcards";
+import { resetFinder } from "./search";
 
 export { createPopupWindow, closePopupWindow };
 
@@ -36,9 +37,8 @@ function createPopupWindow() {
   bookDiffExitContainer.addEventListener("click", closePopupWindow, {
     once: true,
   });
-  // mainContainer.addEventListener("click", closePopupWindow, { once: true });
   editor.session.on("change", closePopupWindow);
-  return { bookDiffPopup, bookDiffContent, modalContainer };
+  return [ bookDiffContent, modalContainer ];
 }
 
 function closePopupWindow() {
@@ -57,6 +57,7 @@ function closePopupWindow() {
   } catch (err) {
     // console.log(err);
   }
+  resetFinder()
   try {
     editCardsRejection(new Error("Exited"));
     setRejectToNull();
@@ -64,6 +65,5 @@ function closePopupWindow() {
     // console.log(err);
   }
   clearTaskTippys();
-  // mainContainer.removeEventListener("click", closePopupWindow);
   editor.session.off("change", closePopupWindow);
 }

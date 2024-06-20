@@ -93,8 +93,8 @@ function dropWrapper(e) {
 
 async function createList() {
   nestedBooks = new Set();
-  listHandlers = listHandlers.reduce((arr, e) => {
-    e.element.removeEventListener(e.type, e.listener);
+  listHandlers = listHandlers.reduce((arr, { element, type, listener}) => {
+    element.removeEventListener(type, listener);
     return arr;
   }, []);
   const result = (await getList()).sort((a, b) => {
@@ -109,7 +109,7 @@ async function createList() {
     // names must be equal
     return;
   });
-  root.children = result.map((obj) => obj.name)
+  root.children = result.map((obj) => obj.name);
   const gigaFolder = nestedList(root, result).childNodes[1];
   gigaFolder.classList.add("gigaFolder");
   while (listContainer.firstChild) {
@@ -229,10 +229,10 @@ function showImagePreview(e) {
   showPagePreview(e, `![](${this.getAttribute("data-href")})`);
 }
 
-function goToImagePreview(e) {
-  const occ = Object.entries(localStorage).reduce((str, e) => {
-    if (JSON.stringify(e[1]).includes(this.getAttribute("data-href"))) {
-      str += `- :ref[${e[0]}]\n`;
+function goToImagePreview() {
+  const occ = Object.entries(localStorage).reduce((str, [key , value]) => {
+    if (JSON.stringify(value).includes(this.getAttribute("data-href"))) {
+      str += `- :ref[${key}]\n`;
     }
     return str;
   }, "**Occurrences in local storage:**\n");
@@ -316,13 +316,8 @@ function showList() {
   localStorage.setItem("/listShown", "true");
 }
 
-function toggleList() {
-  if (list.hasAttribute("data-shown")) {
-    hideList();
-  } else {
-    showList();
-  }
-}
+var toggleList = () =>
+  list.hasAttribute("data-shown") ? hideList() : showList();
 
 function listContextMenu(e, toolBar) {
   function cmInput() {
@@ -494,7 +489,7 @@ function listContextMenu(e, toolBar) {
         appearance: "ios",
       },
     ],
-    toolBar ? [`${e.clientX-160}px`, "75px"] : null
+    toolBar ? [`${e.clientX - 160}px`, "75px"] : null
   );
 }
 
@@ -504,7 +499,7 @@ async function showPagePreview(e, customText) {
   e.stopPropagation();
   delContextMenu();
   const leftAmount =
-    e.currentTarget.id.substring(0, "whereTo".length) === "whereTo"
+    e.currentTarget.id.slice(0, "whereTo".length) === "whereTo"
       ? 30
       : parseInt(list.style.width) + 30;
   const page = e.currentTarget.getAttribute("data-page");

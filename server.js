@@ -52,7 +52,6 @@ async function gpt(content, prompt) {
       },
     ],
     temperature: 0,
-    seed: 111,
   });
 
   return completion.choices[0].message.content;
@@ -191,7 +190,7 @@ app.get("/api/get/image-list/", async (req, res) => {
 
 app.post("/api/save/images", upload.single("avatar"), function (req, res) {
   try {
-    res.send(req.file.path.substring(req.file.path.indexOf("/")));
+    res.send(req.file.path.slice(req.file.path.indexOf("/")));
   } catch (err) {
     res.status(500).json({ status: "Internal Server Error" });
   }
@@ -211,11 +210,7 @@ app.get("/api/get/list/", async (req, res) => {
       data.push({
         name: notebook.name,
         excerpt: notebook.content.map((page) => {
-          const name =
-            page.indexOf("\n") === -1
-              ? page
-              : page.substring(0, page.indexOf("\n"));
-          return name;
+          return page.split("\n")[0];
         }),
         children: notebook.children,
         parents: notebook.parents,
@@ -297,7 +292,7 @@ app.patch("/api/relinquish/:child/:parent", async (req, res) => {
 });
 
 app.get("/:name", async (req, res) => {
-  res.status(404);
+  res.status(200);
   res.render("desktop.ejs");
 });
 

@@ -47,7 +47,7 @@ function showTodo(hereForInsertion) {
     return;
   }
 
-  const { bookDiffPopup, bookDiffContent, modalContainer } =
+  const [ bookDiffContent, modalContainer ] =
     createPopupWindow();
   mainContainer.after(modalContainer);
 
@@ -126,10 +126,7 @@ function showTodo(hereForInsertion) {
       events.push(eventObj);
       saveTodo();
 
-      taskName.value = "";
-      taskDesc.value = "";
-      taskCategory.value = "";
-      dp.value = "";
+      taskName.value, taskDesc.value, taskCategory.value, (dp.value = "");
 
       renderTaskList(false, taskList);
     }
@@ -146,22 +143,13 @@ function showTodo(hereForInsertion) {
   seePast.setAttribute("type", "button");
   seePast.value = "View Completed Tasks";
   seePast.addEventListener("click", function () {
-    if (!this.hasAttribute("data-enabled")) {
-      renderTaskList(true, taskList);
-    } else {
-      renderTaskList(false, taskList);
-    }
+    this.hasAttribute("data-enabled")
+      ? renderTaskList(false, taskList)
+      : renderTaskList(true, taskList);
     taskName.focus();
   });
 
-  // const importTasks = document.createElement("input");
-  // importTasks.id = "seePast";
-  // importTasks.setAttribute("type", "button");
-  // importTasks.value = "Import Tasks from Notebook"
-
   addTaskContainer.appendChild(seePast);
-  // addTaskContainer.appendChild(importTasks);
-
   bookDiffContent.appendChild(todoContainer);
 
   datePicker = new AirDatepicker("#datePicker", {
@@ -288,33 +276,30 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     event.id = `task__${task.id}`;
 
     event.addEventListener("contextmenu", (e) =>
-      contextMenu(
-        e,
-        [
-          {
-            text: `Delete Event`,
-            click: function () {
-              this.innerText = "Confirm";
-              this.classList.add("rios");
-              this.addEventListener(
-                "click",
-                function () {
-                  events = events.filter((e) => e.id !== task.id);
-                  pastEvents = pastEvents.filter((e) => e.id !== task.id);
-                  try {
-                    calendar.getEventById(task.id).remove();
-                  } catch (err) {}
-                  saveTodo();
-                  document.getElementById(`task__${task.id}`).remove();
-                  delContextMenu();
-                },
-                { once: true }
-              );
-            },
-            appearance: "ios",
+      contextMenu(e, [
+        {
+          text: `Delete Event`,
+          click: function () {
+            this.innerText = "Confirm";
+            this.classList.add("rios");
+            this.addEventListener(
+              "click",
+              function () {
+                events = events.filter((e) => e.id !== task.id);
+                pastEvents = pastEvents.filter((e) => e.id !== task.id);
+                try {
+                  calendar.getEventById(task.id).remove();
+                } catch (err) {}
+                saveTodo();
+                document.getElementById(`task__${task.id}`).remove();
+                delContextMenu();
+              },
+              { once: true }
+            );
           },
-        ]
-      )
+          appearance: "ios",
+        },
+      ])
     );
 
     const eventTop = document.createElement("div");

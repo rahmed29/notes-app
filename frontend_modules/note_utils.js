@@ -1,4 +1,4 @@
-import { listInMemory, updateList } from "./list_utils";
+import { listInMemory, search, updateList } from "./list_utils";
 import { closePopupWindow } from "./popup";
 import { editor } from "../main";
 import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
@@ -295,8 +295,7 @@ async function switchNote(noteName, page) {
 }
 
 // a small wrapper function that filters an array with the given logic (or compares to an empty string by default), but won't return an empty array
-function getWrittenPages(arr, logic, defaultValue) {
-  logic = !logic ? (str) => str !== "" : logic;
+function getWrittenPages(arr, logic = (str) => str !== "", defaultValue) {
   defaultValue = defaultValue == null ? "" : defaultValue;
   const response = arr.filter((e) => logic(e));
   if (!response.length) {
@@ -306,6 +305,7 @@ function getWrittenPages(arr, logic, defaultValue) {
 }
 
 async function forceUpdateNotes() {
+  // temp
   const name = note.name;
   try {
     const tabToClose = document.getElementById(`book__${note.name}`);

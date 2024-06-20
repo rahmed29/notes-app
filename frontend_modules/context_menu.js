@@ -2,7 +2,6 @@ import { mainContainer, toolBar, bottomRightTools } from "../main";
 
 export { contextMenu, delContextMenu };
 
-// context menu
 // takes in an event object, an array of objects representing items in the context menu, and optionally an array representing a x and y coordinate for the context menu to be located
 
 function delContextMenu() {
@@ -24,7 +23,7 @@ function contextMenu(e, button, position) {
   const menu = document.createElement("div");
   menu.addEventListener("contextmenu", (e) => e.preventDefault());
   menu.id = "contextMenu";
-  if (position) {
+  if (position && position.length == 2) {
     menu.style.left = position[0];
     menu.style.top = position[1];
   } else {
@@ -46,6 +45,7 @@ function contextMenu(e, button, position) {
   });
   if (menu.firstChild) {
     mainContainer.after(menu);
+    // keep context menu in viewport
     if (parseInt(menu.style.top) + menu.scrollHeight >= window.innerHeight) {
       menu.style.marginTop = `-${menu.scrollHeight}px`;
     }
@@ -54,7 +54,7 @@ function contextMenu(e, button, position) {
     }
     mainContainer.addEventListener("click", delContextMenu, { once: true });
     mainContainer.addEventListener("contextmenu", delContextMenu, {
-      once: true,
+      once: true, 
     });
     toolBar.addEventListener("click", delContextMenu, { once: true });
     toolBar.addEventListener("contextmenu", delContextMenu, { once: true });
@@ -62,10 +62,5 @@ function contextMenu(e, button, position) {
     bottomRightTools.addEventListener("contextmenu", delContextMenu, {
       once: true,
     });
-    // if (noScroll) {
-    //   document.addEventListener("wheel", delContextMenu, { once: true });
-    // }
-  } else {
-    return;
   }
 }

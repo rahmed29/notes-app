@@ -22,6 +22,7 @@ import { showTodo } from "./calendar.js";
 import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
+import { showSearch } from "./search.js";
 
 export { defineCmd };
 
@@ -36,9 +37,8 @@ async function defineCmd() {
   }
 
   const cmdPgs = note.content.map((e, i) => {
-    const name = e.indexOf("\n") === -1 ? e : e.substring(0, e.indexOf("\n"));
     return {
-      name: `📄 ${removeMD(name)}`,
+      name: `📄 ${removeMD(e.split("\n")[0])}`,
       handler: () => jumpToDesiredPage(i),
     };
   });
@@ -98,22 +98,22 @@ async function defineCmd() {
     },
     {
       name: "🔍 Compare Local Notes to DB",
-      handler: () => showBookDiffPopup(),
+      handler: showBookDiffPopup,
     },
     {
       name: "✨ AI Summary",
-      handler: () => AISUmmary(),
+      handler: AISUmmary,
     },
     {
       name: "🃏 Create Flashcards",
-      handler: () => flashcardMode(),
+      handler: flashcardMode,
     },
     {
       name: "🗑️ Delete This Page",
       children: [
         {
           name: "❓ Confirm",
-          handler: () => deletePage(),
+          handler: deletePage,
         },
       ],
     },
@@ -131,13 +131,13 @@ async function defineCmd() {
       children: [
         {
           name: "❓ Confirm",
-          handler: () => forceUpdateNotes(),
+          handler: forceUpdateNotes,
         },
       ],
     },
     {
       name: "📇 Practice Flashcards",
-      handler: () => showFlashcards(),
+      handler: showFlashcards,
     },
     {
       name: "📅 Open Calendar",
@@ -145,11 +145,11 @@ async function defineCmd() {
     },
     // {
     //   name: "Open Sticky Note",
-    //   handler: () => showStickyNotes(),
+    //   handler: showStickyNotes,
     // },
     {
       name: "✈️ Import Sticky Note",
-      handler: () => insertStickyNote(),
+      handler: insertStickyNote,
     },
     {
       name: "✈️ Insert Calendar Event",
@@ -173,7 +173,7 @@ async function defineCmd() {
         return {
           name: e.name
             .split("_")
-            .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
+            .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
             .join(" "),
           handler: () => changeTheme(e.name),
         };
@@ -185,21 +185,18 @@ async function defineCmd() {
         {
           name: "🌗 Split",
           handler: () => {
-            localStorage.setItem("/viewPref", "split");
             editingWindow("split");
           },
         },
         {
           name: "🌑 Read",
           handler: () => {
-            localStorage.setItem("/viewPref", "read");
             editingWindow("read");
           },
         },
         {
           name: "🌕 Write",
           handler: () => {
-            localStorage.setItem("/viewPref", "write");
             editingWindow("write");
           },
         },
@@ -207,11 +204,11 @@ async function defineCmd() {
     },
     {
       name: "🧠 Toggle Wikipedia Search",
-      handler: () => toggleWikiSearch(),
+      handler: toggleWikiSearch,
     },
     {
       name: "🌴 Toggle List",
-      handler: () => toggleList(),
+      handler: toggleList,
     },
   ];
 

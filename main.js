@@ -32,6 +32,7 @@ import {
 import setupToolbar from "./frontend_modules/setup_toolbar.js";
 import setupList from "./frontend_modules/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
+import { showSearch } from "./frontend_modules/search.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -400,6 +401,9 @@ window.addEventListener(
       } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
         e.preventDefault();
         cycleViewPreferences();
+      } else if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
+        e.preventDefault()
+        showSearch();
       }
     });
 

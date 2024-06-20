@@ -106,7 +106,7 @@ function setupToolbar() {
             return {
                 text: e.name
                 .split("_")
-                .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
+                .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
                 .join(" "),
                 click: () => {
                   changeTheme(e.name);
@@ -192,7 +192,7 @@ function setupToolbar() {
           this.classList.add("rios");
           this.addEventListener(
             "click",
-            function () {
+            () => {
               forceUpdateNotes();
               delContextMenu();
             },
