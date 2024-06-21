@@ -989,7 +989,8 @@ blockquote:hover {
   color: var(--main-accent) !important;
 }
 
-#popupModal {
+#popupModal,
+#paletteContainer {
   z-index: 2;
   position: fixed;
   top: 0%;
@@ -1002,6 +1003,10 @@ blockquote:hover {
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
   animation: fade 0.5s;
+}
+
+#paletteContainer {
+  z-index: 3;
 }
 
 #bookDiffPopup {
@@ -1732,9 +1737,9 @@ blockquote:hover {
 .powerSearch .results {
   max-height: 40vh;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
-.modal-container,
 .powerSearch {
   position: relative;
   margin: auto;
@@ -1742,17 +1747,16 @@ blockquote:hover {
   border-radius: 6px;
   display: flex;
   flex-direction: column;
-  width: 640px;
+  width: 100vw;
+  max-width: 640px;
   background: var(--notes-background);
   box-shadow: var(--floating-bs);
   overflow: hidden;
-  top: 2vh;
   animation: bounce-in 0.25s ease;
   font-family: monospace !important;
   color: var(--notes-color);
 }
 
-#CommandPal .search,
 .powerSearch input {
   padding: 1.25em;
   flex-grow: 1;
@@ -1768,11 +1772,6 @@ blockquote:hover {
   font-feature-settings: "liga" 1, "calt" 1;
 }
 
-#CommandPal .search::placeholder {
-  opacity: 0.5;
-}
-
-#CommandPal .item,
 .powerSearch .item {
   padding: 0.75em 1em;
   display: flex;
@@ -1784,9 +1783,11 @@ blockquote:hover {
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
   font-size: 14px;
+  transition: .25s;
 }
 
 .powerSearch .item {
+  min-height: 40px;
   justify-content: space-between;
 }
 
@@ -1796,14 +1797,15 @@ blockquote:hover {
   margin-left: auto;
 }
 
-#CommandPal .item.selected, #CommandPal .item:hover, .powerSearch .item:hover, .powerSearch .item.selected {
+.powerSearch .item:hover,
+.powerSearch .item.selected {
   cursor: pointer;
   background-color: var(--code);
   outline: none;
-}
-
-#CommandPal .mobile-button {
-  display: none;
+  padding-left: 25px;
+  border-left-style: solid;
+  border-width: 4px;
+  border-color: var(--main-accent);
 }
 
 /* https://codepen.io/oltika/pen/WGLZyb */
@@ -1824,6 +1826,20 @@ blockquote:hover {
 
 .grid .filter {
   margin-bottom: auto;
+}
+
+.leftFade {
+  background: linear-gradient(to left, var(--notes-color), rgba(0,0,0,0));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rightFade {
+  background: linear-gradient(to right, var(--notes-color), rgba(0,0,0,0));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .topOverflow {

@@ -28,7 +28,7 @@ function getDiff(one, other) {
 }
 
 function showBookDiffPopup() {
-  const [ bookDiffContent, modalContainer] = createPopupWindow();
+  const bookDiffContent = createPopupWindow();
   const timesToRepeat = Math.max(note.dbSave.length, note.content.length);
   const missingPage =
     timesToRepeat === note.dbSave.length ? note.dbSave : note.content;
@@ -71,5 +71,4 @@ function showBookDiffPopup() {
     }
     bookDiffContent.appendChild(pageDiff);
   }
-  mainContainer.after(modalContainer);
 }

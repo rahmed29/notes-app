@@ -299,10 +299,9 @@ function removeImageToolTip(e) {
 
 // tooltip for [[references]] to notebooks
 async function referToolTip() {
-  try {
+  if (lastDynamicTippy) {
     lastDynamicTippy.destroy();
-  } catch (err) {
-    // console.log(err);
+    lastDynamicTippy = null;
   }
   delContextMenu();
   lastDynamicTippy = tippy([this], {

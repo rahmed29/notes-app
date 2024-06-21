@@ -20,16 +20,28 @@ export {
   pastEvents,
   datePicker,
   calendar,
+  deleteCalendar,
 };
 
 // instance of fullcalendar, air date picker and command pal for later destruction
-let calendar;
-let datePicker;
+let calendar = null;
+let datePicker = null;
 
 let taskTippys = [];
 // active and completed events for todo
 let events;
 let pastEvents;
+
+function deleteCalendar() {
+  if (calendar) {
+    calendar.destroy();
+    calendar = null;
+  }
+  if (datePicker) {
+    datePicker.destroy();
+    datePicker = null;
+  }
+}
 
 function clearTaskTippys() {
   taskTippys = taskTippys.reduce((arr, e) => {
@@ -47,9 +59,7 @@ function showTodo(hereForInsertion) {
     return;
   }
 
-  const [ bookDiffContent, modalContainer ] =
-    createPopupWindow();
-  mainContainer.after(modalContainer);
+  const bookDiffContent = createPopupWindow();
 
   const todoContainer = document.createElement("div");
   todoContainer.id = "todoContainer";
@@ -68,8 +78,8 @@ function showTodo(hereForInsertion) {
         closePopupWindow();
       }
     : (info) => {
-        try {
-          const evInList = document.getElementById(`task__${info.event.id}`);
+        const evInList = document.getElementById(`task__${info.event.id}`);
+        if (evInList) {
           evInList.addEventListener(
             "animationend",
             () => evInList.classList.remove("taskFlashes"),
@@ -79,7 +89,7 @@ function showTodo(hereForInsertion) {
           );
           evInList.classList.add("taskFlashes");
           evInList.scrollIntoView();
-        } catch (err) {}
+        }
       };
 
   calendar = new Calendar(calendarContainer, {
@@ -262,7 +272,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
       const date1 = a.start;
       const date2 = b.start;
       if (date1 < date2) {
-        return;
+        return 1;
       }
       if (date1 > date1) {
         return -1;

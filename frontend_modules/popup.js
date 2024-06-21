@@ -1,15 +1,18 @@
-import { editor } from "../main";
-import { clearTaskTippys, datePicker, calendar } from "./calendar";
+import { editor, mainContainer } from "../main";
+import { clearTaskTippys, deleteCalendar } from "./calendar";
 import { delContextMenu } from "./context_menu";
 import { hideStickyNotes } from "./sticky_note";
-import { editCardsRejection, setRejectToNull } from "./flashcards";
-import { resetFinder } from "./search";
+import { setRejectToNull } from "./flashcards";
+import { attemptRemoval } from "./dom_utils";
 
 export { createPopupWindow, closePopupWindow };
 
-function createPopupWindow() {
+function createPopupWindow(noAnimation) {
   closePopupWindow();
   const modalContainer = document.createElement("div");
+  if (noAnimation) {
+    modalContainer.style.animation = "none";
+  }
   modalContainer.id = "popupModal";
   modalContainer.addEventListener("click", (e) => {
     closePopupWindow();
@@ -38,32 +41,14 @@ function createPopupWindow() {
     once: true,
   });
   editor.session.on("change", closePopupWindow);
-  return [ bookDiffContent, modalContainer ];
+  mainContainer.after(modalContainer)
+  return bookDiffContent;
 }
 
 function closePopupWindow() {
-  try {
-    document.getElementById("popupModal").remove();
-  } catch (err) {
-    // console.log(err);
-  }
-  try {
-    calendar.destroy();
-  } catch (err) {
-    // console.log(err);
-  }
-  try {
-    datePicker.destroy();
-  } catch (err) {
-    // console.log(err);
-  }
-  resetFinder()
-  try {
-    editCardsRejection(new Error("Exited"));
-    setRejectToNull();
-  } catch (err) {
-    // console.log(err);
-  }
+  attemptRemoval([document.getElementById("popupModal")])
+  deleteCalendar();
+  setRejectToNull();
   clearTaskTippys();
   editor.session.off("change", closePopupWindow);
 }

@@ -344,6 +344,7 @@ function listContextMenu(e, toolBar) {
     this.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.contentEditable = false;
         if (hasTyped) {
           switch (JSON.parse(this.getAttribute("data-props"))[0]) {

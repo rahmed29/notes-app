@@ -32,7 +32,8 @@ import {
 import setupToolbar from "./frontend_modules/setup_toolbar.js";
 import setupList from "./frontend_modules/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
-import { showSearch } from "./frontend_modules/search.js";
+import { showSearch } from "./frontend_modules/ctrl_f.js";
+import { showPal } from "./frontend_modules/cmd_pal.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -405,6 +406,10 @@ window.addEventListener(
         e.preventDefault()
         showSearch();
       }
+      else if (e.ctrlKey && e.key === " ") {
+        e.preventDefault()
+        showPal();
+      }
     });
 
     // main note area
@@ -416,7 +421,7 @@ window.addEventListener(
     // open command pal
     document.getElementById("openCommandPal").addEventListener("click", () => {
       delContextMenu();
-      document.getElementsByClassName("mobile-button")[0].click();
+      showPal();
     });
 
     // tabs

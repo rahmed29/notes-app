@@ -1,6 +1,14 @@
 import { mainContainer } from "../main";
 
-export { loading, stopLoading }
+export { loading, stopLoading, attemptRemoval }
+
+function attemptRemoval(eles) {
+  eles.forEach((ele) => {
+    try {
+      ele.remove();
+    } catch (err) {}
+  })
+}
 
 function loading() {
   const loadingScreen = document.createElement("div");

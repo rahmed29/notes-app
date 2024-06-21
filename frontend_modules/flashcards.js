@@ -20,23 +20,27 @@ export {
 let editCardsRejection = null;
 
 function setRejectToNull() {
-  editCardsRejection = null;
+  if (editCardsRejection) {
+    editCardsRejection(new Error("Exited"));
+    editCardsRejection = null;
+  }
 }
 
 async function AIFlashcards() {
   let generatedCards = [];
-  let response =
-    ((await chatGPT(
+  let response = (
+    (await chatGPT(
       note.content[note.pgN],
       // this works well enough idk
       "Create flashcards from this note. Provide me with a string where cards are separated by 3 colons (:::) and within those cards, the term and definition are separated by 3 plus signs (+++)"
-    )) || "").split(":::");
+    )) || ""
+  ).split(":::");
   let count = 1;
   if (Array.isArray(response) && response.length > 0) {
     response.forEach((card) => {
       card = card.split("+++");
-      const front = card[0]
-      const back = card[1]
+      const front = card[0];
+      const back = card[1];
       if (front && back) {
         generatedCards.push({
           subject: note.name,
@@ -114,9 +118,9 @@ let fcLastNode = null;
 
 function fcId(e) {
   if (e.target.id !== "fill" && e.target.id !== "notesPreviewArea") {
-    try {
+    if (fcLastNode) {
       fcLastNode.classList.remove("fcSelection");
-    } catch (err) {}
+    }
     e.target.classList.add("fcSelection");
     fcLastNode = e.target;
   }
@@ -237,11 +241,7 @@ function leaveFlashcardMode() {
 }
 
 function showFlashcards(noAnimation) {
-  const [ bookDiffContent, modalContainer ] =
-    createPopupWindow();
-  if (noAnimation != null && noAnimation) {
-    modalContainer.style.animation = "none";
-  }
+  const bookDiffContent = createPopupWindow(noAnimation);
   const organized = flashcards.reduce(
     (arr2d, e) => {
       if (e.subject !== note.name) {
@@ -402,8 +402,6 @@ function showFlashcards(noAnimation) {
     wrapper.classList.add("fcGroup");
     bookDiffContent.appendChild(wrapper);
   });
-
-  mainContainer.after(modalContainer);
 }
 
 function shuffle(array) {
@@ -442,17 +440,12 @@ async function editCards(cardArr) {
   }
 }
 
-function editCardsHelper(cardArr, yesAnimation) {
+function editCardsHelper(cardArr) {
   if (cardArr.length === 0) {
     return;
   }
 
-  const [ bookDiffContent, modalContainer ] =
-    createPopupWindow();
-  if (!yesAnimation) {
-    modalContainer.style.animation = "none";
-  }
-  mainContainer.after(modalContainer);
+  const bookDiffContent = createPopupWindow(true);
 
   const h2 = document.createElement("h2");
   h2.innerText = "Flashcard Editor";
@@ -533,10 +526,7 @@ function editCardsHelper(cardArr, yesAnimation) {
 }
 
 function study(cardArr, allCards) {
-  const [ bookDiffContent, modalContainer ] =
-    createPopupWindow();
-  modalContainer.style.animation = "none";
-  mainContainer.after(modalContainer);
+  const bookDiffContent = createPopupWindow(true);
 
   if (!cardArr[0]) {
     showFlashcards(true);

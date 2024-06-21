@@ -1,4 +1,3 @@
-import "command-pal";
 import themes from "./themes/index.js";
 import {
   note,
@@ -22,23 +21,59 @@ import { showTodo } from "./calendar.js";
 import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
-import { showSearch } from "./search.js";
+import { createPalette, closePalette } from "./new_cmd.js";
 
-export { defineCmd };
+export { showPal, defineCmd };
 
-let c;
+let commands;
+
+function showPal() {
+  function render(arr, results) {
+    while (results.firstChild) {
+      results.firstChild.remove();
+    }
+    arr.forEach((cmd) => {
+      const item = document.createElement("div");
+      if (cmd.children) {
+        item.addEventListener("click", () => {
+          createPalette(
+            "Search for commands...",
+            (results, text) => {
+              render(cmd.children.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results)
+            },
+            (results, text) => {
+              render(cmd.children, results)
+            }
+          );
+        })
+      } else {
+        item.addEventListener("click", () => {
+          cmd.handler();
+          closePalette();
+        })
+      }
+      item.classList.add("item");
+      item.innerText = cmd.name;
+      results.appendChild(item);
+    });
+  }
+
+  createPalette(
+    "Search for commands...",
+    (results, text) => {
+      render(commands.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results)
+    },
+    (results, text) => {
+      render(commands, results)
+    }
+  );
+}
 
 // Re-Instantiate the command palette
 async function defineCmd() {
-  try {
-    c.destroy();
-  } catch (err) {
-    // console.log(err);
-  }
-
   const cmdPgs = note.content.map((e, i) => {
     return {
-      name: `📄 ${removeMD(e.split("\n")[0])}`,
+      name: `${removeMD(e.split("\n")[0])}`,
       handler: () => jumpToDesiredPage(i),
     };
   });
@@ -46,14 +81,14 @@ async function defineCmd() {
   const family = await getFamily(note.name);
   const json = await getList();
   const cmdList = json.map((e) => ({
-    name: `📓 ${e.name}`,
+    name: `${e.name}`,
     handler: () => switchNote(e.name),
   }));
 
   const cmdNest = json.reduce((arr, e) => {
     if (e.name !== note.name && !family.includes(e.name)) {
       arr.push({
-        name: `📓 ${e.name}`,
+        name: `${e.name}`,
         handler: () => nestNote(note.name, e.name),
       });
     }
@@ -62,85 +97,85 @@ async function defineCmd() {
 
   const cmdRel = (await getAnyBookContent(note.name, "parents")).map(
     (parent) => ({
-      name: `📓 ${parent}`,
+      name: `${parent}`,
       handler: () => relinquishNote(note.name, parent),
     })
   );
 
-  let commands = [
+  commands = [
     {
-      name: "📃 New Page",
+      name: "New Page",
       handler: () => jumpToDesiredPage(note.content.length),
     },
     {
-      name: "📄 Go to Page",
+      name: "Go to Page",
       children: cmdPgs,
     },
     {
-      name: "📖 Open Notebook",
+      name: "Open Notebook",
       children: cmdList,
     },
     {
-      name: "💾 Save Notebook",
+      name: "Save Notebook",
       handler: () => saveNoteBookToDb(note.name),
     },
     {
-      name: "🖼️ Insert Image",
+      name: "Insert Image",
       handler: () => document.getElementById("getFile1").click(),
     },
     {
-      name: "📂 Nest Notebook",
+      name: "Nest Notebook",
       children: cmdNest,
     },
     {
-      name: "🫗 Relinquish Notebook",
+      name: "Relinquish Notebook",
       children: cmdRel,
     },
     {
-      name: "🔍 Compare Local Notes to DB",
+      name: "Compare Local Notes to DB",
       handler: showBookDiffPopup,
     },
     {
-      name: "✨ AI Summary",
+      name: "AI Summary",
       handler: AISUmmary,
     },
     {
-      name: "🃏 Create Flashcards",
+      name: "Create Flashcards",
       handler: flashcardMode,
     },
     {
-      name: "🗑️ Delete This Page",
+      name: "Delete This Page",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: deletePage,
         },
       ],
     },
     {
-      name: "🗑️ Delete Notebook",
+      name: "Delete Notebook",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: () => deleteNoteBookFromDb(note.name),
         },
       ],
     },
     {
-      name: "🪠 Force Update Notebook",
+      name: "Force Update Notebook",
       children: [
         {
-          name: "❓ Confirm",
+          name: "Confirm",
           handler: forceUpdateNotes,
         },
       ],
     },
     {
-      name: "📇 Practice Flashcards",
+      name: "Practice Flashcards",
       handler: showFlashcards,
     },
     {
-      name: "📅 Open Calendar",
+      name: "Open Calendar",
       handler: () => showTodo(false),
     },
     // {
@@ -148,15 +183,15 @@ async function defineCmd() {
     //   handler: showStickyNotes,
     // },
     {
-      name: "✈️ Import Sticky Note",
+      name: "Import Sticky Note",
       handler: insertStickyNote,
     },
     {
-      name: "✈️ Insert Calendar Event",
+      name: "Insert Calendar Event",
       handler: () => showTodo(true),
     },
     {
-      name: "⌨️ Toggle Vim Mode",
+      name: "Toggle Vim Mode",
       handler: () => {
         if (notesTextArea.hasAttribute("data-vim")) {
           editor.setKeyboardHandler("ace/keyboard/vscode");
@@ -168,7 +203,7 @@ async function defineCmd() {
       },
     },
     {
-      name: "🌃 Change Theme",
+      name: "Change Theme",
       children: themes.map((e) => {
         return {
           name: e.name
@@ -180,22 +215,22 @@ async function defineCmd() {
       }),
     },
     {
-      name: "👁️ Switch View",
+      name: "Switch View",
       children: [
         {
-          name: "🌗 Split",
+          name: "Split",
           handler: () => {
             editingWindow("split");
           },
         },
         {
-          name: "🌑 Read",
+          name: "Read",
           handler: () => {
             editingWindow("read");
           },
         },
         {
-          name: "🌕 Write",
+          name: "Write",
           handler: () => {
             editingWindow("write");
           },
@@ -203,19 +238,12 @@ async function defineCmd() {
       ],
     },
     {
-      name: "🧠 Toggle Wikipedia Search",
+      name: "Toggle Wikipedia Search",
       handler: toggleWikiSearch,
     },
     {
-      name: "🌴 Toggle List",
+      name: "Toggle List",
       handler: toggleList,
     },
   ];
-
-  c = new CommandPal({
-    hotkey: "ctrl+space",
-    placeholder: "Search...",
-    commands: commands,
-  });
-  c.start();
 }
