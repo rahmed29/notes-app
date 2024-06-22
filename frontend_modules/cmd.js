@@ -44,15 +44,19 @@ function closePalette() {
   document.removeEventListener("keydown", handleKeys);
 }
 
-// little confusing. This is to have a command palette that is extremely fine tuneable, since you can directly modify it's dom. The function creates the palette, and takes in:
 // 1. placeholder text
-// 2. a search function handler. This search function handler gets a couple params passed into: the results section of the palette & the search term
+// 2. a search function handler. This search function handler gets a couple params passed into it: the results section of the palette & the search term
 // 3. an optional function to run when the palette is created
 function createPalette(placeholder, searchHandler, init) {
   function resetFinder() {
-    finderNode = results.firstChild;
-    if (finderNode) {
-      finderNode.classList.add("selected");
+    if (!results.firstChild) {
+      results.innerHTML = "&nbsp;<br>&nbsp;&nbsp;No results<br>&nbsp;";
+      finderNode = null;
+    } else {
+      finderNode = results.firstChild;
+      if (finderNode) {
+        finderNode.classList.add("selected");
+      }
     }
   }
 
@@ -78,10 +82,7 @@ function createPalette(placeholder, searchHandler, init) {
   searchBar.placeholder = placeholder;
   searchBar.addEventListener("input", function () {
     searchHandler(results, this.value);
-    finderNode = results.firstChild;
-    if (finderNode) {
-      finderNode.classList.add("selected");
-    }
+    resetFinder();
   });
   document.addEventListener("keydown", handleKeys);
 

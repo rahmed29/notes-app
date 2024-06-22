@@ -1,7 +1,7 @@
 import DOMPurify from "dompurify";
 import { note } from "./note_utils";
 import { jumpToDesiredPage } from "./dom_formatting";
-import { closePalette, createPalette } from "./new_cmd";
+import { closePalette, createPalette } from "./cmd";
 
 export { showSearch };
 

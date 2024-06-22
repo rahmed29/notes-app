@@ -1,48 +1,102 @@
-import { savedWS, switchNote, library, note } from "./note_utils";
+import { savedWS, switchNote, library, note, setCurrNote } from "./note_utils";
 import tippy from "tippy.js";
-import { list } from "../main";
+import { list, tabs } from "../main";
 import { showList, hideList } from "./list_utils";
 import { delContextMenu } from "./context_menu";
 
-export { createTab, switchTab, createWorkspace, closeTab };
+export { createTab, switchTab, createWorkspace, closeTab, editTabText };
 
-let tabTippys = new Map();
+const tabMap = new Map();
 
-function closeTab(e) {
+async function closeTab(name, refresh) {
+  try {
+    await tabMap.get(name).close(refresh)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+function editTabText(name, text) {
+  try {
+    tabMap.get(name).editText(text)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+function closeTabHandler(e) {
   delContextMenu();
   const compare = this.className.includes("tabExit") ? 1 : e.button;
   if (compare === 1) {
     e.stopPropagation();
     e.preventDefault();
-    const temp = this.getAttribute("data-bookname");
-    library.delete(temp);
-    tabTippys.get(temp).destroy();
-    tabTippys.delete(temp);
-    savedWS.delete(temp);
+    closeTab(this.getAttribute("data-bookname"))
+  }
+}
+
+class Tab {
+  constructor(name, tabRef, tippy) {
+    this.name = name;
+    this.tabRef = tabRef;
+    this.tippy = tippy;
+  }
+
+  async close(refresh) {
+    savedWS.delete(this.name);
     localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
-    this.removeEventListener("click", switchTab);
-    this.removeEventListener("mouseup", closeTab);
-    if (this.className.includes("tabExit")) {
-      this.parentElement.remove();
-    } else {
-      this.remove();
+    tabMap.delete(this.name)
+    const temp = this.name;
+    const pg = library.get(this.name) ? library.get(this.name).pgN : 0
+    library.delete(this.name);
+
+    // remove DOM stuff
+    this.tippy.destroy();
+    this.tabRef.removeEventListener("click", switchTab);
+    this.tabRef.removeEventListener("mouseup", closeTabHandler);
+    this.tabRef.children[1].removeEventListener("click", closeTabHandler);
+    this.tabRef.remove();
+
+    // finish up
+    if (!savedWS.size && !refresh) {
+      await switchNote("home");
+    } else if (note && this.name === note.name && !refresh) {
+      await switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
     }
-    if (!savedWS.size) {
-      switchNote("home");
-    } else if (note && temp === note.name) {
-      switchNote(Array.from(savedWS)[Array.from(savedWS).length - 1]);
+
+    // reload tab
+    if (refresh) {
+      setCurrNote(null)
+      await switchNote(temp, pg)
     }
+  }
+
+  editText(text) {
+    this.tabRef.firstChild.innerText = text;
+  }
+
+  select() {
+    this.tabRef.classList.add("openTab")
+    tabMap.forEach((value, key) => {
+      if (key != this.name) {
+        value.tabRef.classList.remove("openTab");
+      }
+    })
   }
 }
 
 // create a tab element
 function createTab(txt, shouldOpen) {
+  if (tabMap.get(txt)) {
+    tabMap.get(txt).select()
+    return;
+  }
+
   function addCloseTab(ele, isExitButton) {
     if (isExitButton) {
-      ele.addEventListener("click", closeTab);
+      ele.addEventListener("click", closeTabHandler);
     } else {
       ele.addEventListener("click", switchTab);
-      ele.addEventListener("mouseup", closeTab);
+      ele.addEventListener("mouseup", closeTabHandler);
     }
   }
 
@@ -66,16 +120,24 @@ function createTab(txt, shouldOpen) {
   div.id = `book__${txt}`;
   div.setAttribute("data-bookname", txt);
   addCloseTab(div, false);
-  tabTippys.set(
+  tabMap.set(
     txt,
-    tippy([div], {
-      theme: "dark",
-      animation: "shift-toward-subtle",
-      placement: "bottom-end",
-      content: txt,
-      arrow: false,
-    })[0]
+    new Tab(
+      txt,
+      div,
+      tippy([div], {
+        theme: "dark",
+        animation: "shift-toward-subtle",
+        placement: "bottom-end",
+        content: txt,
+        arrow: false,
+      })[0]
+    )
   );
+
+  if (shouldOpen) {
+    tabMap.get(txt).select()
+  }
   tabs.prepend(div);
 }
 
@@ -90,7 +152,6 @@ function createWorkspace() {
   }
 }
 
-// for tabs
 function switchTab() {
   if (
     this.className.includes("reference") &&

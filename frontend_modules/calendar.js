@@ -9,7 +9,7 @@ import tippy from "tippy.js";
 import { contextMenu, delContextMenu } from "./context_menu";
 import { formatHDate } from "./text_formatting";
 import { note, reservedNames } from "./note_utils";
-import { mainContainer, editor } from "../main";
+import { editor } from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
 
 export {

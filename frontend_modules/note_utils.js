@@ -1,9 +1,9 @@
-import { listInMemory, search, updateList } from "./list_utils";
+import { listInMemory, updateList } from "./list_utils";
 import { closePopupWindow } from "./popup";
 import { editor } from "../main";
 import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
-import { defineCmd } from "./cmd_pal";
-import { createTab, switchTab, closeTab } from "./tabs";
+import { defineCmd } from "./ctrl_space";
+import { closeTab, createTab } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
 import { filterFlashcards } from "./flashcards";
@@ -241,11 +241,6 @@ async function switchNote(noteName, page) {
     notyf.error("Something went wrong. Try again in a second");
     return;
   }
-  try {
-    document.getElementById(`book__${note.name}`).classList.remove("openTab");
-  } catch (err) {
-    // console.log(err);
-  }
   setLastNote(note);
   setCurrNote({});
   note.name = noteName.replaceAll("/", "");
@@ -255,7 +250,7 @@ async function switchNote(noteName, page) {
     : JSON.parse(localStorage.getItem(noteName)) || data.content;
   note.pgN = page < note.content.length ? page : note.content.length - 1;
   note.password = note.isEncrypted ? data.password : null;
-  note.dbSave = data.dbSave || data.content;
+  note.dbSave = data.dbSave || [...data.content];
   note.children = data.children;
   note.parents = data.parents;
   note.family = await getFamily(noteName, data);
@@ -270,11 +265,7 @@ async function switchNote(noteName, page) {
     note.pgN = 0;
     note.content = getWrittenPages(note.content);
   }
-  try {
-    document.getElementById(`book__${note.name}`).classList.add("openTab");
-  } catch (err) {
-    createTab(note.name, true);
-  }
+  createTab(note.name, true);
   if (reservedNames.some((e) => e.data.name === note.name)) {
     toolBar.classList.add("homeToolBar");
     note.readOnly = true;
@@ -295,8 +286,7 @@ async function switchNote(noteName, page) {
 }
 
 // a small wrapper function that filters an array with the given logic (or compares to an empty string by default), but won't return an empty array
-function getWrittenPages(arr, logic = (str) => str !== "", defaultValue) {
-  defaultValue = defaultValue == null ? "" : defaultValue;
+function getWrittenPages(arr, logic = (str) => str !== "", defaultValue="") {
   const response = arr.filter((e) => logic(e));
   if (!response.length) {
     response.push(defaultValue);
@@ -306,21 +296,8 @@ function getWrittenPages(arr, logic = (str) => str !== "", defaultValue) {
 
 async function forceUpdateNotes() {
   // temp
-  const name = note.name;
-  try {
-    const tabToClose = document.getElementById(`book__${note.name}`);
-    tabToClose.removeEventListener("click", switchTab);
-    tabToClose.removeEventListener("mouseup", closeTab);
-    tabToClose.children[1].removeEventListener("click", closeTab);
-    tabToClose.remove();
-  } catch (err) {
-    console.log(err);
-  }
-  const pg = note.pgN;
-  setCurrNote(null);
-  localStorage.removeItem(name);
-  library.delete(name);
-  switchNote(name, pg);
+  localStorage.removeItem(note.name);
+  await closeTab(note.name, true)
   notyf.success("Notes were pulled from database");
 }
 
@@ -334,7 +311,7 @@ function deletePage() {
   }
 }
 
-async function saveNoteBookToDb(noteName, data) {
+async function saveNoteBookToDb(noteName) {
   if (
     !validNoteName.test(noteName) ||
     reservedNames.some((e) => e.data.name === noteName)
@@ -351,6 +328,10 @@ async function saveNoteBookToDb(noteName, data) {
           newContent.push(obj.content[i]);
           newSessions.push(obj.aceSessions[i]);
         }
+      }
+
+      if (!newContent.length) {
+        newContent.push("")
       }
 
       obj.content = newContent;
@@ -389,7 +370,7 @@ async function saveNoteBookToDb(noteName, data) {
         }
         desiredNote.saved = true;
         desiredNote.timeOfSave = new Date().toLocaleString();
-        syncStatus(desiredNote.dbSave);
+        syncStatus();
       } else {
         desiredNote.dbSave = [...desiredNote.content];
         desiredNote.saved = true;
@@ -438,18 +419,11 @@ async function deleteNoteBookFromDb(noteName) {
           // console.log(err);
         }
       });
-
-      noteinMem.dbSave = [];
-      noteinMem.saved = false;
-      noteinMem.children = [];
-      noteinMem.parents = [];
-      noteinMem.family = [];
-      noteinMem.isEncrypted = false;
-      noteinMem.password = null;
     }
 
+    closeTab(noteName)
     filterFlashcards(noteName);
-    syncStatus(note.dbSave);
+    syncStatus();
     updateList();
     defineCmd();
   } else {
@@ -464,7 +438,7 @@ async function copyBook(newName, bookToCopy) {
       notyf.error("Encrypted notebooks can't be copied");
       return;
     }
-    const content = await getAnyBookContent(bookToCopy, "content");
+    const content = await getAnyBookContent(bookToCopy, "content") || [""];
     const save = await fetch("/api/save/notebooks/", {
       method: "PUT",
       headers: {
@@ -478,11 +452,8 @@ async function copyBook(newName, bookToCopy) {
     });
     if (save.ok) {
       localStorage.setItem(newName, JSON.stringify(content));
-      if (library.get(newName)) {
-        library.get(newName).content = content;
-      }
       updateList();
-      switchNote(newName, 0);
+      closeTab(newName, true)
     } else {
       notyf.error("An error occurred when saving a notebook");
     }

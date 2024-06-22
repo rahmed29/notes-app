@@ -15,10 +15,10 @@ import {
 import morphdom from "morphdom";
 import { format } from "./text_formatting";
 import { contextMenu, delContextMenu } from "./context_menu";
-import { switchTab } from "./tabs";
+import { switchTab, editTabText } from "./tabs";
 import { showPagePreview, scrollCM } from "./list_utils";
 import { deleteImageFromDb } from "./images";
-import { defineCmd } from "./cmd_pal";
+import { defineCmd } from "./ctrl_space";
 import { currTheme } from "./theming";
 import tippy from "tippy.js";
 
@@ -112,7 +112,7 @@ async function updateAndSaveNotesLocally() {
   ) {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
-  syncStatus(note.dbSave);
+  syncStatus();
   previewHandlers = previewHandlers.reduce((arr, { element, type, listener }) => {
     element.removeEventListener(type, listener);
     return arr;
@@ -138,54 +138,37 @@ async function updateAndSaveNotesLocally() {
     .padStart(5, "0");
 }
 
-function syncStatus(dbSave) {
+function syncStatus() {
   if (reservedNames.some((e) => e.data.name === note.name)) {
-    try {
-      document.getElementById(`book__${note.name}`).firstChild.innerText =
-        note.name;
-      document.title = note.name;
-      areNotesSavedIcon.style.filter = "grayscale(1)";
-    } catch (err) {
-      // console.log(err);
-    }
+    // note name reserved
+    editTabText(note.name, note.name)
+    areNotesSavedIcon.style.filter = "grayscale(1)";
+    document.title = note.name;
   } else if (!note.saved) {
+    // note not saved
+    editTabText(note.name, `* ${note.name}`)
     synced.setContent(`Notes are not saved`);
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
     document.title = `* ${note.name}`;
-    try {
-      document.getElementById(
-        `book__${note.name}`
-      ).firstChild.innerText = `* ${note.name}`;
-    } catch (err) {
-      // console.log(err);
-    }
   } else {
+    // note is saved
     let writtenPages = getWrittenPages(note.content);
-    if (JSON.stringify(writtenPages) === JSON.stringify(dbSave)) {
-      areNotesSavedIcon.style.filter = "none";
+    if (JSON.stringify(writtenPages) === JSON.stringify(note.dbSave)) {
+      // content is synced
+      editTabText(note.name, note.name)
       synced.setContent(`Notes were saved at ${note.timeOfSave}`);
+      areNotesSavedIcon.style.filter = "none";
       document.title = note.name;
-      try {
-        document.getElementById(`book__${note.name}`).firstChild.innerText =
-          note.name;
-      } catch (err) {
-        // console.log(err);
-      }
     } else {
-      areNotesSavedIcon.style.filter = "grayscale(1)";
+      // content is not in sync with db
+      editTabText(note.name, `* ${note.name}`)
       synced.setContent(
         `Notes shown differ from saved notes by ${Math.abs(
-          JSON.stringify(note.content).length - JSON.stringify(dbSave).length
+          JSON.stringify(note.content).length - JSON.stringify(note.dbSave).length
         )} chars`
       );
+      areNotesSavedIcon.style.filter = "grayscale(1)";
       document.title = `* ${note.name}`;
-      try {
-        document.getElementById(
-          `book__${note.name}`
-        ).firstChild.innerText = `* ${note.name}`;
-      } catch (err) {
-        // console.log(err);
-      }
     }
   }
 }

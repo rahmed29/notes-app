@@ -2,10 +2,10 @@ import {
   getAnyBookContent,
   library,
   reservedNames,
-  switchNote,
 } from "./note_utils";
 import { updateList } from "./list_utils";
-import { defineCmd } from "./cmd_pal";
+import { defineCmd } from "./ctrl_space";
+import { closeTab } from "./tabs";
 
 export { getFamily, nestNote, relinquishNote, createChild };
 
@@ -71,8 +71,9 @@ async function createChild(parent, child) {
       }),
     });
     if (saveStatus.ok) {
-      await nestNote(child, parent);
-      switchNote(child, 0);
+      localStorage.setItem(child, JSON.stringify([""]));
+      await closeTab(child, true)
+      nestNote(child, parent);
     } else {
       notyf.error("An error occurred when saving a notebook");
     }

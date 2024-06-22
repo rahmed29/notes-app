@@ -93,7 +93,7 @@ function dropWrapper(e) {
 
 async function createList() {
   nestedBooks = new Set();
-  listHandlers = listHandlers.reduce((arr, { element, type, listener}) => {
+  listHandlers = listHandlers.reduce((arr, { element, type, listener }) => {
     element.removeEventListener(type, listener);
     return arr;
   }, []);
@@ -155,6 +155,7 @@ function nestedList(obj, allNotes) {
   folder.setAttribute("data-searchValue", `${obj.name}`);
   folder.classList.add("item");
   const folderName = document.createElement("div");
+  folderName.setAttribute("data-bookname", obj.name);
   folderName.classList.add("folderName");
   folderName.addEventListener("contextmenu", listContextMenu);
   listHandlers.push({
@@ -230,7 +231,7 @@ function showImagePreview(e) {
 }
 
 function goToImagePreview() {
-  const occ = Object.entries(localStorage).reduce((str, [key , value]) => {
+  const occ = Object.entries(localStorage).reduce((str, [key, value]) => {
     if (JSON.stringify(value).includes(this.getAttribute("data-href"))) {
       str += `- :ref[${key}]\n`;
     }
@@ -320,42 +321,38 @@ var toggleList = () =>
   list.hasAttribute("data-shown") ? hideList() : showList();
 
 function listContextMenu(e, toolBar) {
-  function cmInput() {
-    const noteName = toolBar
-      ? note.name
-      : JSON.parse(this.getAttribute("data-props"))[1];
+  function cmInput(ele, noteName, placeholder, choice) {
     let hasTyped = false;
-    const storeHTML = this.innerHTML;
-    this.classList.add("currPage");
-    this.style.fontStyle = "italic";
-    this.innerText = `Enter ${
-      JSON.parse(this.getAttribute("data-props"))[0]
-    } name`;
-    this.contentEditable = true;
-    this.focus();
-    this.addEventListener(
+    const storeHTML = ele.innerHTML;
+    ele.classList.add("currPage");
+    ele.style.fontStyle = "italic";
+    ele.innerText = placeholder;
+    ele.contentEditable = true;
+    ele.focus();
+    ele.addEventListener(
       "beforeinput",
       function () {
         hasTyped = true;
-        this.innerText = "";
+        ele.innerText = "";
       },
       { once: true }
     );
-    this.addEventListener("keydown", function (e) {
+    ele.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopImmediatePropagation();
-        this.contentEditable = false;
+        e.stopPropagation();
+        ele.contentEditable = false;
         if (hasTyped) {
-          switch (JSON.parse(this.getAttribute("data-props"))[0]) {
-            case "book":
-              switchNote(this.innerText);
+          switch (choice) {
+            case "open":
+              switchNote(ele.innerText.replaceAll("\n", ""));
               break;
             case "copy":
-              copyBook(this.innerText, noteName);
+              copyBook(ele.innerText.replaceAll("\n", ""), noteName);
               break;
             case "child":
-              createChild(noteName, this.innerText);
+              createChild(noteName, ele.innerText.replaceAll("\n", ""));
           }
           delContextMenu();
         } else {
@@ -365,14 +362,14 @@ function listContextMenu(e, toolBar) {
         delContextMenu();
       }
     });
-    this.addEventListener(
+    ele.addEventListener(
       "blur",
       function () {
-        this.contentEditable = false;
-        this.innerHTML = storeHTML;
-        this.classList.remove("currPage");
-        this.style.fontStyle = "inherit";
-        this.innerText = "Open Notebook";
+        ele.contentEditable = false;
+        ele.innerHTML = storeHTML;
+        ele.classList.remove("currPage");
+        ele.style.fontStyle = "inherit";
+        ele.innerText = "Open Notebook";
       },
       { once: true }
     );
@@ -383,13 +380,14 @@ function listContextMenu(e, toolBar) {
     [
       toolBar
         ? {
-            attr: JSON.stringify(["book"]),
             text: "Open Notebook",
-            click: cmInput,
+            click: function () {
+              cmInput(this, note.name, "Enter a book name", "open");
+            },
             appearance: "ios",
           }
         : {
-            attr: this.innerText,
+            attr: this.getAttribute("data-bookname"),
             text: "Open Notebook",
             click: function () {
               switchNote(this.getAttribute("data-props"));
@@ -400,7 +398,7 @@ function listContextMenu(e, toolBar) {
       toolBar
         ? null
         : {
-            attr: toolBar ? "" : this.innerText,
+            attr: toolBar ? "" : this.getAttribute("data-bookname"),
             text: "Delete Notebook",
             click: function () {
               this.innerText = "Confirm";
@@ -419,7 +417,7 @@ function listContextMenu(e, toolBar) {
             appearance: "ios",
           },
       {
-        attr: toolBar ? "" : this.innerText,
+        attr: toolBar ? "" : this.getAttribute("data-bookname"),
         text: "Relinquish Notebook",
         click: async function () {
           const noteName = toolBar
@@ -445,7 +443,7 @@ function listContextMenu(e, toolBar) {
         appearance: "ios",
       },
       {
-        attr: toolBar ? "" : this.innerText,
+        attr: toolBar ? "" : this.getAttribute("data-bookname"),
         text: "Nest Notebook",
         click: async function (e) {
           const noteName = toolBar
@@ -474,19 +472,29 @@ function listContextMenu(e, toolBar) {
         appearance: "ios",
       },
       {
-        attr: toolBar
-          ? JSON.stringify(["child"])
-          : JSON.stringify(["child", this.innerText]),
+        attr: toolBar ? note.name : this.getAttribute("data-bookname"),
         text: "Create Child",
-        click: cmInput,
+        click: function () {
+          cmInput(
+            this,
+            this.getAttribute("data-props"),
+            "Enter a child name",
+            "child"
+          );
+        },
         appearance: "ios",
       },
       {
-        attr: toolBar
-          ? JSON.stringify(["copy"])
-          : JSON.stringify(["copy", this.innerText]),
+        attr: toolBar ? note.name : this.getAttribute("data-bookname"),
         text: "Copy Notebook",
-        click: cmInput,
+        click: function () {
+          cmInput(
+            this,
+            this.getAttribute("data-props"),
+            "Enter a copy name",
+            "copy"
+          );
+        },
         appearance: "ios",
       },
     ],

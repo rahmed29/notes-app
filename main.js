@@ -33,7 +33,7 @@ import setupToolbar from "./frontend_modules/setup_toolbar.js";
 import setupList from "./frontend_modules/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
 import { showSearch } from "./frontend_modules/ctrl_f.js";
-import { showPal } from "./frontend_modules/cmd_pal.js";
+import { showPal } from "./frontend_modules/ctrl_space.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -393,25 +393,6 @@ const dropzone = new Dropzone(document.body, {
 window.addEventListener(
   "load",
   async () => {
-    // Event listeners
-    // doc
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
-        e.preventDefault();
-        saveNoteBookToDb(note.name);
-      } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
-        e.preventDefault();
-        cycleViewPreferences();
-      } else if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
-        e.preventDefault()
-        showSearch();
-      }
-      else if (e.ctrlKey && e.key === " ") {
-        e.preventDefault()
-        showPal();
-      }
-    });
-
     // main note area
     notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
 
@@ -476,6 +457,24 @@ window.addEventListener(
         brDots.children[i].classList.add("currPage");
       });
     }
+    // Event listeners
+    // doc
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        saveNoteBookToDb(note.name);
+      } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
+        e.preventDefault();
+        cycleViewPreferences();
+      } else if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
+        e.preventDefault()
+        showSearch();
+      }
+      else if (e.ctrlKey && e.key === " ") {
+        e.preventDefault()
+        showPal();
+      }
+    });
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
     console.log(`Load time: ${Date.now() - startTime}ms`)

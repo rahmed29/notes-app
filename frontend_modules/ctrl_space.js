@@ -21,7 +21,7 @@ import { showTodo } from "./calendar.js";
 import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
-import { createPalette, closePalette } from "./new_cmd.js";
+import { createPalette, closePalette } from "./cmd.js";
 
 export { showPal, defineCmd };
 
@@ -37,7 +37,7 @@ function showPal() {
       if (cmd.children) {
         item.addEventListener("click", () => {
           createPalette(
-            "Search for commands...",
+            cmd.name,
             (results, text) => {
               render(cmd.children.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results)
             },

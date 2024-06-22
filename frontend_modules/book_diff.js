@@ -1,6 +1,5 @@
 import { createPopupWindow, closePopupWindow } from "./popup";
 import { contextMenu, delContextMenu } from "./context_menu";
-import { mainContainer } from "../main";
 import { note } from "./note_utils";
 import { jumpToDesiredPage } from "./dom_formatting";
 
