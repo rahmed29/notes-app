@@ -3,14 +3,13 @@ import { closePopupWindow } from "./popup";
 import { editor } from "../main";
 import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { defineCmd } from "./ctrl_space";
-import { closeTab, createTab } from "./tabs";
+import { savedWS, closeTab, createTab } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
 import { filterFlashcards } from "./flashcards";
 import validNoteName from "../validNoteName";
 
 export {
-  savedWS,
   library,
   lastNote,
   note,
@@ -31,7 +30,6 @@ export {
 let switching = false;
 
 // note stuff
-const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
 let library = new Map();
 let lastNote = null;
 let note = null;

@@ -1,8 +1,4 @@
-import {
-  getAnyBookContent,
-  library,
-  reservedNames,
-} from "./note_utils";
+import { getAnyBookContent, library, reservedNames } from "./note_utils";
 import { updateList } from "./list_utils";
 import { defineCmd } from "./ctrl_space";
 import { closeTab } from "./tabs";
@@ -17,22 +13,26 @@ async function getFamily(bookName, optionalPreFetchedData) {
     const ancestors = await getFamilyOneWay(
       bookName,
       "parents",
-      optionalPreFetchedData || false
+      optionalPreFetchedData
     );
     const descendants = await getFamilyOneWay(
       bookName,
       "children",
-      optionalPreFetchedData || false
+      optionalPreFetchedData
     );
-    const response = Array.from(ancestors).concat(Array.from(descendants));
+    const response = [...ancestors, ...descendants];
     return response;
   }
 }
 
-async function getFamilyOneWay(bookName, direction, optionalPreFetchedData) {
-  let response = new Set();
+async function getFamilyOneWay(
+  bookName,
+  direction,
+  optionalPreFetchedData = {}
+) {
+  const response = new Set();
   const branch =
-    optionalPreFetchedData.parents ||
+    optionalPreFetchedData[direction] ||
     (await getAnyBookContent(bookName, direction)) ||
     [];
 
@@ -40,13 +40,11 @@ async function getFamilyOneWay(bookName, direction, optionalPreFetchedData) {
     return response;
   }
 
-  branch.forEach(async (member) => {
+  for (const member of branch) {
     response.add(member);
-    response = new Set([
-      ...response,
-      ...(await getFamilyOneWay(member, direction, {})),
-    ]);
-  });
+    const memberFamily = await getFamilyOneWay(member, direction, {});
+    memberFamily.forEach((m) => response.add(m));
+  }
 
   return response;
 }
@@ -72,7 +70,7 @@ async function createChild(parent, child) {
     });
     if (saveStatus.ok) {
       localStorage.setItem(child, JSON.stringify([""]));
-      await closeTab(child, true)
+      await closeTab(child, true);
       nestNote(child, parent);
     } else {
       notyf.error("An error occurred when saving a notebook");
@@ -88,14 +86,16 @@ async function nestNote(child, parent) {
       method: "PATCH",
     });
     if (result.ok) {
-      if (library.get(child)) {
-        library.get(child)["parents"].push(parent);
-        library.get(child)["family"].push(parent);
+      const childInMem = library.get(child);
+      if (childInMem) {
+        childInMem["parents"].push(parent);
+        childInMem["family"].push(parent);
       }
 
-      if (library.get(parent)) {
-        library.get(parent)["children"].push(child);
-        library.get(parent)["family"].push(child);
+      const parentInMem = library.get(parent);
+      if (parentInMem) {
+        parentInMem["children"].push(child);
+        parentInMem["family"].push(child);
       }
 
       updateList();
@@ -114,26 +114,16 @@ async function relinquishNote(child, parent) {
       method: "PATCH",
     });
     if (result.ok) {
-      try {
-        library.get(child)["parents"] = library
-          .get(child)
-          ["parents"].filter((e) => e !== parent);
-        library.get(child)["family"] = library
-          .get(child)
-          ["family"].filter((e) => e !== parent);
-      } catch (err) {
-        // console.log(err);
+      const childInMem = library.get(child);
+      if (childInMem) {
+        childInMem["parents"] = childInMem["parents"].filter((e) => e !== parent);
+        childInMem["family"] = childInMem["family"].filter((e) => e !== parent);
       }
 
-      try {
-        library.get(parent)["children"] = library
-          .get(parent)
-          ["children"].filter((e) => e !== child);
-        library.get(parent)["family"] = library
-          .get(parent)
-          ["family"].filter((e) => e !== child);
-      } catch (err) {
-        // console.log(err);
+      const parentInMem = library.get(parent);
+      if (parentInMem) {
+        parentInMem["children"] = parentInMem["children"].filter((e) => e !== child);
+        parentInMem["family"] = parentInMem["family"].filter((e) => e !== child);
       }
 
       updateList();

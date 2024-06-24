@@ -273,13 +273,17 @@ async function appendUploads() {
   });
 }
 
-function search(term) {
+async function search(term) {
   for (const item of listContainer.firstChild.childNodes) {
     const folder = item.firstChild;
-    folder.style.display = "inline-block";
-    const terms = folder.getAttribute("data-searchValue");
-    if (!terms.toLowerCase().includes(term.toLowerCase())) {
+    const name = folder.getAttribute("data-bookname");
+    let fam = await getFamily(name)
+    fam.push(name)
+    fam = JSON.stringify(fam).toLowerCase()
+    if (!fam.includes(term.toLowerCase()) && term) {
       folder.style.display = "none";
+    } else {
+      folder.style.display = "inline-block"
     }
   }
 }

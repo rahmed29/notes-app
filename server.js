@@ -9,20 +9,18 @@ import OpenAI from "openai";
 import validNoteName from "./validNoteName.js";
 
 async function getFamilyOneWay(bookName, direction) {
-  let response = new Set();
-  const branch = (await Item.findOne({ name: bookName })[direction]) || [];
+  const response = new Set();
+  const branch = (await Item.findOne({ name: bookName }))[direction] || [];
 
   if (branch.length === 0) {
     return response;
   }
 
-  branch.forEach(async (member) => {
+  for (const member of branch) {
     response.add(member);
-    response = new Set([
-      ...response,
-      ...(await getFamilyOneWay(member, direction)),
-    ]);
-  });
+    const memberFamily = await getFamilyOneWay(member, direction);
+    memberFamily.forEach(m => response.add(m));
+  };
 
   return response;
 }
@@ -30,7 +28,7 @@ async function getFamilyOneWay(bookName, direction) {
 async function getFamily(bookName) {
   const ancestors = await getFamilyOneWay(bookName, "parents");
   const descendants = await getFamilyOneWay(bookName, "children");
-  const response = Array.from(ancestors).concat(Array.from(descendants));
+  const response = [...ancestors, ...descendants]
   return response;
 }
 
@@ -122,6 +120,11 @@ app.set("view engine", "ejs");
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });
+
+app.get("/api/get/family/:book", async (req, res) => {
+  const fam = await getFamily(req.params.book)
+  res.status(200).json({ data: fam });
+})
 
 app.get("/api/", async (req, res) => {
   res.status(200).json({ status: "Welcome to the notes API." });
@@ -271,7 +274,7 @@ app.patch("/api/relinquish/:child/:parent", async (req, res) => {
   try {
     const childBook = await Item.findOne({ name: child });
     const parentBook = await Item.findOne({ name: parent });
-    if (!parentBook) {
+    if (!childBook || !parentBook) {
       res.status(404).json({ error: "Parent or child not found" });
     } else if (parentBook.children.includes(child)) {
       const children = parentBook.children.filter((e) => e !== child);

@@ -1,11 +1,12 @@
-import { savedWS, switchNote, library, note, setCurrNote } from "./note_utils";
+import { switchNote, library, note, setCurrNote } from "./note_utils";
 import tippy from "tippy.js";
 import { list, tabs } from "../main";
 import { showList, hideList } from "./list_utils";
 import { delContextMenu } from "./context_menu";
 
-export { createTab, switchTab, createWorkspace, closeTab, editTabText };
+export { savedWS, createTab, switchTab, createWorkspace, closeTab, editTabText };
 
+const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
 const tabMap = new Map();
 
 async function closeTab(name, refresh) {
