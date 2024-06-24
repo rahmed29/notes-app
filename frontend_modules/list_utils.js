@@ -152,7 +152,6 @@ function nestedList(obj, allNotes) {
   }
   const folder = document.createElement("div");
   folder.setAttribute("data-bookname", obj.name);
-  folder.setAttribute("data-searchValue", `${obj.name}`);
   folder.classList.add("item");
   const folderName = document.createElement("div");
   folderName.setAttribute("data-bookname", obj.name);
@@ -199,10 +198,6 @@ function nestedList(obj, allNotes) {
   }
   if (obj.children.length > 0) {
     obj.children.forEach((childName) => {
-      folder.setAttribute(
-        "data-searchValue",
-        `${folder.getAttribute("data-searchValue")}-${obj.children.join("-")}`
-      );
       const li = document.createElement("li");
       try {
         li.appendChild(

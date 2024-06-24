@@ -5,16 +5,14 @@ import { closeTab } from "./tabs";
 
 export { getFamily, nestNote, relinquishNote, createChild };
 
-// not actually "family", but rather all descendants and ancestors. If possible, grabs from memory. This function is needed when nesting notebooks to prevent infinite recursion in the list
+// not actually "family", but rather all descendants + immediate ancestors. If possible, grabs from memory.
+// you can't nest notebook `1` into `2` if `2` is a descendant of `1` or if `1` is already nested in `2`
+// essentially, the "family" of notebook `1` cannot contain `2`
 async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getFamilyOneWay(
-      bookName,
-      "parents",
-      optionalPreFetchedData
-    );
+    const ancestors = await getAnyBookContent(bookName, "parents");
     const descendants = await getFamilyOneWay(
       bookName,
       "children",
