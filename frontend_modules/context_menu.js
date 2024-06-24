@@ -1,12 +1,12 @@
 import { mainContainer, toolBar, bottomRightTools } from "../main";
-import { attemptRemoval } from "./dom_utils";
+import { eid, attemptRemoval } from "./dom_utils";
 
 export { contextMenu, delContextMenu };
 
 // takes in an event object, an array of objects representing items in the context menu, and optionally an array representing a x and y coordinate for the context menu to be located
 
 function delContextMenu() {
-  attemptRemoval([document.getElementById("contextMenu")])
+  attemptRemoval([eid("contextMenu")])
   mainContainer.removeEventListener("click", delContextMenu);
   mainContainer.removeEventListener("contextmenu", delContextMenu);
   toolBar.removeEventListener("click", delContextMenu);

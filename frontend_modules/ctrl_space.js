@@ -18,10 +18,11 @@ import { toggleWikiSearch } from "./wikipedia.js";
 import { editingWindow } from "./editing_window.js";
 import { editor } from "../main.js";
 import { showTodo } from "./calendar.js";
-import { insertStickyNote } from "./sticky_note.js";
+import { insertStickyNote, showStickyNotes } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
 import { createPalette, closePalette } from "./cmd.js";
+import { eid } from "./dom_utils.js";
 
 export { showPal, defineCmd };
 
@@ -121,7 +122,7 @@ async function defineCmd() {
     },
     {
       name: "Insert Image",
-      handler: () => document.getElementById("getFile1").click(),
+      handler: () => eid("getFile1").click(),
     },
     {
       name: "Nest Notebook",
@@ -178,10 +179,6 @@ async function defineCmd() {
       name: "Open Calendar",
       handler: () => showTodo(false),
     },
-    // {
-    //   name: "Open Sticky Note",
-    //   handler: showStickyNotes,
-    // },
     {
       name: "Import Sticky Note",
       handler: insertStickyNote,

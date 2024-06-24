@@ -12,12 +12,12 @@ async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getAnyBookContent(bookName, "parents");
+    const ancestors = await getAnyBookContent(bookName, "parents") || [];
     const descendants = await getFamilyOneWay(
       bookName,
       "children",
       optionalPreFetchedData
-    );
+    ) || [];
     const response = [...ancestors, ...descendants];
     return response;
   }

@@ -1,5 +1,5 @@
 import { editor } from "../main.js";
-import { attemptRemoval } from "./dom_utils.js";
+import { attemptRemoval, eid } from "./dom_utils.js";
 import themes from "./themes/index.js";
 
 // current theme
@@ -7,7 +7,7 @@ let currTheme = null;
 
 // theming
 function changeTheme(themeName) {
-  attemptRemoval([document.getElementById("zitselTheme")])
+  attemptRemoval([eid("zitselTheme")])
   const style = document.createElement("style");
   style.id = "zitselTheme";
   document.head.appendChild(style);

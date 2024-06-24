@@ -1,6 +1,10 @@
 import { mainContainer } from "../main";
 
-export { loading, stopLoading, attemptRemoval }
+export { loading, stopLoading, attemptRemoval, eid }
+
+function eid(id) {
+  return document.getElementById(id)
+}
 
 function attemptRemoval(eles) {
   eles.forEach((ele) => {
@@ -9,6 +13,8 @@ function attemptRemoval(eles) {
     } catch (err) {}
   })
 }
+
+window.attemptRemoval = attemptRemoval
 
 function loading() {
   const loadingScreen = document.createElement("div");
@@ -21,8 +27,6 @@ function loading() {
 }
 
 function stopLoading() {
-  try {
-    document.getElementById("loading").remove();
-  } catch (err) {}
+  attemptRemoval(eid("loading"))
   mainContainer.style.pointerEvents = "inherit";
 }

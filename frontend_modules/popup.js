@@ -3,7 +3,7 @@ import { clearTaskTippys, deleteCalendar } from "./calendar";
 import { delContextMenu } from "./context_menu";
 import { hideStickyNotes } from "./sticky_note";
 import { setRejectToNull } from "./flashcards";
-import { attemptRemoval } from "./dom_utils";
+import { attemptRemoval, eid } from "./dom_utils";
 
 export { createPopupWindow, closePopupWindow };
 
@@ -46,7 +46,7 @@ function createPopupWindow(noAnimation) {
 }
 
 function closePopupWindow() {
-  attemptRemoval([document.getElementById("popupModal")])
+  attemptRemoval([eid("popupModal")])
   deleteCalendar();
   setRejectToNull();
   clearTaskTippys();

@@ -11,6 +11,7 @@ import { formatHDate } from "./text_formatting";
 import { note, reservedNames } from "./note_utils";
 import { editor } from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
+import { attemptRemoval, eid } from "./dom_utils";
 
 export {
   initializeTodo,
@@ -78,7 +79,7 @@ function showTodo(hereForInsertion) {
         closePopupWindow();
       }
     : (info) => {
-        const evInList = document.getElementById(`task__${info.event.id}`);
+        const evInList = eid(`task__${info.event.id}`);
         if (evInList) {
           evInList.addEventListener(
             "animationend",
@@ -257,11 +258,11 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
   }
   // this isn't good honestly
   if (lookingAtPast) {
-    document.getElementById("seePast").setAttribute("data-enabled", "");
-    document.getElementById("seePast").value = "View Active Tasks";
+    eid("seePast").setAttribute("data-enabled", "");
+    eid("seePast").value = "View Active Tasks";
   } else {
-    document.getElementById("seePast").removeAttribute("data-enabled");
-    document.getElementById("seePast").value = "View Completed Tasks";
+    eid("seePast").removeAttribute("data-enabled");
+    eid("seePast").value = "View Completed Tasks";
   }
   const lookAt = lookingAtPast ? pastEvents : events;
   const arr = !constraint
@@ -297,11 +298,9 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
               function () {
                 events = events.filter((e) => e.id !== task.id);
                 pastEvents = pastEvents.filter((e) => e.id !== task.id);
-                try {
-                  calendar.getEventById(task.id).remove();
-                } catch (err) {}
+                calendar.getEventById(task.id).remove();
                 saveTodo();
-                document.getElementById(`task__${task.id}`).remove();
+                attemptRemoval([eid(`task__${task.id}`)])
                 delContextMenu();
               },
               { once: true }

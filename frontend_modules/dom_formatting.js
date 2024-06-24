@@ -21,6 +21,7 @@ import { deleteImageFromDb } from "./images";
 import { defineCmd } from "./ctrl_space";
 import { currTheme } from "./theming";
 import tippy from "tippy.js";
+import { eid } from "./dom_utils";
 
 export {
   jumpWrapper,
@@ -242,7 +243,7 @@ function createPageNumbers() {
     morePages.style.display = "none";
   }
   morePages.classList.remove("currPage");
-  const currPage = document.getElementById(`whereTo${note.pgN}`) || morePages;
+  const currPage = eid(`whereTo${note.pgN}`) || morePages;
   currPage.classList.add("currPage");
 }
 

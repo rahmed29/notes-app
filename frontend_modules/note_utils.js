@@ -8,6 +8,7 @@ import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
 import { filterFlashcards } from "./flashcards";
 import validNoteName from "../validNoteName";
+import { allowSingleRedo } from "./undo";
 
 export {
   library,
@@ -301,11 +302,16 @@ async function forceUpdateNotes() {
 
 function deletePage() {
   if (note.content.length > 1) {
+    const undoState = {
+      content: [...note.content],
+      aceSessions: [...note.aceSessions],
+    }
     note.aceSessions[note.pgN] = null;
     note.content.splice(note.pgN, 1);
     note.pgN = note.content.length - 1;
     accents(false);
     defineCmd();
+    allowSingleRedo(note.name, undoState)
   }
 }
 
@@ -317,7 +323,12 @@ async function saveNoteBookToDb(noteName) {
     notyf.error("Something went wrong");
     return;
   }
-  if (library.get(noteName)) {
+  const desiredNote = library.get(noteName);
+  if (desiredNote) {
+    const undoState = {
+      content: [...desiredNote.content],
+      aceSessions: [...desiredNote.aceSessions],
+    }
     function prepareForSave(obj) {
       const newContent = [];
       const newSessions = [];
@@ -336,7 +347,6 @@ async function saveNoteBookToDb(noteName) {
       obj.aceSessions = newSessions;
     }
 
-    let desiredNote = library.get(noteName);
     prepareForSave(desiredNote);
     if (!desiredNote.isEncrypted) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
@@ -375,6 +385,7 @@ async function saveNoteBookToDb(noteName) {
         desiredNote.timeOfSave = new Date().toLocaleString();
       }
       notyf.success("Notebook was saved");
+      allowSingleRedo(noteName, undoState)
     } else {
       notyf.error("An error occurred when saving a notebook");
     }

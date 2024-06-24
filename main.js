@@ -173,6 +173,7 @@ document.body.innerHTML = `
       <span id="wordCount">00000</span>
       <span id = "spacer">|</span>
       <span id = "openCommandPal">>_</span>
+      <span id = "undoButton" class = "gone">&#8617;</span>
     </div>
 
     <div id="mainContainer">
@@ -255,6 +256,7 @@ export const brDots = document.getElementById("brDots");
 export const yellowButtons = document.getElementById("yellowButtons");
 export const bottomRightTools = document.getElementById("bottomRightTools");
 export const progBar = document.getElementById("progBar");
+export const undoButton = document.getElementById("undoButton")
 
 export const editor = ace.edit("editor");
 // editor.setTheme("ace/theme/chrome");
@@ -299,15 +301,12 @@ export const generalInfoPageNumber = tippy("#generalInfoPageNumber", {
   placement: "top",
 })[0];
 
-export const toolBarTips = [
-  "Save (Ctrl + S)",
-  "Notebook",
-  "Delete",
-  "Insert Image",
-  "Switch View (Ctrl + E)",
-  "Prev Page",
-  "Next Page",
-];
+export const undoTip = tippy("#undoButton", {
+  arrow: false,
+  animation: "shift-toward-subtle",
+  content: "Undo Recent Major Change",
+  placement: "bottom",
+})[0];
 
 const anonTooltips = [
   {

@@ -5,6 +5,7 @@ import { note } from "./note_utils";
 import { chatGPT } from "./chat_gpt";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
 import { mainContainer, notesPreviewArea, brain } from "../main";
+import { eid, attemptRemoval } from "./dom_utils";
 
 export {
   initializeFlashcards,
@@ -228,16 +229,8 @@ function leaveFlashcardMode() {
   document.body.classList.remove("flashcardMode");
   toggleWikiSearch();
   showList();
-  try {
-    document.getElementById("fcAlert").remove();
-  } catch (err) {
-    // console.log(err);
-  }
-  try {
-    document.getElementById("fcArea").remove();
-  } catch (err) {
-    // console.log(err);
-  }
+  attemptRemoval([eid("fcAlert")])
+  attemptRemoval([eid("fcArea")])
 }
 
 function showFlashcards(noAnimation) {

@@ -787,6 +787,7 @@ blockquote:hover {
   backdrop-filter: blur(5px);
   user-select: none;
   display: flex;
+  align-items: end;
   gap: 8px;
   padding: 0.3em;
   font-family: monospace;
@@ -796,7 +797,11 @@ blockquote:hover {
   color: var(--searchAndUpload);
 }
 
-#openCommandPal {
+#undoButton {
+  animation: dip 2s ease infinite;
+}
+
+#openCommandPal, #undoButton {
   cursor: pointer;
 }
 
@@ -1887,6 +1892,18 @@ blockquote:hover {
     opacity: 1;
   }
   to {
+    opacity: 0;
+  }
+}
+
+@keyframes dip {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
     opacity: 0;
   }
 }

@@ -1,6 +1,6 @@
 import { mainContainer } from "../main";
 import { editor } from "../main";
-import { attemptRemoval } from "./dom_utils";
+import { eid, attemptRemoval } from "./dom_utils";
 import { closePopupWindow } from "./popup";
 
 export { createPalette, closePalette };
@@ -39,7 +39,7 @@ function handleKeys(e) {
 let finderNode = null;
 
 function closePalette() {
-  attemptRemoval([document.getElementById("paletteContainer")]);
+  attemptRemoval([eid("paletteContainer")]);
   finderNode = null;
   document.removeEventListener("keydown", handleKeys);
 }

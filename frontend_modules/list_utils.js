@@ -23,6 +23,7 @@ import { format, removeMD } from "./text_formatting";
 import { switchTab } from "./tabs";
 import { getFamily, nestNote, relinquishNote, createChild } from "./hierarchy";
 import { jumpToDesiredPage } from "./dom_formatting";
+import { eid } from "./dom_utils";
 
 export {
   createList,
@@ -435,8 +436,8 @@ function listContextMenu(e, toolBar) {
             }
           );
           contextMenu(e, buttons, [
-            document.getElementById("contextMenu").style.left,
-            document.getElementById("contextMenu").style.top,
+            eid("contextMenu").style.left,
+            eid("contextMenu").style.top,
           ]);
         },
         appearance: "ios",
@@ -464,8 +465,8 @@ function listContextMenu(e, toolBar) {
             return arr;
           }, []);
           contextMenu(e, buttons, [
-            document.getElementById("contextMenu").style.left,
-            document.getElementById("contextMenu").style.top,
+            eid("contextMenu").style.left,
+            eid("contextMenu").style.top,
           ]);
         },
         appearance: "ios",
@@ -540,7 +541,7 @@ async function showPagePreview(e, customText) {
 }
 
 function scrollCM(e) {
-  document.getElementById("contextMenu").firstChild.scroll({
-    top: document.getElementById("contextMenu").firstChild.scrollTop + e.deltaY,
+  eid("contextMenu").firstChild.scroll({
+    top: eid("contextMenu").firstChild.scrollTop + e.deltaY,
   });
 }

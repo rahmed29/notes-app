@@ -1,27 +1,37 @@
 import { switchNote, library, note, setCurrNote } from "./note_utils";
 import tippy from "tippy.js";
-import { list, tabs } from "../main";
+import { list, tabs, undoButton } from "../main";
 import { showList, hideList } from "./list_utils";
 import { delContextMenu } from "./context_menu";
+import { eid } from "./dom_utils";
+import { accents } from "./dom_formatting";
+import { allowSingleRedo } from "./undo";
 
-export { savedWS, createTab, switchTab, createWorkspace, closeTab, editTabText };
+export {
+  savedWS,
+  createTab,
+  switchTab,
+  createWorkspace,
+  closeTab,
+  editTabText,
+};
 
 const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
 const tabMap = new Map();
 
 async function closeTab(name, refresh) {
   try {
-    await tabMap.get(name).close(refresh)
+    await tabMap.get(name).close(refresh);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 }
 
 function editTabText(name, text) {
   try {
-    tabMap.get(name).editText(text)
+    tabMap.get(name).editText(text);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 }
 
@@ -31,7 +41,7 @@ function closeTabHandler(e) {
   if (compare === 1) {
     e.stopPropagation();
     e.preventDefault();
-    closeTab(this.getAttribute("data-bookname"))
+    closeTab(this.getAttribute("data-bookname"));
   }
 }
 
@@ -45,9 +55,15 @@ class Tab {
   async close(refresh) {
     savedWS.delete(this.name);
     localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
-    tabMap.delete(this.name)
+    tabMap.delete(this.name);
+    const book = library.get(this.name);
     const temp = this.name;
-    const pg = library.get(this.name) ? library.get(this.name).pgN : 0
+    const pg = book ? book.pgN : 0;
+    let undoState
+    book ? undoState = {
+        content: [...book.content],
+        aceSessions: [...book.aceSessions],
+      } : null
     library.delete(this.name);
 
     // remove DOM stuff
@@ -66,8 +82,11 @@ class Tab {
 
     // reload tab
     if (refresh) {
-      setCurrNote(null)
-      await switchNote(temp, pg)
+      setCurrNote(null);
+      await switchNote(temp, pg);
+      if (undoState) {
+        allowSingleRedo(this.name, undoState)
+      }
     }
   }
 
@@ -76,19 +95,19 @@ class Tab {
   }
 
   select() {
-    this.tabRef.classList.add("openTab")
+    this.tabRef.classList.add("openTab");
     tabMap.forEach((value, key) => {
       if (key != this.name) {
         value.tabRef.classList.remove("openTab");
       }
-    })
+    });
   }
 }
 
 // create a tab element
 function createTab(txt, shouldOpen) {
   if (tabMap.get(txt)) {
-    tabMap.get(txt).select()
+    tabMap.get(txt).select();
     return;
   }
 
@@ -137,7 +156,7 @@ function createTab(txt, shouldOpen) {
   );
 
   if (shouldOpen) {
-    tabMap.get(txt).select()
+    tabMap.get(txt).select();
   }
   tabs.prepend(div);
 }
@@ -154,10 +173,7 @@ function createWorkspace() {
 }
 
 function switchTab() {
-  if (
-    this.className.includes("reference") &&
-    document.getElementById("fcAlert")
-  ) {
+  if (this.className.includes("reference") && eid("fcAlert")) {
     return;
   }
   if (this.hasAttribute("data-page")) {

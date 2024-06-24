@@ -26,8 +26,8 @@ async function getFamilyOneWay(bookName, direction) {
 }
 
 async function getFamily(bookName) {
-  const ancestors = (await Item.findOne({ name: bookName }))["parents"]
-  const descendants = await getFamilyOneWay(bookName, "children");
+  const ancestors = (await Item.findOne({ name: bookName }))["parents"] || []
+  const descendants = await getFamilyOneWay(bookName, "children") || [];
   const response = [...ancestors, ...descendants]
   return response;
 }
@@ -236,7 +236,7 @@ app.patch("/api/nest/:child/:parent", async (req, res) => {
     const childBook = await Item.findOne({ name: child });
     const parentBook = await Item.findOne({ name: parent });
     if (!childBook || !parentBook) {
-      return res.status(404).json({ error: "Parent or child not found" });
+      res.status(404).json({ error: "Parent or child not found" });
     } else if (childBook && parentBook) {
       const family = await getFamily(child);
       if (!family.includes(parent)) {
@@ -275,7 +275,7 @@ app.patch("/api/relinquish/:child/:parent", async (req, res) => {
     const childBook = await Item.findOne({ name: child });
     const parentBook = await Item.findOne({ name: parent });
     if (!childBook || !parentBook) {
-      return res.status(404).json({ error: "Parent or child not found" });
+      res.status(404).json({ error: "Parent or child not found" });
     } else if (parentBook.children.includes(child)) {
       const children = parentBook.children.filter((e) => e !== child);
       parentBook.children = children;
