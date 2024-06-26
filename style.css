@@ -1929,6 +1929,11 @@ blockquote:hover {
   filter: grayscale(1);
 }
 
+.unavailable {
+  opacity: .5;
+  pointer-events: none;
+}
+
 .idk {
   animation: bounce-in 0.15s ease;
 }

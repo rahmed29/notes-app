@@ -13,7 +13,7 @@ import { getFamily, nestNote, relinquishNote } from "./hierarchy.js";
 import { getList, toggleList } from "./list_utils.js";
 import { changeTheme } from "./theming.js";
 import { jumpToDesiredPage } from "./dom_formatting.js";
-import { AISUmmary } from "./chat_gpt.js";
+import { AISUmmary } from "./ai_utils.js";
 import { toggleWikiSearch } from "./wikipedia.js";
 import { editingWindow } from "./editing_window.js";
 import { editor } from "../main.js";

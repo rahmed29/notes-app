@@ -10,7 +10,7 @@ import {
 import { editingWindow } from "./editing_window";
 import { handlePageMovement } from "./dom_formatting";
 import { toggleWikiSearch } from "./wikipedia";
-import { AISUmmary } from "./chat_gpt";
+import { AISUmmary, aiGenerating } from "./ai_utils";
 import { insertStickyNote } from "./sticky_note";
 import { showTodo } from "./calendar";
 import { flashcardMode } from "./flashcards";
@@ -21,7 +21,6 @@ import { listContextMenu } from "./list_utils";
 import themes from "./themes";
 import { changeTheme } from "./theming";
 import { eid } from "./dom_utils";
-import { ollama } from "./ollama";
 
 export default setupToolbar;
 
@@ -151,20 +150,16 @@ function setupToolbar() {
                 {
                   text: "ChatGPT",
                   click: async function () {
-                    this.innerText = "Loading...";
+                    delContextMenu();
                     await AISUmmary(0);
-                    this.style.pointerEvents = "inherit";
-                    this.innerText = "AI Summary";
                   },
                   appearance: "ios",
                 },
                 {
                   text: "Ollama",
                   click: async function () {
-                    this.innerText = "Loading...";
+                    delContextMenu();
                     await AISUmmary(1);
-                    this.style.pointerEvents = "inherit";
-                    this.innerText = "AI Summary";
                   },
                   appearance: "ios",
                 },
@@ -172,7 +167,7 @@ function setupToolbar() {
               [eid("contextMenu").style.left, eid("contextMenu").style.top]
             );
           },
-          appearance: "ios",
+          appearance: aiGenerating ? "unavailable" : "ios",
         },
         {
           text: "Insert Sticky Note",

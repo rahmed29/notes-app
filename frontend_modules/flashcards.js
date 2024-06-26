@@ -2,7 +2,7 @@ import { contextMenu, delContextMenu } from "./context_menu";
 import { createPopupWindow, closePopupWindow } from "./popup";
 import { showList, hideList } from "./list_utils";
 import { note } from "./note_utils";
-import { chatGPT } from "./chat_gpt";
+import { aiGenerating, chatGPT } from "./ai_utils";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
 import { mainContainer, notesPreviewArea, brain } from "../main";
 import { eid, attemptRemoval } from "./dom_utils";
@@ -164,6 +164,9 @@ function flashcardMode() {
   const generated = document.createElement("button");
   generated.innerText = "✨ Generate Cards";
   generated.addEventListener("click", AIFlashcards, { once: true });
+  if (aiGenerating) {
+    generated.classList.add("unavailable")
+  }
   aibutton.appendChild(generated);
   fcArea.appendChild(aibutton);
   const cardFront = document.createElement("div");
