@@ -18,54 +18,25 @@ import { toggleWikiSearch } from "./wikipedia.js";
 import { editingWindow } from "./editing_window.js";
 import { editor } from "../main.js";
 import { showTodo } from "./calendar.js";
-import { insertStickyNote, showStickyNotes } from "./sticky_note.js";
+import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
-import { createPalette, closePalette } from "./cmd.js";
+import { createPalette, render } from "./cmd.js";
 import { eid } from "./dom_utils.js";
+import { closeTab } from "./tabs.js";
 
 export { showPal, defineCmd };
 
 let commands;
 
 function showPal() {
-  function render(arr, results) {
-    while (results.firstChild) {
-      results.firstChild.remove();
-    }
-    arr.forEach((cmd) => {
-      const item = document.createElement("div");
-      if (cmd.children) {
-        item.addEventListener("click", () => {
-          createPalette(
-            cmd.name,
-            (results, text) => {
-              render(cmd.children.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results)
-            },
-            (results, text) => {
-              render(cmd.children, results)
-            }
-          );
-        })
-      } else {
-        item.addEventListener("click", () => {
-          cmd.handler();
-          closePalette();
-        })
-      }
-      item.classList.add("item");
-      item.innerText = cmd.name;
-      results.appendChild(item);
-    });
-  }
-
   createPalette(
     "Search for commands...",
     (results, text) => {
-      render(commands.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results)
+      render(1, commands.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results);
     },
     (results, text) => {
-      render(commands, results)
+      render(1, commands, results);
     }
   );
 }
@@ -115,6 +86,10 @@ async function defineCmd() {
     {
       name: "Open Notebook",
       children: cmdList,
+    },
+    {
+      name: "Close Current Tab",
+      handler: () => closeTab(note.name),
     },
     {
       name: "Save Notebook",

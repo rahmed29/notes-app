@@ -8,7 +8,7 @@ import { createPopupWindow, closePopupWindow } from "./popup";
 import tippy from "tippy.js";
 import { contextMenu, delContextMenu } from "./context_menu";
 import { formatHDate } from "./text_formatting";
-import { note, reservedNames } from "./note_utils";
+import { note, reserved } from "./note_utils";
 import { editor } from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
 import { attemptRemoval, eid } from "./dom_utils";
@@ -52,10 +52,7 @@ function clearTaskTippys() {
 }
 
 function showTodo(hereForInsertion) {
-  if (
-    hereForInsertion &&
-    reservedNames.some((e) => e.data.name === note.name)
-  ) {
+  if (hereForInsertion && reserved(note.name)) {
     notyf.error("Reserved notebooks are read only");
     return;
   }
@@ -300,7 +297,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
                 pastEvents = pastEvents.filter((e) => e.id !== task.id);
                 calendar.getEventById(task.id).remove();
                 saveTodo();
-                attemptRemoval([eid(`task__${task.id}`)])
+                attemptRemoval([eid(`task__${task.id}`)]);
                 delContextMenu();
               },
               { once: true }

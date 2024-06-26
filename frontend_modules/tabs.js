@@ -1,11 +1,10 @@
 import { switchNote, library, note, setCurrNote } from "./note_utils";
 import tippy from "tippy.js";
-import { list, tabs, undoButton } from "../main";
+import { list, tabs } from "../main";
 import { showList, hideList } from "./list_utils";
 import { delContextMenu } from "./context_menu";
 import { eid } from "./dom_utils";
-import { accents } from "./dom_formatting";
-import { allowSingleRedo } from "./undo";
+import { allowSingleRedo } from "./notif_palette";
 
 export {
   savedWS,

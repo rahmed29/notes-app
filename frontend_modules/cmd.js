@@ -3,7 +3,7 @@ import { editor } from "../main";
 import { eid, attemptRemoval } from "./dom_utils";
 import { closePopupWindow } from "./popup";
 
-export { createPalette, closePalette };
+export { createPalette, closePalette, render };
 
 function handleKeys(e) {
   if (e.key === "Enter") {
@@ -42,6 +42,54 @@ function closePalette() {
   attemptRemoval([eid("paletteContainer")]);
   finderNode = null;
   document.removeEventListener("keydown", handleKeys);
+}
+
+function render(version, arr, results) {
+  while (results.firstChild) {
+    results.firstChild.remove();
+  }
+  arr.forEach((cmd) => {
+    const item = document.createElement("div");
+    if (cmd.children) {
+      item.addEventListener("click", () => {
+        createPalette(
+          "Search...",
+          (results, text) => {
+            render(
+              version,
+              cmd.children.filter((e) =>
+                e.name.toLowerCase().includes(text.toLowerCase())
+              ),
+              results
+            );
+          },
+          (results, text) => {
+            render(version, cmd.children, results);
+          }
+        );
+      });
+    } else {
+      item.addEventListener("click", () => {
+        cmd.handler();
+        closePalette();
+      });
+    }
+    item.classList.add("item");
+    // version 1 is just text
+    if (version === 1) {
+      item.innerText = cmd.name;
+    } else {
+      // version 2 is centered text with an left aligned icon
+      const h3 = document.createElement("h3");
+      h3.innerHTML = cmd.icon;
+      item.appendChild(h3);
+      const finder = document.createElement("div");
+      finder.classList.add("finder");
+      finder.innerHTML = DOMPurify.sanitize(`${cmd.name}`);
+      item.appendChild(finder);
+    }
+    results.appendChild(item);
+  });
 }
 
 // 1. placeholder text

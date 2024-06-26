@@ -34,6 +34,8 @@ import setupList from "./frontend_modules/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
 import { showSearch } from "./frontend_modules/ctrl_f.js";
 import { showPal } from "./frontend_modules/ctrl_space.js";
+import { eid } from "./frontend_modules/dom_utils.js";
+import { showNotifs } from "./frontend_modules/notif_palette.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -173,7 +175,6 @@ document.body.innerHTML = `
       <span id="wordCount">00000</span>
       <span id = "spacer">|</span>
       <span id = "openCommandPal">>_</span>
-      <span id = "undoButton" class = "gone">&#8617;</span>
     </div>
 
     <div id="mainContainer">
@@ -256,7 +257,6 @@ export const brDots = document.getElementById("brDots");
 export const yellowButtons = document.getElementById("yellowButtons");
 export const bottomRightTools = document.getElementById("bottomRightTools");
 export const progBar = document.getElementById("progBar");
-export const undoButton = document.getElementById("undoButton")
 
 export const editor = ace.edit("editor");
 // editor.setTheme("ace/theme/chrome");
@@ -267,6 +267,7 @@ editor.renderer.setShowGutter(false);
 // disable ace editor command palette
 editor.commands.bindKey("F1", null);
 editor.commands.bindKey("ctrl+f", null);
+editor.commands.bindKey("ctrl+,", null);
 editor.setOption("showPrintMargin", false);
 
 // tooltips
@@ -299,13 +300,6 @@ export const generalInfoPageNumber = tippy("#generalInfoPageNumber", {
   arrow: false,
   content: "Loading",
   placement: "top",
-})[0];
-
-export const undoTip = tippy("#undoButton", {
-  arrow: false,
-  animation: "shift-toward-subtle",
-  content: "Undo Recent Major Change",
-  placement: "bottom",
 })[0];
 
 const anonTooltips = [
@@ -388,6 +382,14 @@ const dropzone = new Dropzone(document.body, {
   },
 });
 
+eid("loading").addEventListener(
+  "animationend",
+  function () {
+    this.remove();
+  },
+  { once: true }
+);
+
 // onload functions
 window.addEventListener(
   "load",
@@ -459,24 +461,34 @@ window.addEventListener(
     // Event listeners
     // doc
     document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
-        e.preventDefault();
-        saveNoteBookToDb(note.name);
-      } else if (e.ctrlKey && (e.key === "e" || e.key === "E")) {
-        e.preventDefault();
-        cycleViewPreferences();
-      } else if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
-        e.preventDefault()
-        showSearch();
-      }
-      else if (e.ctrlKey && e.key === " ") {
-        e.preventDefault()
-        showPal();
+      if (e.ctrlKey) {
+        switch (e.key.toLowerCase()) {
+          case "s":
+            e.preventDefault();
+            saveNoteBookToDb(note.name);
+            break;
+          case "e":
+            e.preventDefault();
+            cycleViewPreferences();
+            break;
+          case "f":
+            e.preventDefault();
+            showSearch();
+            break;
+          case " ":
+            e.preventDefault();
+            showPal();
+            break;
+          case ",":
+            e.preventDefault();
+            showNotifs();
+            break;
+        }
       }
     });
     progBar.style.width = "420px";
     document.getElementById("loading").classList.add("loaded");
-    console.log(`Load time: ${Date.now() - startTime}ms`)
+    console.log(`Load time: ${Date.now() - startTime}ms`);
   },
   { once: true }
 );

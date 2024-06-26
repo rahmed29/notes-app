@@ -8,7 +8,7 @@ import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
 import { filterFlashcards } from "./flashcards";
 import validNoteName from "../validNoteName";
-import { allowSingleRedo } from "./undo";
+import { allowSingleRedo } from "./notif_palette";
 
 export {
   library,
@@ -17,7 +17,8 @@ export {
   setLastNote,
   setCurrNote,
   getAnyBookContent,
-  reservedNames,
+  reserved,
+  editReserved,
   switchNote,
   getWrittenPages,
   forceUpdateNotes,
@@ -109,6 +110,14 @@ const reservedNames = [
   },
 ];
 
+function editReserved(name, content) {
+  return reservedNames.find((e) => e.data.name === name).data.content = content;
+}
+
+function reserved(name) {
+  return reservedNames.some((e) => e.data.name === name);
+}
+
 function setLastNote(input) {
   lastNote = input;
 }
@@ -119,7 +128,7 @@ function setCurrNote(input) {
 
 // Returns desired info of any given book. If possible, takes it from memory
 async function getAnyBookContent(bookName, desiredInfo) {
-  if (reservedNames.some((e) => e.data.name === bookName)) {
+  if (reserved(bookName)) {
     if (desiredInfo === "_data") {
       return reservedNames.find((e) => e.data.name === bookName)["data"];
     }
@@ -193,7 +202,7 @@ async function switchNote(noteName, page) {
     note &&
     noteName === note.name &&
     page === note.pgN &&
-    !reservedNames.some((e) => e.data.name === note.name)
+    !reserved(note.name)
   ) {
     return;
   }
@@ -265,7 +274,7 @@ async function switchNote(noteName, page) {
     note.content = getWrittenPages(note.content);
   }
   createTab(note.name, true);
-  if (reservedNames.some((e) => e.data.name === note.name)) {
+  if (reserved(note.name)) {
     toolBar.classList.add("homeToolBar");
     note.readOnly = true;
     editor.setReadOnly(true);
@@ -285,7 +294,7 @@ async function switchNote(noteName, page) {
 }
 
 // a small wrapper function that filters an array with the given logic (or compares to an empty string by default), but won't return an empty array
-function getWrittenPages(arr, logic = (str) => str !== "", defaultValue="") {
+function getWrittenPages(arr, logic = (str) => str !== "", defaultValue = "") {
   const response = arr.filter((e) => logic(e));
   if (!response.length) {
     response.push(defaultValue);
@@ -296,7 +305,7 @@ function getWrittenPages(arr, logic = (str) => str !== "", defaultValue="") {
 async function forceUpdateNotes() {
   // temp
   localStorage.removeItem(note.name);
-  await closeTab(note.name, true)
+  await closeTab(note.name, true);
   notyf.success("Notes were pulled from database");
 }
 
@@ -305,21 +314,18 @@ function deletePage() {
     const undoState = {
       content: [...note.content],
       aceSessions: [...note.aceSessions],
-    }
+    };
     note.aceSessions[note.pgN] = null;
     note.content.splice(note.pgN, 1);
     note.pgN = note.content.length - 1;
     accents(false);
     defineCmd();
-    allowSingleRedo(note.name, undoState)
+    allowSingleRedo(note.name, undoState);
   }
 }
 
 async function saveNoteBookToDb(noteName) {
-  if (
-    !validNoteName.test(noteName) ||
-    reservedNames.some((e) => e.data.name === noteName)
-  ) {
+  if (!validNoteName.test(noteName) || reserved(noteName)) {
     notyf.error("Something went wrong");
     return;
   }
@@ -328,7 +334,7 @@ async function saveNoteBookToDb(noteName) {
     const undoState = {
       content: [...desiredNote.content],
       aceSessions: [...desiredNote.aceSessions],
-    }
+    };
     function prepareForSave(obj) {
       const newContent = [];
       const newSessions = [];
@@ -340,7 +346,7 @@ async function saveNoteBookToDb(noteName) {
       }
 
       if (!newContent.length) {
-        newContent.push("")
+        newContent.push("");
       }
 
       obj.content = newContent;
@@ -385,7 +391,7 @@ async function saveNoteBookToDb(noteName) {
         desiredNote.timeOfSave = new Date().toLocaleString();
       }
       notyf.success("Notebook was saved");
-      allowSingleRedo(noteName, undoState)
+      allowSingleRedo(noteName, undoState);
     } else {
       notyf.error("An error occurred when saving a notebook");
     }
@@ -430,7 +436,7 @@ async function deleteNoteBookFromDb(noteName) {
       });
     }
 
-    closeTab(noteName)
+    closeTab(noteName);
     filterFlashcards(noteName);
     syncStatus();
     updateList();
@@ -447,7 +453,7 @@ async function copyBook(newName, bookToCopy) {
       notyf.error("Encrypted notebooks can't be copied");
       return;
     }
-    const content = await getAnyBookContent(bookToCopy, "content") || [""];
+    const content = (await getAnyBookContent(bookToCopy, "content")) || [""];
     const save = await fetch("/api/save/notebooks/", {
       method: "PUT",
       headers: {
@@ -462,7 +468,7 @@ async function copyBook(newName, bookToCopy) {
     if (save.ok) {
       localStorage.setItem(newName, JSON.stringify(content));
       updateList();
-      closeTab(newName, true)
+      closeTab(newName, true);
     } else {
       notyf.error("An error occurred when saving a notebook");
     }

@@ -1,4 +1,4 @@
-import { brain, toolBar } from "../main";
+import { brain, toolBar, areNotesSavedIcon } from "../main";
 import { contextMenu, delContextMenu } from "./context_menu";
 import {
   deletePage,
@@ -20,214 +20,248 @@ import { insertAndSaveImage } from "./images";
 import { listContextMenu } from "./list_utils";
 import themes from "./themes";
 import { changeTheme } from "./theming";
+import { eid } from "./dom_utils";
+import { ollama } from "./ollama";
 
 export default setupToolbar;
 
 function setupToolbar() {
   // toolbar
-  document
-    .getElementById("icon1")
-    .addEventListener("click", () => saveNoteBookToDb(note.name));
-  document
-    .getElementById("icon2")
-    .addEventListener("click", (e) => listContextMenu(e, true));
-  document.getElementById("icon3").addEventListener("click", (e) =>
-    contextMenu(e, [
-      {
-        text: "Delete Notebook",
-        click: function () {
-          this.classList.add("rios");
-          this.innerText = "Confirm";
-          this.addEventListener(
-            "click",
-            () => {
-              deleteNoteBookFromDb(note.name);
-              delContextMenu();
-            },
-            { once: true }
-          );
+  eid("icon1").addEventListener("click", () => saveNoteBookToDb(note.name));
+  eid("icon2").addEventListener("click", (e) => listContextMenu(e, true));
+  eid("icon3").addEventListener("click", (e) =>
+    contextMenu(
+      e,
+      [
+        {
+          text: "Delete Notebook",
+          click: function () {
+            this.classList.add("rios");
+            this.innerText = "Confirm";
+            this.addEventListener(
+              "click",
+              () => {
+                deleteNoteBookFromDb(note.name);
+                delContextMenu();
+              },
+              { once: true }
+            );
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Delete This Page",
-        click: function () {
-          this.classList.add("rios");
-          this.innerText = "Confirm";
-          this.addEventListener(
-            "click",
-            () => {
-              deletePage();
-              delContextMenu();
-            },
-            { once: true }
-          );
+        {
+          text: "Delete This Page",
+          click: function () {
+            this.classList.add("rios");
+            this.innerText = "Confirm";
+            this.addEventListener(
+              "click",
+              () => {
+                deletePage();
+                delContextMenu();
+              },
+              { once: true }
+            );
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-    ], [`${e.clientX-160}px`, "75px"])
+      ],
+      [`${e.clientX - 160}px`, "75px"]
+    )
   );
-  document
-    .getElementById("getFile1")
-    .addEventListener("change", insertAndSaveImage);
-  document.getElementById("icon5").addEventListener("click", (e) =>
-    contextMenu(e, [
-      {
-        text: "Split",
-        click: () => {
-          localStorage.setItem("/viewPref", "split");
-          editingWindow("split");
-          delContextMenu();
+  eid("getFile1").addEventListener("change", insertAndSaveImage);
+  eid("icon5").addEventListener("click", (e) =>
+    contextMenu(
+      e,
+      [
+        {
+          text: "Split",
+          click: () => {
+            localStorage.setItem("/viewPref", "split");
+            editingWindow("split");
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Read",
-        click: () => {
-          localStorage.setItem("/viewPref", "read");
-          editingWindow("read");
-          delContextMenu();
+        {
+          text: "Read",
+          click: () => {
+            localStorage.setItem("/viewPref", "read");
+            editingWindow("read");
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Write",
-        click: () => {
-          localStorage.setItem("/viewPref", "write");
-          editingWindow("write");
-          delContextMenu();
+        {
+          text: "Write",
+          click: () => {
+            localStorage.setItem("/viewPref", "write");
+            editingWindow("write");
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Change theme",
-        click: () => {
-          const buttons = themes.map((e) => {
-            return {
+        {
+          text: "Change theme",
+          click: () => {
+            const buttons = themes.map((e) => {
+              return {
                 text: e.name
-                .split("_")
-                .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
-                .join(" "),
+                  .split("_")
+                  .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
+                  .join(" "),
                 click: () => {
                   changeTheme(e.name);
                 },
                 appearance: "ios",
-              }
-          });
-          contextMenu(e, buttons, [
-            document.getElementById("contextMenu").style.left,
-            document.getElementById("contextMenu").style.top,
-          ]);
+              };
+            });
+            contextMenu(e, buttons, [
+              eid("contextMenu").style.left,
+              eid("contextMenu").style.top,
+            ]);
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-    ], [`${e.clientX-160}px`, "75px"])
+      ],
+      [`${e.clientX - 160}px`, "75px"]
+    )
   );
-  document
-    .getElementById("icon6")
-    .addEventListener("click", () => handlePageMovement(true, 1, false));
-  document
-    .getElementById("icon7")
-    .addEventListener("click", (e) => handlePageMovement(false, 1, false, e));
+  eid("icon6").addEventListener("click", () =>
+    handlePageMovement(true, 1, false)
+  );
+  eid("icon7").addEventListener("click", (e) =>
+    handlePageMovement(false, 1, false, e)
+  );
   brain.addEventListener("click", (e) =>
-    contextMenu(e, [
-      {
-        text: "Toggle Wiki Search",
-        click: () => toggleWikiSearch(),
-        appearance: "ios",
-      },
-      {
-        text: "AI Summary",
-        click: async function () {
-          this.innerText = "Loading...";
-          await AISUmmary();
-          this.style.pointerEvents = "inherit";
-          this.innerText = "AI Summary";
+    contextMenu(
+      e,
+      [
+        {
+          text: "Toggle Wiki Search",
+          click: () => toggleWikiSearch(),
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Insert Sticky Note",
-        click: () => {
-          insertStickyNote();
-          delContextMenu();
+        {
+          text: "AI Summary",
+          click: () => {
+            contextMenu(
+              e,
+              [
+                {
+                  text: "ChatGPT",
+                  click: async function () {
+                    this.innerText = "Loading...";
+                    await AISUmmary(0);
+                    this.style.pointerEvents = "inherit";
+                    this.innerText = "AI Summary";
+                  },
+                  appearance: "ios",
+                },
+                {
+                  text: "Ollama",
+                  click: async function () {
+                    this.innerText = "Loading...";
+                    await AISUmmary(1);
+                    this.style.pointerEvents = "inherit";
+                    this.innerText = "AI Summary";
+                  },
+                  appearance: "ios",
+                },
+              ],
+              [eid("contextMenu").style.left, eid("contextMenu").style.top]
+            );
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Insert Calendar Event",
-        click: () => {
-          showTodo(true);
-          delContextMenu();
+        {
+          text: "Insert Sticky Note",
+          click: () => {
+            insertStickyNote();
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Create Flashcards",
-        click: () => {
-          flashcardMode();
-          delContextMenu();
+        {
+          text: "Insert Calendar Event",
+          click: () => {
+            showTodo(true);
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-    ], [`${e.clientX-160}px`, "75px"])
+        {
+          text: "Create Flashcards",
+          click: () => {
+            flashcardMode();
+            delContextMenu();
+          },
+          appearance: "ios",
+        },
+      ],
+      [`${e.clientX - 160}px`, "75px"]
+    )
   );
   areNotesSavedIcon.addEventListener("animationend", function () {
     this.classList.remove("saved");
   });
   areNotesSavedIcon.addEventListener("click", (e) =>
-    contextMenu(e, [
-      {
-        text: "More Details",
-        click: () => {
-          showBookDiffPopup();
-          delContextMenu();
+    contextMenu(
+      e,
+      [
+        {
+          text: "More Details",
+          click: () => {
+            showBookDiffPopup();
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: "Force Update",
-        click: function () {
-          this.innerText = "Confirm";
-          this.classList.add("rios");
-          this.addEventListener(
-            "click",
-            () => {
-              forceUpdateNotes();
-              delContextMenu();
-            },
-            { once: true }
-          );
+        {
+          text: "Force Update",
+          click: function () {
+            this.innerText = "Confirm";
+            this.classList.add("rios");
+            this.addEventListener(
+              "click",
+              () => {
+                forceUpdateNotes();
+                delContextMenu();
+              },
+              { once: true }
+            );
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      {
-        text: note.isEncrypted ? "Decrypt Notebook" : "Encrypt Notebook",
-        click: () => {
-          if (note.isEncrypted) {
-            decryptCurrentBook();
-          } else {
-            encryptCurrentBook();
-          }
-          delContextMenu();
+        {
+          text: note.isEncrypted ? "Decrypt Notebook" : "Encrypt Notebook",
+          click: () => {
+            if (note.isEncrypted) {
+              decryptCurrentBook();
+            } else {
+              encryptCurrentBook();
+            }
+            delContextMenu();
+          },
+          appearance: "ios",
         },
-        appearance: "ios",
-      },
-      note.isEncrypted
-        ? {
-            text: "Change Password",
-            click: () => {
-              const newPassword = prompt("Enter a new password");
-              if (newPassword != null) {
-                note.password = newPassword;
-                saveNoteBookToDb(note.name);
-              }
-              delContextMenu();
-            },
-            appearance: "ios",
-          }
-        : null,
-    ], [`${e.clientX-160}px`, "75px"])
+        note.isEncrypted
+          ? {
+              text: "Change Password",
+              click: () => {
+                const newPassword = prompt("Enter a new password");
+                if (newPassword != null) {
+                  note.password = newPassword;
+                  saveNoteBookToDb(note.name);
+                }
+                delContextMenu();
+              },
+              appearance: "ios",
+            }
+          : null,
+      ],
+      [`${e.clientX - 160}px`, "75px"]
+    )
   );
   toolBar.addEventListener("contextmenu", (e) => e.preventDefault());
 }

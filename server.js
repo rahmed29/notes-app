@@ -6,7 +6,12 @@ import fs from "fs";
 import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
+import axios from "axios";
 import validNoteName from "./validNoteName.js";
+// Environment variables
+// OPENAI_API_KEY=""
+// OLLAMA_URI=""
+// OLLAMA_MODEL=""
 
 async function getFamilyOneWay(bookName, direction) {
   const response = new Set();
@@ -19,16 +24,16 @@ async function getFamilyOneWay(bookName, direction) {
   for (const member of branch) {
     response.add(member);
     const memberFamily = await getFamilyOneWay(member, direction);
-    memberFamily.forEach(m => response.add(m));
-  };
+    memberFamily.forEach((m) => response.add(m));
+  }
 
   return response;
 }
 
 async function getFamily(bookName) {
-  const ancestors = (await Item.findOne({ name: bookName }))["parents"] || []
-  const descendants = await getFamilyOneWay(bookName, "children") || [];
-  const response = [...ancestors, ...descendants]
+  const ancestors = (await Item.findOne({ name: bookName }))["parents"] || [];
+  const descendants = (await getFamilyOneWay(bookName, "children")) || [];
+  const response = [...ancestors, ...descendants];
   return response;
 }
 
@@ -122,9 +127,9 @@ app.set("view engine", "ejs");
 // });
 
 app.get("/api/get/family/:book", async (req, res) => {
-  const fam = await getFamily(req.params.book)
+  const fam = await getFamily(req.params.book);
   res.status(200).json({ data: fam });
-})
+});
 
 app.get("/api/", async (req, res) => {
   res.status(200).json({ status: "Welcome to the notes API." });
@@ -346,6 +351,25 @@ app.post("/api/chatGPT", async (req, res) => {
     const response = await gpt(req.body.content, req.body.prompt);
     res.status(200).json({ data: response });
   } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/ollama", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${process.env.OLLAMA_URI}/api/generate`,
+      {
+        model: process.env.OLLAMA_MODEL,
+        system: req.body.content,
+        prompt: req.body.prompt,
+        stream: false,
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    res.status(200).json({ data: response.data });
+  } catch (err) {
+    console.log(err)
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -7,6 +7,7 @@ export { contextMenu, delContextMenu };
 
 function delContextMenu() {
   attemptRemoval([eid("contextMenu")])
+  document.body.classList.remove("cmOpen")
   mainContainer.removeEventListener("click", delContextMenu);
   mainContainer.removeEventListener("contextmenu", delContextMenu);
   toolBar.removeEventListener("click", delContextMenu);
@@ -19,6 +20,7 @@ function contextMenu(e, button, position) {
   e.preventDefault();
   e.stopPropagation();
   delContextMenu();
+  document.body.classList.add("cmOpen")
   const menu = document.createElement("div");
   menu.addEventListener("contextmenu", (e) => e.preventDefault());
   menu.id = "contextMenu";

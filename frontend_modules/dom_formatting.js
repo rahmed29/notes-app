@@ -1,8 +1,8 @@
 import {
   note,
-  reservedNames,
   getWrittenPages,
   getAnyBookContent,
+  reserved,
 } from "./note_utils";
 import {
   editor,
@@ -59,7 +59,7 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
     if (
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
-      !reservedNames.some((e) => e.data.name === note.name)
+      !reserved(note.name)
     ) {
       note.content.push("");
       note.pgN += amount;
@@ -69,17 +69,21 @@ function handlePageMovement(goBack, amount, shouldCreateNewPage, e) {
       note.pgN + amount >= note.content.length &&
       !shouldCreateNewPage
     ) {
-      contextMenu(e, [
-        {
-          text: "New Page",
-          click: (e) => {
-            e.stopPropagation();
-            handlePageMovement(false, 1, true);
-            delContextMenu();
+      contextMenu(
+        e,
+        [
+          {
+            text: "New Page",
+            click: (e) => {
+              e.stopPropagation();
+              handlePageMovement(false, 1, true);
+              delContextMenu();
+            },
+            appearance: "ios",
           },
-          appearance: "ios",
-        },
-      ], [`${e.clientX-160}px`, "75px"]);
+        ],
+        [`${e.clientX - 160}px`, "75px"]
+      );
     } else if (!(note.pgN + amount >= note.content.length)) {
       note.pgN += amount;
       accents();
@@ -107,17 +111,17 @@ function accents() {
 
 async function updateAndSaveNotesLocally() {
   note.content[note.pgN] = editor.getValue();
-  if (
-    !reservedNames.some((e) => e.data.name === note.name) &&
-    !note.isEncrypted
-  ) {
+  if (!reserved(note.name) && !note.isEncrypted) {
     localStorage.setItem(note.name, JSON.stringify(note.content));
   }
   syncStatus();
-  previewHandlers = previewHandlers.reduce((arr, { element, type, listener }) => {
-    element.removeEventListener(type, listener);
-    return arr;
-  }, []);
+  previewHandlers = previewHandlers.reduce(
+    (arr, { element, type, listener }) => {
+      element.removeEventListener(type, listener);
+      return arr;
+    },
+    []
+  );
   const v = document.createElement("div");
   v.innerHTML = format(editor.getValue());
   v.id = "fill";
@@ -140,14 +144,14 @@ async function updateAndSaveNotesLocally() {
 }
 
 function syncStatus() {
-  if (reservedNames.some((e) => e.data.name === note.name)) {
+  if (reserved(note.name)) {
     // note name reserved
-    editTabText(note.name, note.name)
+    editTabText(note.name, note.name);
     areNotesSavedIcon.style.filter = "grayscale(1)";
     document.title = note.name;
   } else if (!note.saved) {
     // note not saved
-    editTabText(note.name, `* ${note.name}`)
+    editTabText(note.name, `* ${note.name}`);
     synced.setContent(`Notes are not saved`);
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
     document.title = `* ${note.name}`;
@@ -156,16 +160,17 @@ function syncStatus() {
     let writtenPages = getWrittenPages(note.content);
     if (JSON.stringify(writtenPages) === JSON.stringify(note.dbSave)) {
       // content is synced
-      editTabText(note.name, note.name)
+      editTabText(note.name, note.name);
       synced.setContent(`Notes were saved at ${note.timeOfSave}`);
       areNotesSavedIcon.style.filter = "none";
       document.title = note.name;
     } else {
       // content is not in sync with db
-      editTabText(note.name, `* ${note.name}`)
+      editTabText(note.name, `* ${note.name}`);
       synced.setContent(
         `Notes shown differ from saved notes by ${Math.abs(
-          JSON.stringify(note.content).length - JSON.stringify(note.dbSave).length
+          JSON.stringify(note.content).length -
+            JSON.stringify(note.dbSave).length
         )} chars`
       );
       areNotesSavedIcon.style.filter = "grayscale(1)";
@@ -201,7 +206,7 @@ function formatNonText(ele) {
 
 // page numbers on the left
 function createPageNumbers() {
-  pageHandlers = pageHandlers.reduce((arr, { element, type, listener}) => {
+  pageHandlers = pageHandlers.reduce((arr, { element, type, listener }) => {
     element.removeEventListener(type, listener);
     return arr;
   }, []);
@@ -248,37 +253,34 @@ function createPageNumbers() {
 }
 
 function removeImageToolTip(e) {
-  contextMenu(
-    e,
-    [
-      {
-        attr: this.src,
-        text: "Open Image",
-        click: function () {
-          window.open(`${this.getAttribute("data-props")}`, "_blank");
-          delContextMenu();
-        },
-        appearance: "ios",
+  contextMenu(e, [
+    {
+      attr: this.src,
+      text: "Open Image",
+      click: function () {
+        window.open(`${this.getAttribute("data-props")}`, "_blank");
+        delContextMenu();
       },
-      {
-        attr: this.src.slice(this.src.indexOf("/uploads/") + 9),
-        text: "Delete Image",
-        click: function () {
-          this.classList.add("rios");
-          this.innerText = "Confirm";
-          this.addEventListener(
-            "click",
-            () => {
-              deleteImageFromDb(this.getAttribute("data-props"));
-              delContextMenu();
-            },
-            { once: true }
-          );
-        },
-        appearance: "ios",
+      appearance: "ios",
+    },
+    {
+      attr: this.src.slice(this.src.indexOf("/uploads/") + 9),
+      text: "Delete Image",
+      click: function () {
+        this.classList.add("rios");
+        this.innerText = "Confirm";
+        this.addEventListener(
+          "click",
+          () => {
+            deleteImageFromDb(this.getAttribute("data-props"));
+            delContextMenu();
+          },
+          { once: true }
+        );
       },
-    ]
-  );
+      appearance: "ios",
+    },
+  ]);
 }
 
 // tooltip for [[references]] to notebooks

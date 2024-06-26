@@ -6,6 +6,7 @@ import { chatGPT } from "./chat_gpt";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
 import { mainContainer, notesPreviewArea, brain } from "../main";
 import { eid, attemptRemoval } from "./dom_utils";
+import { AINotif } from "./notif_palette";
 
 export {
   initializeFlashcards,
@@ -28,6 +29,11 @@ function setRejectToNull() {
 }
 
 async function AIFlashcards() {
+  if (note.isEncrypted) {
+    notyf.error("AI Features are unavailable on encrypted notebooks")
+    return;
+  }
+  leaveFlashcardMode();
   let generatedCards = [];
   let response = (
     (await chatGPT(
@@ -54,17 +60,18 @@ async function AIFlashcards() {
       }
       count++;
     });
-    leaveFlashcardMode();
-    try {
-      generatedCards = await editCardsHelper(generatedCards, true);
-      flashcards = flashcards.concat(generatedCards);
-      saveFlashcards();
-      showFlashcards(true);
-    } catch (err) {
-      if (err.message === "Unsaved") {
+    AINotif("Flashcards", note.name, async () => {
+      try {
+        generatedCards = await editCardsHelper(generatedCards, true);
+        flashcards = flashcards.concat(generatedCards);
+        saveFlashcards();
         showFlashcards(true);
+      } catch (err) {
+        if (err.message === "Unsaved") {
+          showFlashcards(true);
+        }
       }
-    }
+    })
   } else {
     if (!note.isEncrypted) {
       notyf.error("Flashcards could not be generated");

@@ -1,4 +1,4 @@
-import { getAnyBookContent, library, reservedNames } from "./note_utils";
+import { getAnyBookContent, library, reserved } from "./note_utils";
 import { updateList } from "./list_utils";
 import { defineCmd } from "./ctrl_space";
 import { closeTab } from "./tabs";
@@ -12,12 +12,10 @@ async function getFamily(bookName, optionalPreFetchedData) {
   try {
     return library.get(bookName)["family"];
   } catch (err) {
-    const ancestors = await getAnyBookContent(bookName, "parents") || [];
-    const descendants = await getFamilyOneWay(
-      bookName,
-      "children",
-      optionalPreFetchedData
-    ) || [];
+    const ancestors = (await getAnyBookContent(bookName, "parents")) || [];
+    const descendants =
+      (await getFamilyOneWay(bookName, "children", optionalPreFetchedData)) ||
+      [];
     const response = [...ancestors, ...descendants];
     return response;
   }
@@ -49,12 +47,7 @@ async function getFamilyOneWay(
 
 async function createChild(parent, child) {
   const existingItem = await fetch(`/api/get/notebooks/${child}`);
-  if (
-    existingItem.status === 404 &&
-    child &&
-    parent &&
-    !reservedNames.some((e) => e.data.name === parent)
-  ) {
+  if (existingItem.status === 404 && child && parent && !reserved(parent)) {
     const saveStatus = await fetch("/api/save/notebooks/", {
       method: "PUT",
       headers: {
@@ -79,7 +72,7 @@ async function createChild(parent, child) {
 }
 
 async function nestNote(child, parent) {
-  if (child && parent && !reservedNames.some((e) => e.data.name === child)) {
+  if (child && parent && !reserved(child)) {
     const result = await fetch(`/api/nest/${child}/${parent}`, {
       method: "PATCH",
     });
@@ -114,14 +107,20 @@ async function relinquishNote(child, parent) {
     if (result.ok) {
       const childInMem = library.get(child);
       if (childInMem) {
-        childInMem["parents"] = childInMem["parents"].filter((e) => e !== parent);
+        childInMem["parents"] = childInMem["parents"].filter(
+          (e) => e !== parent
+        );
         childInMem["family"] = childInMem["family"].filter((e) => e !== parent);
       }
 
       const parentInMem = library.get(parent);
       if (parentInMem) {
-        parentInMem["children"] = parentInMem["children"].filter((e) => e !== child);
-        parentInMem["family"] = parentInMem["family"].filter((e) => e !== child);
+        parentInMem["children"] = parentInMem["children"].filter(
+          (e) => e !== child
+        );
+        parentInMem["family"] = parentInMem["family"].filter(
+          (e) => e !== child
+        );
       }
 
       updateList();

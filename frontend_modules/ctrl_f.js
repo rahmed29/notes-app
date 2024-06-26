@@ -1,7 +1,6 @@
-import DOMPurify from "dompurify";
 import { note } from "./note_utils";
 import { jumpToDesiredPage } from "./dom_formatting";
-import { closePalette, createPalette } from "./cmd";
+import { createPalette, render } from "./cmd";
 
 export { showSearch };
 
@@ -24,32 +23,17 @@ function showSearch() {
   }
 
   createPalette("Search for text within this notebook...", (results, text) => {
-    while (results.firstChild) {
-      results.firstChild.remove();
-    }
-    if (!text) {
-      return;
-    }
-    for (let i = 0, n = note.content.length; i < n; i++) {
-      const result = findSubstringWithContext(note.content[i], text);
-      if (result) {
-        const item = document.createElement("div");
-        item.setAttribute("data-page", i);
-        item.classList.add("item");
-        const h3 = document.createElement("h3");
-        h3.innerText = `Page ${i + 1}`;
-        item.appendChild(h3);
-        const finder = document.createElement("div");
-        finder.classList.add("finder");
-        finder.classList.add("fading-box");
-        finder.innerHTML = DOMPurify.sanitize(result);
-        item.appendChild(finder);
-        item.addEventListener("click", () => {
-          jumpToDesiredPage(i);
-          closePalette();
+    const commands = note.content.reduce((arr, e, i) => {
+      let str = findSubstringWithContext(e, text);
+      if (str) {
+        arr.push({
+          name: str,
+          icon: `Page ${i + 1}`,
+          handler: () => jumpToDesiredPage(i),
         });
-        results.appendChild(item);
       }
-    }
+      return arr;
+    }, []);
+    render(2, commands, results);
   });
 }

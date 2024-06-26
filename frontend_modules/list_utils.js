@@ -15,9 +15,9 @@ import {
   switchNote,
   deleteNoteBookFromDb,
   getAnyBookContent,
-  reservedNames,
   note,
   copyBook,
+  editReserved,
 } from "./note_utils";
 import { format, removeMD } from "./text_formatting";
 import { switchTab } from "./tabs";
@@ -233,9 +233,9 @@ function goToImagePreview() {
     }
     return str;
   }, "**Occurrences in local storage:**\n");
-  reservedNames.find((e) => e.data.name === "Image-Preview").data.content = [
+  editReserved("Image-Preview", [
     `![](${this.getAttribute("data-href")})\n\n${occ}`,
-  ];
+  ]);
   switchNote("Image-Preview");
 }
 
@@ -273,13 +273,13 @@ async function search(term) {
   for (const item of listContainer.firstChild.childNodes) {
     const folder = item.firstChild;
     const name = folder.getAttribute("data-bookname");
-    let fam = await getFamily(name)
-    fam.push(name)
-    fam = JSON.stringify(fam).toLowerCase()
+    let fam = await getFamily(name);
+    fam.push(name);
+    fam = JSON.stringify(fam).toLowerCase();
     if (!fam.includes(term.toLowerCase()) && term) {
       folder.style.display = "none";
     } else {
-      folder.style.display = "inline-block"
+      folder.style.display = "inline-block";
     }
   }
 }

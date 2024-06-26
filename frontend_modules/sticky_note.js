@@ -1,6 +1,13 @@
 import { closePopupWindow } from "./popup";
-import { note, reservedNames } from "./note_utils";
-import { editor, stickyNotes, openCalendar, mainContainer, stickyNotesTextArea, brDots } from "../main";
+import { note, reserved } from "./note_utils";
+import {
+  editor,
+  stickyNotes,
+  openCalendar,
+  mainContainer,
+  stickyNotesTextArea,
+  brDots,
+} from "../main";
 import { updateAndSaveNotesLocally } from "./dom_formatting";
 
 export {
@@ -12,7 +19,7 @@ export {
 };
 
 function insertStickyNote() {
-  if (!reservedNames.some((e) => e.data.name === note.name)) {
+  if (!reserved(note.name)) {
     editor.insert(stickyNotesTextArea.value);
     updateAndSaveNotesLocally();
   } else {

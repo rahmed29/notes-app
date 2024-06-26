@@ -26,19 +26,19 @@ function getDiff(one, other) {
   return fragment;
 }
 
-function showBookDiffPopup() {
+function showBookDiffPopup(content = note.content, dbSave = note.dbSave) {
   const bookDiffContent = createPopupWindow();
-  const timesToRepeat = Math.max(note.dbSave.length, note.content.length);
+  const timesToRepeat = Math.max(dbSave.length, content.length);
   const missingPage =
-    timesToRepeat === note.dbSave.length ? note.dbSave : note.content;
+    timesToRepeat === dbSave.length ? dbSave : content;
   const [bgColor, textColor] =
-    timesToRepeat === note.dbSave.length
+    timesToRepeat === dbSave.length
       ? ["#ff5e5e", "black"]
       : ["#33ff96", "black"];
   for (let i = 0, n = timesToRepeat; i < n; i++) {
     const pageDiff = document.createElement("div");
     const h2 = document.createElement("h2");
-    h2.innerText = `Page ${i + 1}`;
+    h2.innerHTML = i !== 0 ? `Page ${i + 1}` : `Page ${i + 1} <span style = 'font-size: 14px;'>Your notebook <span style = 'background: #33ff96; color: black;'>&nbsp;includes&nbsp;</span> or <span style = 'background: #ff5e5e; color: black;'>&nbsp;excludes&nbsp;</span></span>`;
     h2.addEventListener("click", function () {
       this.scrollIntoView();
     });
@@ -58,7 +58,7 @@ function showBookDiffPopup() {
     pageDiff.appendChild(h2);
     pageDiff.classList.add("pageDiff");
     try {
-      pageDiff.appendChild(getDiff(note.dbSave[i], note.content[i]));
+      pageDiff.appendChild(getDiff(dbSave[i], content[i]));
     } catch (err) {
       const fragment = document.createDocumentFragment();
       const span = document.createElement("span");
