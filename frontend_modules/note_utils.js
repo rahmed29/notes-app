@@ -139,18 +139,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
   if (library.get(bookName)) {
     const cBook = library.get(bookName);
     const cachedData = {
-      data: {
-        name: cBook.name,
-        date: cBook.timeOfSave,
-        content: cBook.content,
-        dbSave: cBook.dbSave,
-        children: cBook.children,
-        parents: cBook.parents,
-        saved: cBook.saved,
-        isEncrypted: cBook.isEncrypted,
-        password: cBook.password,
-        aceSessions: cBook.aceSessions,
-      },
+      data: cBook,
     };
     if (desiredInfo === "_data") {
       return cachedData["data"];

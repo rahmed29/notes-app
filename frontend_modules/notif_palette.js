@@ -1,6 +1,6 @@
 
 import { showBookDiffPopup } from "./book_diff";
-import { createPalette, render } from "./cmd";
+import { createPalette, render_p } from "./cmd";
 import { accents } from "./dom_formatting";
 import { library, note, switchNote } from "./note_utils";
 
@@ -79,7 +79,7 @@ function showNotifs() {
   createPalette(
     "Search notifications...",
     (results, text) => {
-      render(
+      render_p(
         2,
         notifStack.filter((e) =>
           e.name.toLowerCase().includes(text.toLowerCase())
@@ -88,7 +88,7 @@ function showNotifs() {
       );
     },
     (results) => {
-      render(2, notifStack, results);
+      render_p(2, notifStack, results);
     }
   );
 }

@@ -91,12 +91,9 @@ function cal(d) {
 function ref(d) {
   if (d.type !== "textDirective") return false;
 
-  this.tag("<span");
-  this.tag(` class="reference" data-bookname="${d.label}" data-page="0"`);
-
-  this.tag(">");
+  this.tag(`<a href = 'javascript:()' class="reference" data-bookname="${d.label}" data-page="0">`);
   this.raw(DOMPurify.sanitize(d.label) || "");
-  this.tag("</span>");
+  this.tag("</a>");
 }
 
 // Text formatting stuff

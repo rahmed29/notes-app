@@ -3,7 +3,7 @@ import { editor } from "../main";
 import { eid, attemptRemoval } from "./dom_utils";
 import { closePopupWindow } from "./popup";
 
-export { createPalette, closePalette, render };
+export { createPalette, closePalette, render_p };
 
 function handleKeys(e) {
   if (e.key === "Enter") {
@@ -44,7 +44,7 @@ function closePalette() {
   document.removeEventListener("keydown", handleKeys);
 }
 
-function render(version, arr, results) {
+function render_p(version, arr, results) {
   while (results.firstChild) {
     results.firstChild.remove();
   }
@@ -55,7 +55,7 @@ function render(version, arr, results) {
         createPalette(
           "Search...",
           (results, text) => {
-            render(
+            render_p(
               version,
               cmd.children.filter((e) =>
                 e.name.toLowerCase().includes(text.toLowerCase())
@@ -64,7 +64,7 @@ function render(version, arr, results) {
             );
           },
           (results, text) => {
-            render(version, cmd.children, results);
+            render_p(version, cmd.children, results);
           }
         );
       });

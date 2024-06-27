@@ -346,31 +346,50 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
   }
 });
 
-app.post("/api/chatGPT", async (req, res) => {
-  try {
-    const response = await gpt(req.body.content, req.body.prompt);
-    res.status(200).json({ data: response });
-  } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+let generating = false;
+
+app.post("/api/chatgpt", async (req, res) => {
+  if (!generating) {
+    generating = true;
+    try {
+      const response = await gpt(req.body.content, req.body.prompt);
+      res.status(200).json({ data: response });
+    } catch (err) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+    generating = false;
+  } else {
+    res
+      .status(503)
+      .json({ error: "An AI response is currently being generated." });
   }
 });
 
 app.post("/api/ollama", async (req, res) => {
-  try {
-    const response = await axios.post(
-      `${process.env.OLLAMA_URI}/api/generate`,
-      {
-        model: process.env.OLLAMA_MODEL,
-        system: req.body.content,
-        prompt: req.body.prompt,
-        stream: false,
-      },
-      { headers: { "Content-Type": "application/json" } }
-    );
-    res.status(200).json({ data: response.data });
-  } catch (err) {
-    console.log(err)
-    res.status(500).json({ error: "Internal server error" });
+  if (!generating) {
+    generating = true;
+    try {
+      const response = await axios.post(
+        `${process.env.OLLAMA_URI}/api/generate`,
+        {
+          model: process.env.OLLAMA_MODEL,
+          system: req.body.content,
+          prompt: req.body.prompt,
+          stream: false,
+          temperature: 0.0,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      res.status(200).json({ data: response.data.response });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+    generating = false;
+  } else {
+    res
+      .status(503)
+      .json({ error: "An AI response is currently being generated." });
   }
 });
 

@@ -149,17 +149,17 @@ function setupToolbar() {
               [
                 {
                   text: "ChatGPT",
-                  click: async function () {
+                  click: () => {
                     delContextMenu();
-                    await AISUmmary(0);
+                    AISUmmary("chatgpt");
                   },
                   appearance: "ios",
                 },
                 {
                   text: "Ollama",
-                  click: async function () {
+                  click: () => {
                     delContextMenu();
-                    await AISUmmary(1);
+                    AISUmmary("ollama");
                   },
                   appearance: "ios",
                 },

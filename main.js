@@ -358,7 +358,7 @@ anonTooltips.forEach((obj) =>
 // toast notifs
 const notyf = new Notyf({
   position: {
-    y: "top",
+    y: "bottom",
     x: "center",
   },
   dismissible: true,

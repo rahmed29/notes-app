@@ -978,8 +978,8 @@ blockquote:hover {
   position: fixed;
   z-index: 3;
   box-shadow: var(--floating-bs);
-  border-radius: 6px;
   padding: 3px;
+  border-radius: 6px;
   max-height: 500px;
   overflow-y: auto;
   display: flex;
@@ -997,14 +997,14 @@ blockquote:hover {
   color: var(--context-menu-color);
   overflow: hidden;
   white-space: nowrap;
-  height: 1.5em;
+  height: 1.6em;
+  border-radius: 3px;
   font-family: Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
   padding-left: 5px;
   font-size: 13px;
   display: flex;
   align-items: center;
-  border-radius: 3px;
   user-select: none;
   flex: 0 0 auto;
   outline: none;
@@ -1424,7 +1424,6 @@ blockquote:hover {
 
 .fcCardList .cardFront {
   background: var(--quizlet-purple);
-  width: 300px;
   min-width: 300px;
   height: 100%;
   box-shadow: none;

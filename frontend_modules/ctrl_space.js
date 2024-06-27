@@ -21,7 +21,7 @@ import { showTodo } from "./calendar.js";
 import { insertStickyNote } from "./sticky_note.js";
 import { showBookDiffPopup } from "./book_diff.js";
 import { flashcardMode, showFlashcards } from "./flashcards.js";
-import { createPalette, render } from "./cmd.js";
+import { createPalette, render_p } from "./cmd.js";
 import { eid } from "./dom_utils.js";
 import { closeTab } from "./tabs.js";
 
@@ -33,10 +33,16 @@ function showPal() {
   createPalette(
     "Search for commands...",
     (results, text) => {
-      render(1, commands.filter((e) => e.name.toLowerCase().includes(text.toLowerCase())), results);
+      render_p(
+        1,
+        commands.filter((e) =>
+          e.name.toLowerCase().includes(text.toLowerCase())
+        ),
+        results
+      );
     },
     (results, text) => {
-      render(1, commands, results);
+      render_p(1, commands, results);
     }
   );
 }
@@ -113,7 +119,16 @@ async function defineCmd() {
     },
     {
       name: "AI Summary",
-      handler: AISUmmary,
+      children: [
+        {
+          name: "ChatGPT",
+          handler: () => AISUmmary("chatgpt"),
+        },
+        {
+          name: "Ollama",
+          handler: () => AISUmmary("ollama"),
+        },
+      ],
     },
     {
       name: "Create Flashcards",

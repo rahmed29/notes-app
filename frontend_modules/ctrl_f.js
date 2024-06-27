@@ -1,6 +1,6 @@
 import { note } from "./note_utils";
 import { jumpToDesiredPage } from "./dom_formatting";
-import { createPalette, render } from "./cmd";
+import { createPalette, render_p } from "./cmd";
 
 export { showSearch };
 
@@ -34,6 +34,6 @@ function showSearch() {
       }
       return arr;
     }, []);
-    render(2, commands, results);
+    render_p(2, commands, results);
   });
 }

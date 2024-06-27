@@ -148,13 +148,11 @@ function syncStatus() {
     // note name reserved
     editTabText(note.name, note.name);
     areNotesSavedIcon.style.filter = "grayscale(1)";
-    document.title = note.name;
   } else if (!note.saved) {
     // note not saved
     editTabText(note.name, `* ${note.name}`);
     synced.setContent(`Notes are not saved`);
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
-    document.title = `* ${note.name}`;
   } else {
     // note is saved
     let writtenPages = getWrittenPages(note.content);
@@ -163,7 +161,6 @@ function syncStatus() {
       editTabText(note.name, note.name);
       synced.setContent(`Notes were saved at ${note.timeOfSave}`);
       areNotesSavedIcon.style.filter = "none";
-      document.title = note.name;
     } else {
       // content is not in sync with db
       editTabText(note.name, `* ${note.name}`);
@@ -174,7 +171,6 @@ function syncStatus() {
         )} chars`
       );
       areNotesSavedIcon.style.filter = "grayscale(1)";
-      document.title = `* ${note.name}`;
     }
   }
 }

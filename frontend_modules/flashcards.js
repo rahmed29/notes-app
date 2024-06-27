@@ -2,11 +2,12 @@ import { contextMenu, delContextMenu } from "./context_menu";
 import { createPopupWindow, closePopupWindow } from "./popup";
 import { showList, hideList } from "./list_utils";
 import { note } from "./note_utils";
-import { aiGenerating, chatGPT } from "./ai_utils";
+import { aiGenerating, prompt_ai } from "./ai_utils";
 import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
 import { mainContainer, notesPreviewArea, brain } from "../main";
 import { eid, attemptRemoval } from "./dom_utils";
 import { AINotif } from "./notif_palette";
+import { format } from "./text_formatting";
 
 export {
   initializeFlashcards,
@@ -30,36 +31,36 @@ function setRejectToNull() {
 
 async function AIFlashcards() {
   if (note.isEncrypted) {
-    notyf.error("AI Features are unavailable on encrypted notebooks")
+    notyf.error("AI Features are unavailable on encrypted notebooks");
     return;
   }
   leaveFlashcardMode();
   let generatedCards = [];
   let response = (
-    (await chatGPT(
+    (await prompt_ai(
       note.content[note.pgN],
       // this works well enough idk
-      "Create flashcards from this note. Provide me with a string where cards are separated by 3 colons (:::) and within those cards, the term and definition are separated by 3 plus signs (+++)"
-    )) || ""
-  ).split(":::");
+      "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags.",
+      "chatgpt"
+    ))
+  )
+  const shadow = document.createElement("div");
+  shadow.innerHTML = format(response);
   let count = 1;
-  if (Array.isArray(response) && response.length > 0) {
-    response.forEach((card) => {
-      card = card.split("+++");
-      const front = card[0];
-      const back = card[1];
-      if (front && back) {
+  if (shadow.getElementsByTagName("table")[0]) {
+   for (const td of shadow.getElementsByTagName("table")[0].rows) {
+      if (td.children[0].innerText && td.children[0].innerText) {
         generatedCards.push({
           subject: note.name,
-          front,
-          back,
+          front: td.children[0].innerText.replaceAll("<br>", "\n"),
+          back: td.children[1].innerText.replaceAll("<br>", "\n"),
           id: Date.now() + count,
           ai_generated: true,
           learning: "unattempted",
         });
+        count++;
       }
-      count++;
-    });
+    }
     AINotif("Flashcards", note.name, async () => {
       try {
         generatedCards = await editCardsHelper(generatedCards, true);
@@ -71,7 +72,7 @@ async function AIFlashcards() {
           showFlashcards(true);
         }
       }
-    })
+    });
   } else {
     if (!note.isEncrypted) {
       notyf.error("Flashcards could not be generated");
@@ -159,13 +160,14 @@ function flashcardMode() {
   brain.classList.add("grayscale");
   const fcArea = document.createElement("div");
   fcArea.id = "fcArea";
+  fcArea.addEventListener("click", delContextMenu)
   const aibutton = document.createElement("div");
   aibutton.classList.add("fcButtons");
   const generated = document.createElement("button");
-  generated.innerText = "✨ Generate Cards";
-  generated.addEventListener("click", AIFlashcards, { once: true });
+  generated.innerHTML = "✨ Generate Cards (ChatGPT)";
+  generated.addEventListener("click", AIFlashcards)
   if (aiGenerating) {
-    generated.classList.add("unavailable")
+    generated.classList.add("unavailable");
   }
   aibutton.appendChild(generated);
   fcArea.appendChild(aibutton);
@@ -207,6 +209,7 @@ function flashcardMode() {
   buttons.appendChild(save);
   buttons.appendChild(exit);
   cardFront.addEventListener("focus", function () {
+    delContextMenu();
     currCard.classList.remove("currCard");
     this.classList.add("currCard");
     currCard = this;
@@ -216,6 +219,7 @@ function flashcardMode() {
   cardBack.contentEditable = true;
   cardBack.spellcheck = false;
   cardBack.addEventListener("focus", function () {
+    delContextMenu();
     currCard.classList.remove("currCard");
     this.classList.add("currCard");
     currCard = this;
@@ -237,10 +241,11 @@ function leaveFlashcardMode() {
   notesPreviewArea.removeEventListener("click", fcPop);
   notesPreviewArea.removeEventListener("mouseover", fcId);
   document.body.classList.remove("flashcardMode");
+  delContextMenu();
   toggleWikiSearch();
   showList();
-  attemptRemoval([eid("fcAlert")])
-  attemptRemoval([eid("fcArea")])
+  attemptRemoval([eid("fcAlert")]);
+  attemptRemoval([eid("fcArea")]);
 }
 
 function showFlashcards(noAnimation) {

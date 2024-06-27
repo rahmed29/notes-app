@@ -91,6 +91,7 @@ class Tab {
 
   editText(text) {
     this.tabRef.firstChild.innerText = text;
+    document.title = text;
   }
 
   select() {
