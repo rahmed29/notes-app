@@ -1,4 +1,4 @@
-import themes from "./themes/index.js";
+import themes from "../themes/index.js";
 import {
   note,
   deleteNoteBookFromDb,
@@ -7,23 +7,23 @@ import {
   switchNote,
   saveNoteBookToDb,
   getAnyBookContent,
-} from "./note_utils.js";
-import { removeMD } from "./text_formatting.js";
-import { getFamily, nestNote, relinquishNote } from "./hierarchy.js";
-import { getList, toggleList } from "./list_utils.js";
-import { changeTheme } from "./theming.js";
-import { jumpToDesiredPage } from "./dom_formatting.js";
-import { AISUmmary } from "./ai_utils.js";
-import { toggleWikiSearch } from "./wikipedia.js";
-import { editingWindow } from "./editing_window.js";
-import { editor } from "../main.js";
-import { showTodo } from "./calendar.js";
-import { insertStickyNote } from "./sticky_note.js";
-import { showBookDiffPopup } from "./book_diff.js";
-import { flashcardMode, showFlashcards } from "./flashcards.js";
+} from "../note_utils.js";
+import { removeMD } from "../text_formatting.js";
+import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
+import { getList, toggleList } from "../list_utils.js";
+import { changeTheme } from "../theming.js";
+import { jumpToDesiredPage } from "../dom_formatting.js";
+import { AISUmmary } from "../ai_utils.js";
+import { toggleWikiSearch } from "../wikipedia.js";
+import { editingWindow } from "../editing_window.js";
+import { editor } from "../../main.js";
+import { showTodo } from "../popups/calendar.js";
+import { insertStickyNote } from "../sticky_note.js";
+import { showBookDiffPopup } from "../popups/book_diff.js";
+import { flashcardMode, showFlashcards } from "../popups/flashcards.js";
 import { createPalette, render_p } from "./cmd.js";
-import { eid } from "./dom_utils.js";
-import { closeTab } from "./tabs.js";
+import { eid } from "../dom_utils.js";
+import { closeTab } from "../tabs.js";
 
 export { showPal, defineCmd };
 
@@ -47,7 +47,7 @@ function showPal() {
   );
 }
 
-// Re-Instantiate the command palette
+// Update palette
 async function defineCmd() {
   const cmdPgs = note.content.map((e, i) => {
     return {

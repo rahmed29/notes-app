@@ -1,6 +1,6 @@
 import { loading, stopLoading } from "./dom_utils";
 import { note, switchNote, editReserved } from "./note_utils";
-import { AINotif } from "./notif_palette";
+import { AINotif } from "./palettes/notif_palette";
 
 export { prompt_ai, AISUmmary, aiGenerating };
 

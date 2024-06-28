@@ -1,9 +1,9 @@
-import { editor, mainContainer } from "../main";
+import { editor, mainContainer } from "../../main";
 import { clearTaskTippys, deleteCalendar } from "./calendar";
-import { delContextMenu } from "./context_menu";
-import { hideStickyNotes } from "./sticky_note";
+import { delContextMenu } from "../context_menu";
+import { hideStickyNotes } from "../sticky_note";
 import { setRejectToNull } from "./flashcards";
-import { attemptRemoval, eid } from "./dom_utils";
+import { attemptRemoval, eid } from "../dom_utils";
 
 export { createPopupWindow, closePopupWindow };
 

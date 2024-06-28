@@ -18,7 +18,7 @@ import { contextMenu, delContextMenu } from "./context_menu";
 import { switchTab, editTabText } from "./tabs";
 import { showPagePreview, scrollCM } from "./list_utils";
 import { deleteImageFromDb } from "./images";
-import { defineCmd } from "./ctrl_space";
+import { defineCmd } from "./palettes/ctrl_space";
 import { currTheme } from "./theming";
 import tippy from "tippy.js";
 import { eid } from "./dom_utils";
@@ -189,6 +189,12 @@ function formatNonText(ele) {
       type: "mouseover",
       listener: referToolTip,
     });
+    node.addEventListener("focus", referToolTip);
+    previewHandlers.push({
+      element: node,
+      type: "focus",
+      listener: referToolTip,
+    });
   }
   for (const node of ele.getElementsByTagName("img")) {
     node.addEventListener("contextmenu", removeImageToolTip);
@@ -310,6 +316,7 @@ async function referToolTip() {
     lastDynamicTippy.setContent(
       `<div class = 'pagePreviewContainer'>${content}</div>`
     );
+    lastDynamicTippy.show()
   } catch (err) {
     lastDynamicTippy.destroy();
   }

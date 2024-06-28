@@ -4,7 +4,7 @@ import { list, tabs } from "../main";
 import { showList, hideList } from "./list_utils";
 import { delContextMenu } from "./context_menu";
 import { eid } from "./dom_utils";
-import { allowSingleRedo } from "./notif_palette";
+import { allowSingleRedo } from "./palettes/notif_palette";
 
 export {
   savedWS,

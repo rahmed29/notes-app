@@ -1,8 +1,8 @@
 
-import { showBookDiffPopup } from "./book_diff";
+import { showBookDiffPopup } from "../popups/book_diff";
 import { createPalette, render_p } from "./cmd";
-import { accents } from "./dom_formatting";
-import { library, note, switchNote } from "./note_utils";
+import { accents } from "../dom_formatting";
+import { getAnyBookContent, library, switchNote } from "../note_utils";
 
 export { allowSingleRedo, AINotif, showNotifs };
 
@@ -60,8 +60,8 @@ function allowSingleRedo(noteName, { content, aceSessions }) {
       {
         name: "Compare to Current State",
         icon: "?",
-        handler: () => {
-          showBookDiffPopup(note.content, content)
+        handler: async () => {
+          showBookDiffPopup(await getAnyBookContent(noteName, "content"), content)
         },
       },
       {

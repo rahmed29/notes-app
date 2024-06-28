@@ -149,8 +149,9 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
   }
 });
 
-app.put("/api/save/notebooks", async (req, res) => {
-  const { name, content, date, isEncrypted } = req.body;
+app.put("/api/save/notebooks/:name", async (req, res) => {
+  const name = req.params.name;
+  const { content, date, isEncrypted } = req.body;
   if (!name || !content || name === "home" || !validNoteName.test(name)) {
     return res.status(400).json({ error: "Malformed request body." });
   }
@@ -355,7 +356,7 @@ app.post("/api/chatgpt", async (req, res) => {
       const response = await gpt(req.body.content, req.body.prompt);
       res.status(200).json({ data: response });
     } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(502).json({ error: "ChatGPT API Could not reached" });
     }
     generating = false;
   } else {
@@ -383,7 +384,7 @@ app.post("/api/ollama", async (req, res) => {
       res.status(200).json({ data: response.data.response });
     } catch (err) {
       console.log(err);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(502).json({ error: "Ollama API Could not be reached" });
     }
     generating = false;
   } else {

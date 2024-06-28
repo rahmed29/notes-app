@@ -1,7 +1,7 @@
-import { mainContainer } from "../main";
-import { editor } from "../main";
-import { eid, attemptRemoval } from "./dom_utils";
-import { closePopupWindow } from "./popup";
+import { mainContainer } from "../../main";
+import { editor } from "../../main";
+import { eid, attemptRemoval } from "../dom_utils";
+import { closePopupWindow } from "../popups/popup";
 
 export { createPalette, closePalette, render_p };
 
@@ -79,7 +79,7 @@ function render_p(version, arr, results) {
     if (version === 1) {
       item.innerText = cmd.name;
     } else {
-      // version 2 is centered text with an left aligned icon
+      // version 2 is centered text with an left aligned 'icon'. The icon can be anything including HTML.
       const h3 = document.createElement("h3");
       h3.innerHTML = cmd.icon;
       item.appendChild(h3);

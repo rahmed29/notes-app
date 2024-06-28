@@ -1,10 +1,10 @@
-import { note, switchNote } from "./note_utils";
-import { mainContainer, list, uploadFolder, border } from "../main";
-import { jumpToDesiredPage } from "./dom_formatting";
-import { showMorePages, search, resizeList } from "./list_utils";
-import { toggleList } from "./list_utils";
-import { delContextMenu } from "./context_menu";
-import { eid } from "./dom_utils";
+import { note, switchNote } from "../note_utils";
+import { mainContainer, list, uploadFolder, border } from "../../main";
+import { jumpToDesiredPage } from "../dom_formatting";
+import { showMorePages, search, resizeList } from "../list_utils";
+import { toggleList } from "../list_utils";
+import { delContextMenu } from "../context_menu";
+import { eid } from "../dom_utils";
 
 export default setupList;
 

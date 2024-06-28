@@ -1,26 +1,26 @@
-import { brain, toolBar, areNotesSavedIcon } from "../main";
-import { contextMenu, delContextMenu } from "./context_menu";
+import { brain, toolBar, areNotesSavedIcon } from "../../main";
+import { contextMenu, delContextMenu } from "../context_menu";
 import {
   deletePage,
   note,
   saveNoteBookToDb,
   deleteNoteBookFromDb,
   forceUpdateNotes,
-} from "./note_utils";
-import { editingWindow } from "./editing_window";
-import { handlePageMovement } from "./dom_formatting";
-import { toggleWikiSearch } from "./wikipedia";
-import { AISUmmary, aiGenerating } from "./ai_utils";
-import { insertStickyNote } from "./sticky_note";
-import { showTodo } from "./calendar";
-import { flashcardMode } from "./flashcards";
-import { showBookDiffPopup } from "./book_diff";
-import { encryptCurrentBook, decryptCurrentBook } from "./encryption";
-import { insertAndSaveImage } from "./images";
-import { listContextMenu } from "./list_utils";
-import themes from "./themes";
-import { changeTheme } from "./theming";
-import { eid } from "./dom_utils";
+} from "../note_utils";
+import { editingWindow } from "../editing_window";
+import { handlePageMovement } from "../dom_formatting";
+import { toggleWikiSearch } from "../wikipedia";
+import { AISUmmary, aiGenerating } from "../ai_utils";
+import { insertStickyNote } from "../sticky_note";
+import { showTodo } from "../popups/calendar";
+import { flashcardMode } from "../popups/flashcards";
+import { showBookDiffPopup } from "../popups/book_diff";
+import { encryptCurrentBook, decryptCurrentBook } from "../encryption";
+import { insertAndSaveImage } from "../images";
+import { listContextMenu } from "../list_utils";
+import themes from "../themes";
+import { changeTheme } from "../theming";
+import { eid } from "../dom_utils";
 
 export default setupToolbar;
 

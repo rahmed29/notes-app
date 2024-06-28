@@ -333,26 +333,27 @@ function listContextMenu(e, toolBar) {
       "beforeinput",
       function () {
         hasTyped = true;
-        ele.innerText = "";
+        this.innerText = "";
       },
       { once: true }
     );
     ele.addEventListener("keydown", function (e) {
+      const inputText = this.innerText;
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopImmediatePropagation();
         e.stopPropagation();
-        ele.contentEditable = false;
+        this.contentEditable = false;
         if (hasTyped) {
           switch (choice) {
             case "open":
-              switchNote(ele.innerText.replaceAll("\n", ""));
+              switchNote(inputText.replaceAll("\n", ""));
               break;
             case "copy":
-              copyBook(ele.innerText.replaceAll("\n", ""), noteName);
+              copyBook(inputText.replaceAll("\n", ""), noteName);
               break;
             case "child":
-              createChild(noteName, ele.innerText.replaceAll("\n", ""));
+              createChild(noteName, inputText.replaceAll("\n", ""));
           }
           delContextMenu();
         } else {

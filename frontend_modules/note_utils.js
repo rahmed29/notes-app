@@ -1,14 +1,14 @@
 import { listInMemory, updateList } from "./list_utils";
-import { closePopupWindow } from "./popup";
+import { closePopupWindow } from "./popups/popup";
 import { editor } from "../main";
 import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
-import { defineCmd } from "./ctrl_space";
+import { defineCmd } from "./palettes/ctrl_space";
 import { savedWS, closeTab, createTab } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { getFamily } from "./hierarchy";
-import { filterFlashcards } from "./flashcards";
+import { filterFlashcards } from "./popups/flashcards";
 import validNoteName from "../validNoteName";
-import { allowSingleRedo } from "./notif_palette";
+import { allowSingleRedo } from "./palettes/notif_palette";
 
 export {
   library,
@@ -346,13 +346,12 @@ async function saveNoteBookToDb(noteName) {
     if (!desiredNote.isEncrypted) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }
-    const saveStatus = await fetch("/api/save/notebooks/", {
+    const saveStatus = await fetch(`/api/save/notebooks/${desiredNote.name}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: desiredNote.name,
         content: !desiredNote.isEncrypted
           ? desiredNote.content
           : desiredNote.content.map((page) =>
@@ -443,13 +442,12 @@ async function copyBook(newName, bookToCopy) {
       return;
     }
     const content = (await getAnyBookContent(bookToCopy, "content")) || [""];
-    const save = await fetch("/api/save/notebooks/", {
+    const save = await fetch(`/api/save/notebooks/${newName}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: newName,
         content,
         date: new Date().toLocaleString(),
       }),

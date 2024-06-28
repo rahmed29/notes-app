@@ -1,5 +1,5 @@
-import { note } from "./note_utils";
-import { jumpToDesiredPage } from "./dom_formatting";
+import { note } from "../note_utils";
+import { jumpToDesiredPage } from "../dom_formatting";
 import { createPalette, render_p } from "./cmd";
 
 export { showSearch };

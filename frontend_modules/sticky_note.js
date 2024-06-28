@@ -1,5 +1,5 @@
-import { closePopupWindow } from "./popup";
-import { note, reserved } from "./note_utils";
+import { closePopupWindow } from "./popups/popup.js";
+import { note, reserved } from "./note_utils.js";
 import {
   editor,
   stickyNotes,
@@ -7,8 +7,8 @@ import {
   mainContainer,
   stickyNotesTextArea,
   brDots,
-} from "../main";
-import { updateAndSaveNotesLocally } from "./dom_formatting";
+} from "../main.js";
+import { updateAndSaveNotesLocally } from "./dom_formatting.js";
 
 export {
   saveStickyNotes,
@@ -29,13 +29,12 @@ function insertStickyNote() {
 
 // sticky note
 async function saveStickyNotes() {
-  const saveStatus = await fetch("/api/save/notebooks/", {
+  const saveStatus = await fetch("/api/save/notebooks/sticky__notes", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "sticky__notes",
       content: [stickyNotesTextArea.value],
       date: new Date().toLocaleString(),
     }),

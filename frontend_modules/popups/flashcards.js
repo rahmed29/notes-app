@@ -1,13 +1,13 @@
-import { contextMenu, delContextMenu } from "./context_menu";
+import { contextMenu, delContextMenu } from "../context_menu";
 import { createPopupWindow, closePopupWindow } from "./popup";
-import { showList, hideList } from "./list_utils";
-import { note } from "./note_utils";
-import { aiGenerating, prompt_ai } from "./ai_utils";
-import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "./wikipedia";
-import { mainContainer, notesPreviewArea, brain } from "../main";
-import { eid, attemptRemoval } from "./dom_utils";
-import { AINotif } from "./notif_palette";
-import { format } from "./text_formatting";
+import { showList, hideList } from "../list_utils";
+import { note } from "../note_utils";
+import { aiGenerating, prompt_ai } from "../ai_utils";
+import { toggleWikiSearch, turnOffWiki, moneyAnimation } from "../wikipedia";
+import { mainContainer, notesPreviewArea, brain } from "../../main";
+import { eid, attemptRemoval } from "../dom_utils";
+import { AINotif } from "../palettes/notif_palette";
+import { format } from "../text_formatting";
 
 export {
   initializeFlashcards,
@@ -107,13 +107,12 @@ async function saveFlashcards() {
     (card) =>
       card.front && card.front !== "\n" && card.back && card.back !== "\n"
   );
-  const response = await fetch("/api/save/notebooks/", {
+  const response = await fetch("/api/save/notebooks/flash__cards", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "flash__cards",
       content: [JSON.stringify(flashcards)],
       date: new Date().toLocaleString(),
     }),
@@ -398,7 +397,7 @@ function showFlashcards(noAnimation) {
       cards.appendChild(cardFront);
     });
 
-    if (!cards.innerHTML) {
+    if (!cards.firstChild) {
       cards.classList.add("grid");
       cards.innerHTML = "<i>Cards for this notebook will appear here.</i>";
     } else {

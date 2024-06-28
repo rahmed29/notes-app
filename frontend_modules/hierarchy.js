@@ -1,6 +1,6 @@
 import { getAnyBookContent, library, reserved } from "./note_utils";
 import { updateList } from "./list_utils";
-import { defineCmd } from "./ctrl_space";
+import { defineCmd } from "./palettes/ctrl_space";
 import { closeTab } from "./tabs";
 
 export { getFamily, nestNote, relinquishNote, createChild };
@@ -48,13 +48,12 @@ async function getFamilyOneWay(
 async function createChild(parent, child) {
   const existingItem = await fetch(`/api/get/notebooks/${child}`);
   if (existingItem.status === 404 && child && parent && !reserved(parent)) {
-    const saveStatus = await fetch("/api/save/notebooks/", {
+    const saveStatus = await fetch(`/api/save/notebooks/${child}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: child,
         content: [""],
         date: new Date().toLocaleString(),
       }),

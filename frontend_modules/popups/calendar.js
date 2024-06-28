@@ -6,12 +6,12 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import { createPopupWindow, closePopupWindow } from "./popup";
 import tippy from "tippy.js";
-import { contextMenu, delContextMenu } from "./context_menu";
-import { formatHDate } from "./text_formatting";
-import { note, reserved } from "./note_utils";
-import { editor } from "../main";
-import { updateAndSaveNotesLocally } from "./dom_formatting";
-import { attemptRemoval, eid } from "./dom_utils";
+import { contextMenu, delContextMenu } from "../context_menu";
+import { formatHDate } from "../text_formatting";
+import { note, reserved } from "../note_utils";
+import { editor } from "../../main";
+import { updateAndSaveNotesLocally } from "../dom_formatting";
+import { attemptRemoval, eid } from "../dom_utils";
 
 export {
   initializeTodo,
@@ -228,13 +228,12 @@ async function initializeTodo() {
 }
 
 async function saveTodo() {
-  const response = await fetch("/api/save/notebooks/", {
+  const response = await fetch("/api/save/notebooks/todo__list", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "todo__list",
       content: [JSON.stringify(events)],
       date: JSON.stringify(pastEvents),
     }),
@@ -449,7 +448,7 @@ function renderTaskList(lookingAtPast, taskList, constraint) {
     taskList.prepend(event);
   });
 
-  if (!taskList.innerHTML) {
+  if (!taskList.firstChild) {
     taskList.classList.add("grid");
     taskList.innerHTML =
       "<i style = 'margin-bottom: auto; opacity: .5;'>Tasks will appear here.</i>";

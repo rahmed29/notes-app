@@ -13,29 +13,29 @@ import {
   saveNoteBookToDb,
 } from "./frontend_modules/note_utils.js";
 import { updateList } from "./frontend_modules/list_utils.js";
-import { initializeTodo, showTodo } from "./frontend_modules/calendar.js";
+import { initializeTodo, showTodo } from "./frontend_modules/popups/calendar.js";
 import { updateAndSaveNotesLocally } from "./frontend_modules/dom_formatting.js";
 import { createWorkspace } from "./frontend_modules/tabs.js";
-import { initializeFlashcards } from "./frontend_modules/flashcards.js";
+import { initializeFlashcards } from "./frontend_modules/popups/flashcards.js";
 import {
   saveStickyNotes,
   showStickyNotes,
   hideStickyNotes,
   initializeStickyNotes,
 } from "./frontend_modules/sticky_note.js";
-import { showFlashcards } from "./frontend_modules/flashcards.js";
+import { showFlashcards } from "./frontend_modules/popups/flashcards.js";
 import { wikiSearch } from "./frontend_modules/wikipedia.js";
 import {
   cycleViewPreferences,
   editingWindow,
 } from "./frontend_modules/editing_window.js";
-import setupToolbar from "./frontend_modules/setup_toolbar.js";
-import setupList from "./frontend_modules/setup_list.js";
+import setupToolbar from "./frontend_modules/setups/setup_toolbar.js";
+import setupList from "./frontend_modules/setups/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
-import { showSearch } from "./frontend_modules/ctrl_f.js";
-import { showPal } from "./frontend_modules/ctrl_space.js";
+import { showSearch } from "./frontend_modules/palettes/ctrl_f.js";
+import { showPal } from "./frontend_modules/palettes/ctrl_space.js";
 import { eid } from "./frontend_modules/dom_utils.js";
-import { showNotifs } from "./frontend_modules/notif_palette.js";
+import { showNotifs } from "./frontend_modules/palettes/notif_palette.js";
 
 window.DOMPurify = DOMPurify;
 

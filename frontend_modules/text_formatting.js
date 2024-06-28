@@ -3,7 +3,7 @@ import { math, mathHtml } from "micromark-extension-math";
 import { gfm, gfmHtml } from "micromark-extension-gfm";
 import { mark, markHTML } from "../micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
-import { events, pastEvents } from "./calendar.js";
+import { events, pastEvents } from "./popups/calendar.js";
 
 export { removeMD, format, formatHDate };
 
