@@ -91,7 +91,7 @@ function cal(d) {
 function ref(d) {
   if (d.type !== "textDirective") return false;
 
-  this.tag(`<a href = 'javascript:()' class="reference" data-bookname="${d.label}" data-page="0">`);
+  this.tag(`<a href = 'javascript:();' class="reference" data-bookname="${d.label}" data-page="0">`);
   this.raw(DOMPurify.sanitize(d.label) || "");
   this.tag("</a>");
 }

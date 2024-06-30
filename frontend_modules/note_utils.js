@@ -379,7 +379,9 @@ async function saveNoteBookToDb(noteName) {
         desiredNote.timeOfSave = new Date().toLocaleString();
       }
       notyf.success("Notebook was saved");
-      allowSingleRedo(noteName, undoState);
+      if (undoState.content.length !== desiredNote.content.length) {
+        allowSingleRedo(noteName, undoState);
+      }
     } else {
       notyf.error("An error occurred when saving a notebook");
     }

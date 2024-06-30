@@ -167,7 +167,7 @@ function setupToolbar() {
               [eid("contextMenu").style.left, eid("contextMenu").style.top]
             );
           },
-          appearance: aiGenerating ? "unavailable" : "ios",
+          appearance: (aiGenerating || note.isEncrypted) ? "unavailable" : "ios",
         },
         {
           text: "Insert Sticky Note",

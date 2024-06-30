@@ -10,6 +10,7 @@ import axios from "axios";
 import validNoteName from "./validNoteName.js";
 // Environment variables
 // OPENAI_API_KEY=""
+// CHATGPT_MODEL=""
 // OLLAMA_URI=""
 // OLLAMA_MODEL=""
 
@@ -43,7 +44,7 @@ const openai = new OpenAI({
 
 async function gpt(content, prompt) {
   const completion = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
+    model: process.env.CHATGPT_MODEL,
     messages: [
       {
         role: "system",

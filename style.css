@@ -44,7 +44,7 @@ a {
   top: 0%;
   left: 0%;
   position: fixed;
-  z-index: 1000000;
+  z-index: 9999;
   background: var(--notes-background);
   width: 100vw;
   height: 100vh;
@@ -1792,7 +1792,7 @@ blockquote:hover {
   user-select: none;
   visibility: hidden;
   position: fixed;
-  z-index: 100000;
+  z-index: 9999;
   pointer-events: none;
   font-size: 1.2em;
 }

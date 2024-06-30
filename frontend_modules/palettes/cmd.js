@@ -6,7 +6,7 @@ import { closePopupWindow } from "../popups/popup";
 export { createPalette, closePalette, render_p };
 
 function handleKeys(e) {
-  if (e.key === "Enter") {
+  if (e.key === "Enter" && finderNode) {
     e.preventDefault();
     document.getElementsByClassName("selected")[0].click();
   } else if (e.key === "Escape") {

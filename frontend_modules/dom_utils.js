@@ -2,10 +2,6 @@ import { border } from "../main";
 
 export { loading, stopLoading, eid, attemptRemoval };
 
-function eid(id) {
-  return document.getElementById(id);
-}
-
 function attemptRemoval(eles) {
   eles.forEach((ele) => {
     try {
@@ -13,10 +9,9 @@ function attemptRemoval(eles) {
     } catch (err) {}
   });
 }
-function loading() {
- border.classList.add("shine-effect")
-}
 
-function stopLoading() {
-  border.classList.remove("shine-effect")
-}
+var eid = (id) => document.getElementById(id);
+
+var loading = () => border.classList.add("shine-effect");
+
+var stopLoading = () => border.classList.remove("shine-effect");

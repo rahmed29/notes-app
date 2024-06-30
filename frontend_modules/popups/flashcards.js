@@ -165,7 +165,7 @@ function flashcardMode() {
   const generated = document.createElement("button");
   generated.innerHTML = "✨ Generate Cards (ChatGPT)";
   generated.addEventListener("click", AIFlashcards)
-  if (aiGenerating) {
+  if (aiGenerating || note.isEncrypted) {
     generated.classList.add("unavailable");
   }
   aibutton.appendChild(generated);
