@@ -159,7 +159,7 @@ function syncStatus() {
     if (JSON.stringify(writtenPages) === JSON.stringify(note.dbSave)) {
       // content is synced
       editTabText(note.name, note.name);
-      synced.setContent(`Notes were saved at ${note.timeOfSave}`);
+      synced.setContent(`Notes were saved at ${note.date}`);
       areNotesSavedIcon.style.filter = "none";
     } else {
       // content is not in sync with db

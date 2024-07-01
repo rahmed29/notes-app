@@ -251,7 +251,7 @@ async function switchNote(noteName, page) {
   note.children = data.children;
   note.parents = data.parents;
   note.family = await getFamily(noteName, data);
-  note.timeOfSave = data.date;
+  note.date = data.date;
   if (data.saved == null || data.saved) {
     note.saved = true;
   } else {
@@ -371,12 +371,12 @@ async function saveNoteBookToDb(noteName) {
           accents(false);
         }
         desiredNote.saved = true;
-        desiredNote.timeOfSave = new Date().toLocaleString();
+        desiredNote.date = new Date().toLocaleString();
         syncStatus();
       } else {
         desiredNote.dbSave = [...desiredNote.content];
         desiredNote.saved = true;
-        desiredNote.timeOfSave = new Date().toLocaleString();
+        desiredNote.date = new Date().toLocaleString();
       }
       notyf.success("Notebook was saved");
       if (undoState.content.length !== desiredNote.content.length) {
