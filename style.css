@@ -538,6 +538,11 @@ a {
     drop-shadow(0.01em -1px 0.01em rgba(0, 0, 0, 0.2));
 }
 
+#icons button:focus-visible {
+  scale: 1.2;
+  outline: none;
+}
+
 #icons {
   background: var(--icons);
   border-radius: 5px;
@@ -987,8 +992,9 @@ hr {
   transition: 0.25s;
 }
 
-.dot:hover {
+.dot:hover, .dot:focus-visible {
   border-color: var(--icons);
+  outline: none;
 }
 
 .dot.currPage:hover {
@@ -1028,9 +1034,11 @@ hr {
   display: none;
 }
 
-#stickyNotes:hover .emoji,
-#openCalendar:hover .emoji,
-#flashcardsPracEmoji:hover .emoji {
+#yellowButtons button:focus-visible {
+  outline: none;
+}
+
+#yellowButtons .emoji:hover, #yellowButtons button:focus-visible .emoji {
   scale: 1.2;
   transform: rotate(15deg);
 }

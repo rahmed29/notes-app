@@ -4,10 +4,7 @@ import {
   getAnyBookContent,
   reserved,
 } from "./note_utils";
-import {
-  synced,
-  generalInfoPageNumber,
-} from "./important_stuff/tooltips";
+import { synced, generalInfoPageNumber } from "./important_stuff/tooltips";
 import {
   topLeftPageNumber,
   generalInfoPageNumberEle,
@@ -69,7 +66,12 @@ function jumpToDesiredPage(desired) {
   }
 }
 
-function handlePageMovement({ direction, amount, shouldCreateNewPage, event }) {
+function handlePageMovement({
+  direction,
+  amount,
+  shouldCreateNewPage = false,
+  event,
+} = {}) {
   if (direction === "<-" && note.pgN > 0) {
     note.pgN -= amount;
     accents();
@@ -85,7 +87,8 @@ function handlePageMovement({ direction, amount, shouldCreateNewPage, event }) {
       // defineCmd();
     } else if (
       note.pgN + amount >= note.content.length &&
-      !shouldCreateNewPage
+      !shouldCreateNewPage &&
+      event
     ) {
       contextMenu(
         event,
@@ -94,7 +97,7 @@ function handlePageMovement({ direction, amount, shouldCreateNewPage, event }) {
             text: "New Page",
             click: (e) => {
               e.stopPropagation();
-              handlePageMovement(false, 1, true);
+              jumpToDesiredPage(note.content.length);
               delContextMenu();
             },
           },
