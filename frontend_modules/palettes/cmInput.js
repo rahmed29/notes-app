@@ -5,8 +5,16 @@ import { createPalette } from "./cmd";
 
 export { cmInput };
 
-function cmInput(noteName, placeholder, choice) {
-    createPalette(placeholder, (results, text, render) => {
+function cmInput(noteName, choice) {
+  const choices = {
+    open: "Enter a book name",
+    child: "Enter name for the child",
+    copy: "Enter name for the copy",
+    rename: "Enter a new name",
+  };
+  createPalette(
+    choices[choice],
+    (results, text, render) => {
       render(
         2,
         [
@@ -33,6 +41,9 @@ function cmInput(noteName, placeholder, choice) {
         ],
         results
       );
-    }, null, false);
-    delContextMenu();
-  }
+    },
+    null,
+    false
+  );
+  delContextMenu();
+}

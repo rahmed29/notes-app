@@ -96,19 +96,22 @@ function fdg(d) {
     `<iframe src = '/api/fdg#${currTheme.notesColor}-${currTheme.body}-${currTheme.mainAccent}'></iframe>`
   );
 }
-function format(str, noMath, noDir) {
+function format(str, {
+  includeMath = true,
+  includeDirs = true,
+} = {}) {
   return micromark(str, {
     extensions: [
       gfm(),
       mark(),
-      noMath ? null : math(),
-      noDir ? null : directive(),
+      includeMath ? math() : null,
+      includeDirs ? directive() : null,
     ],
     htmlExtensions: [
       gfmHtml(),
       markHTML(),
-      noMath ? null : mathHtml(),
-      noDir ? null : directiveHtml({ ref, cal, fdg }),
+      includeMath ? mathHtml() : null,
+      includeDirs ? directiveHtml({ ref, cal, fdg }) : null,
     ],
   });
 }

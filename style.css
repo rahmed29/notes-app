@@ -629,16 +629,26 @@ a {
   display: flex;
 }
 
-.isEncrypted#notesAreaContainer::before {
-  content: "🔏";
-  position: absolute;
-  margin: 5px 0 0 5px;
-  background: var(--body);
-  border-radius: 50%;
-  padding: 3px;
-  display: flex;
+#vaultDetails {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  top: 37px;
+  margin: 5px;
+  cursor: default;
+  font-size: 1.1em;
+  border-radius: 6px;
   justify-content: center;
   align-items: center;
+  user-select: none;
+}
+
+#vaultDetails:hover {
+  background: var(--body);
+}
+
+.isEncrypted #vaultDetails {
+  display: flex !important;
 }
 
 #notesAreaContainer .tippy-content {

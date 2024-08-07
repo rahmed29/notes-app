@@ -146,7 +146,9 @@ async function updateAndSaveNotesLocally() {
   try {
     v.innerHTML = format(editor.getValue());
   } catch (err) {
-    v.innerHTML = format(editor.getValue(), true);
+    v.innerHTML = format(editor.getValue(), {
+      includeMath: false,
+    });
   }
   v.id = "fill";
   morphdom(previewContent, v);

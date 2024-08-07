@@ -39,7 +39,10 @@ import { showSearch } from "./frontend_modules/palettes/ctrl_f.js";
 import { showPal } from "./frontend_modules/palettes/ctrl_space.js";
 import { eid } from "./frontend_modules/dom_utils.js";
 import { showNotifs } from "./frontend_modules/palettes/notif_palette.js";
-import { editor, setupEditor } from "./frontend_modules/important_stuff/editor.js";
+import {
+  editor,
+  setupEditor,
+} from "./frontend_modules/important_stuff/editor.js";
 import {
   setup_dom_refs,
   notesPreviewArea,
@@ -52,8 +55,12 @@ import {
   yellowButtons,
   bottomRightTools,
   searchBar,
+  workspace,
+  bottomLeftGeneralInfo,
+  vaultDetails,
 } from "./frontend_modules/important_stuff/dom_refs.js";
 import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
+import { format } from "./frontend_modules/micromark_directives.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -65,6 +72,7 @@ document.body.innerHTML = `
       </div>
     </div>
     <div id="wikipediaBrainAnimation"></div>
+    <div id="vaultDetails">🔐</div>
     <!---->
 
     <div id="mainContainer">
@@ -382,6 +390,19 @@ window.addEventListener(
         }
       }
     });
+    const resizeObserver = new ResizeObserver((entries) => {
+      bottomLeftGeneralInfo.style.left =
+        workspace.getBoundingClientRect().left + "px";
+      vaultDetails.style.left = workspace.getBoundingClientRect().left + "px";
+    });
+    resizeObserver.observe(workspace);
+    // tippy([vaultDetails], {
+    //   animation: "shift-toward-subtle",
+    //   allowHTML: true,
+    //   arrow: false,
+    //   content: "Encrypted",
+    //   placement: "bottom",
+    // });
     progBar.style.width = "420px";
     eid("loading").classList.add("loaded");
     progBar = null;

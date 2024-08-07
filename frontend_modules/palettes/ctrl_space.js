@@ -10,7 +10,7 @@ import {
 } from "../note_utils.js";
 import removeMD from "../../modules/removeMD.js";
 import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
-import { cmInput, getList, search, toggleList } from "../list_utils.js";
+import { cmInput, getList, toggleList } from "../list_utils.js";
 import { changeTheme } from "../theming.js";
 import { jumpToDesiredPage } from "../dom_formatting.js";
 import { AISUmmary } from "../ai_utils.js";
@@ -125,21 +125,21 @@ const commands = [
   },
   {
     name: "Copy Notebook",
-    handler: () => cmInput(note.name, "Enter a book name", "copy"),
+    handler: () => cmInput(note.name, "copy"),
   },
   {
     name: "Create Child Notebook",
-    handler: () => cmInput(note.name, "Enter a book name", "child"),
+    handler: () => cmInput(note.name, "child"),
   },
   {
     name: "Rename Notebook",
     searchTerm: "edit",
-    handler: () => cmInput(note.name, "Enter a new name", "rename"),
+    handler: () => cmInput(note.name, "rename"),
   },
   {
     name: "Open Notebook",
     searchTerm: "open notebooks",
-    handler: () => cmInput(note.name, "Enter a book name", "open"),
+    handler: () => cmInput(note.name, "open"),
   },
   {
     name: "Close Current Tab",

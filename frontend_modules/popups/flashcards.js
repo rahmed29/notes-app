@@ -42,7 +42,9 @@ async function AIFlashcards() {
     "chatgpt"
   );
   const shadow = document.createElement("div");
-  shadow.innerHTML = format(response, false, true);
+  shadow.innerHTML = format(response, {
+    includeDirs: false,
+  });
   let count = 1;
   if (shadow.getElementsByTagName("table")[0]) {
     for (const td of shadow.getElementsByTagName("table")[0].rows) {
@@ -412,7 +414,9 @@ function showFlashcards(noAnimation) {
         ]);
       });
       cardFront.classList.add("cardFront");
-      cardFront.innerHTML = format(card.front, false, true);
+      cardFront.innerHTML = format(card.front, {
+        includeDirs: false,
+      });
       cards.appendChild(cardFront);
     });
 
@@ -658,12 +662,16 @@ function study(cardArr, allCards) {
 
   const frontCard = document.createElement("div");
   frontCard.classList.add("qFront");
-  frontCard.innerHTML = format(cardObj.front, false, true);
+  frontCard.innerHTML = format(cardObj.front, {
+    includeDirs: false,
+  });
   container.appendChild(frontCard);
 
   const backCard = document.createElement("div");
   backCard.classList.add("qBack");
-  backCard.innerHTML = format(cardObj.back, false, true);
+  backCard.innerHTML = format(cardObj.back, {
+    includeDirs: false,
+  });
   container.appendChild(backCard);
 
   cardContent.appendChild(frontCard);

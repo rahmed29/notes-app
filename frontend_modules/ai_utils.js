@@ -42,7 +42,7 @@ async function AISUmmary(aiChoice = "chatgpt") {
   const name = note.name;
   const pg = note.pgN + 1;
   const AI =
-    (await prompt_ai(note.content[note.pgN || 0], "Summarize the given content", aiChoice))
+    (await prompt_ai(note.content[note.pgN || 0], "Summarize the given content. Surround any tex expressions with dollar signs", aiChoice))
   if (AI !== 0) {
     editReserved("AI-Summary", [
       `# ✨ AI Summary (:ref[${name}:${pg}])\n\n${AI.replaceAll(

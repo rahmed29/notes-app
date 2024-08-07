@@ -127,8 +127,9 @@ async function render_p(version, arr, results) {
 }
 
 // 1. placeholder text
-// 2. a search function handler. This search function handler gets a couple params passed into it: the results section of the palette & the search term
+// 2. a search function handler. This search function handler gets a couple params passed into it: the results section of the palette, the search term, the render function and the filter function
 // 3. an optional function to run when the palette is created
+// 4. an optional boolean to show "No results" when the search bar is empty
 function createPalette(placeholder, searchHandler, init, showNoResults = true) {
   function resetFinder() {
     if (!results.firstChild && showNoResults) {

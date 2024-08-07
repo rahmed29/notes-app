@@ -1,71 +1,37 @@
-export {
-  setup_dom_refs,
-  notesTextArea,
-  notesPreviewArea,
-  mainContainer,
-  notesAreaContainer,
-  topLeftPageNumber,
-  areNotesSavedIcon,
-  list,
-  listContainer,
-  wikipediaBrainAnimation,
-  bottomLeftGeneralInfo,
-  generalInfoPageNumberEle,
-  uploadFolder,
-  morePages,
-  toolBar,
-  brain,
-  border,
-  stickyNotesTextArea,
-  stickyNotes,
-  workspace,
-  tabs,
-  openCalendar,
-  flashcardPrac,
-  myForm,
-  letterCount,
-  wordCount,
-  mode,
-  previewContent,
-  brDots,
-  yellowButtons,
-  bottomRightTools,
-  searchBar,
-};
+export let notesTextArea;
+export let notesPreviewArea;
+export let mainContainer;
+export let notesAreaContainer;
+export let topLeftPageNumber;
+export let areNotesSavedIcon;
+export let list;
+export let listContainer;
+export let wikipediaBrainAnimation;
+export let bottomLeftGeneralInfo;
+export let generalInfoPageNumberEle;
+export let uploadFolder;
+export let morePages;
+export let toolBar;
+export let brain;
+export let border;
+export let stickyNotesTextArea;
+export let stickyNotes;
+export let workspace;
+export let tabs;
+export let openCalendar;
+export let flashcardPrac;
+export let myForm;
+export let letterCount;
+export let wordCount;
+export let mode;
+export let previewContent;
+export let brDots;
+export let yellowButtons;
+export let bottomRightTools;
+export let searchBar;
+export let vaultDetails;
 
-let notesTextArea;
-let notesPreviewArea;
-let mainContainer;
-let notesAreaContainer;
-let topLeftPageNumber;
-let areNotesSavedIcon;
-let list;
-let listContainer;
-let wikipediaBrainAnimation;
-let bottomLeftGeneralInfo;
-let generalInfoPageNumberEle;
-let uploadFolder;
-let morePages;
-let toolBar;
-let brain;
-let border;
-let stickyNotesTextArea;
-let stickyNotes;
-let workspace;
-let tabs;
-let openCalendar;
-let flashcardPrac;
-let myForm;
-let letterCount;
-let wordCount;
-let mode;
-let previewContent;
-let brDots;
-let yellowButtons;
-let bottomRightTools;
-let searchBar;
-
-function setup_dom_refs() {
+export function setup_dom_refs() {
   notesTextArea = document.getElementById("notesTextArea");
   notesPreviewArea = document.getElementById("notesPreviewArea");
   mainContainer = document.getElementById("mainContainer");
@@ -97,4 +63,5 @@ function setup_dom_refs() {
   yellowButtons = document.getElementById("yellowButtons");
   bottomRightTools = document.getElementById("bottomRightTools");
   searchBar = document.getElementById("searchBar");
+  vaultDetails = document.getElementById("vaultDetails");
 }

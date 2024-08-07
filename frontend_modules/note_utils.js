@@ -295,9 +295,9 @@ async function switchNote(noteName, page, refresher = false) {
     savedWS.add(noteName);
     localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
     if (note.isEncrypted) {
-      notesAreaContainer.classList.add("isEncrypted");
+      document.body.classList.add("isEncrypted");
     } else {
-      notesAreaContainer.classList.remove("isEncrypted");
+      document.body.classList.remove("isEncrypted");
     }
     return;
   }
@@ -328,7 +328,7 @@ async function switchNote(noteName, page, refresher = false) {
         data.content = data.content.map(
           (cipher) => JSON.parse(decryptMsg(cipher, data.password)).msg
         );
-        notesAreaContainer.classList.add("isEncrypted");
+        document.body.classList.add("isEncrypted");
       } else {
         notyf.error("Incorrect Password");
         switching = false;
@@ -337,9 +337,9 @@ async function switchNote(noteName, page, refresher = false) {
       }
     } else if (data.isEncrypted) {
       // data.content = data.content.map((cipher) => decryptMsg(cipher, data.password))
-      notesAreaContainer.classList.add("isEncrypted");
+      document.body.classList.add("isEncrypted");
     } else {
-      notesAreaContainer.classList.remove("isEncrypted");
+      document.body.classList.remove("isEncrypted");
     }
   } catch (err) {
     switching = false;

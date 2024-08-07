@@ -321,7 +321,6 @@ function resizeList(e) {
   if (e.clientX <= 600 && e.clientX >= 200) {
     list.style.width = `${e.clientX - 16}px`;
     workspace.style.width = `calc(100% - 25px - ${e.clientX - 16}px)`;
-    bottomLeftGeneralInfo.style.left = `${e.clientX - 16 + 25}px`;
   }
 }
 
@@ -360,7 +359,7 @@ function listContextMenu(e, toolBar) {
         ? {
             text: "Open Notebook",
             click: function () {
-              cmInput(note.name, "Enter a book name", "open");
+              cmInput(note.name, "open");
             },
           }
         : {
@@ -392,7 +391,6 @@ function listContextMenu(e, toolBar) {
         click: function () {
           cmInput(
             this.getAttribute("data-props"),
-            "Enter a new name",
             "rename"
           );
         },
@@ -401,7 +399,7 @@ function listContextMenu(e, toolBar) {
         attr: toolBar ? note.name : this.getAttribute("data-bookname"),
         text: "Copy Notebook",
         click: function () {
-          cmInput(this.getAttribute("data-props"), "Enter a copy name", "copy");
+          cmInput(this.getAttribute("data-props"), "copy");
         },
       },
       toolBar
@@ -471,7 +469,6 @@ function listContextMenu(e, toolBar) {
         click: function () {
           cmInput(
             this.getAttribute("data-props"),
-            "Enter a child name",
             "child"
           );
         },
