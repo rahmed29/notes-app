@@ -111,7 +111,7 @@ function handlePageMovement({
   }
 }
 
-function accents() {
+function accents(focusEditor = true) {
   if (!note.aceSessions[note.pgN]) {
     const newSession = ace.createEditSession(note.content[note.pgN]);
     editor.setSession(newSession);
@@ -126,7 +126,9 @@ function accents() {
   window.history.replaceState(null, null, `/${note.name}?${note.pgN + 1}`);
   updateAndSaveNotesLocally();
   createPageNumbers();
-  editor.focus();
+  if (focusEditor) {
+    editor.focus();
+  }
 }
 
 async function updateAndSaveNotesLocally() {
@@ -182,6 +184,7 @@ function syncStatus() {
   } else {
     // note is saved
     let writtenPages = getWrittenPages(note.content);
+    // let writtenPages = note.content;
     if (JSON.stringify(writtenPages) === JSON.stringify(note.dbSave)) {
       // content is synced
       editTabText(note.name, note.name);

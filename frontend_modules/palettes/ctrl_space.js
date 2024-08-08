@@ -364,7 +364,7 @@ const commands = [
   },
   {
     name: "Toggle List",
-    searchTerm: "tree",
+    searchTerm: "hide tree show tree",
     handler: toggleList,
   },
 ].sort((a, b) => a.name.localeCompare(b.name));

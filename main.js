@@ -188,7 +188,7 @@ document.body.innerHTML = `
             src="/assets/icons/right_arrow_3d.png"
           />
         </button>
-        <button id="icon8" data-enabled="true">
+        <button id="icon8">
           <img
             alt="brain icon"
             draggable="false"

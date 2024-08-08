@@ -746,7 +746,7 @@ mark {
 .reference {
   color: var(--main-accent);
   text-decoration: none;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .reference:hover {
@@ -1002,7 +1002,8 @@ hr {
   transition: 0.25s;
 }
 
-.dot:hover, .dot:focus-visible {
+.dot:hover,
+.dot:focus-visible {
   border-color: var(--icons);
   outline: none;
 }
@@ -1048,7 +1049,8 @@ hr {
   outline: none;
 }
 
-#yellowButtons .emoji:hover, #yellowButtons button:focus-visible .emoji {
+#yellowButtons .emoji:hover,
+#yellowButtons button:focus-visible .emoji {
   scale: 1.2;
   transform: rotate(15deg);
 }
