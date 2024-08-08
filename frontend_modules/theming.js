@@ -25,13 +25,13 @@ const ace_to_prism = {
 
 // theming
 function changeTheme(themeName) {
-  attemptRemoval([eid("zitselPrismTheme")]);
+  attemptRemoval([eid("notes_prism_theme")]);
   const obj =
     themes.find((e) => e.name === themeName) ||
     themes.find((e) => e.name === "chrome");
   currTheme = obj;
   localStorage.setItem("/theme", themeName);
-  nemaNotesTheme.replace(`
+  notes_global_theme.replace(`
     :root {
       --quizlet-purple: ${obj.quizletPurple};
       --quizlet-purple-accents: ${obj.quizletPurpleAccents};
@@ -69,7 +69,7 @@ function changeTheme(themeName) {
       --floating-bs: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   `);
   const prismTheme = document.createElement("style");
-  prismTheme.id = "zitselPrismTheme";
+  prismTheme.id = "notes_prism_theme";
   prismTheme.innerText = `@import url("/assets/prism-all-themes/prism-${
     ace_to_prism[themeName] || "solarizedlight"
   }.css");`;

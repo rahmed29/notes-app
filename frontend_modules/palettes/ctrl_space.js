@@ -322,7 +322,7 @@ const commands = [
   },
   {
     name: "Change Theme",
-    searchTerm: "dark light color",
+    searchTerm: "dark light color scheme",
     children: themes.map((e) => {
       return {
         name: e.name

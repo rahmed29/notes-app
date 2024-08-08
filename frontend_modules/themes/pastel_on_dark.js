@@ -1,5 +1,3 @@
-import { contextMenu } from "../context_menu";
-
 export const pastel_on_dark = {
   name: "pastel_on_dark",
   theme_type: "dark",
@@ -13,8 +11,8 @@ export const pastel_on_dark = {
   notesBackground: "#2c2828",
   notesColor: "#c6c6c6",
   code: "#3c3c3c",
-  highlight: "#bb9f6e",
-  highlightColor: "#000",
+  highlight: "#917950",
+  highlightColor: "#ccc8c8",
   selection: "#4f4f4f",
 
   // flashcards and todo

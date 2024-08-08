@@ -24,6 +24,7 @@
     <!---->
   </head>
   <body>
+    <div id="excalidraw-root"></div>
     <noscript>This app requires JavaScript to function.</noscript>
     <!-- Ace Editor -->
     <script
@@ -33,9 +34,9 @@
     ></script>
     <script>
       // for theming
-      const nemaNotesTheme = new CSSStyleSheet();
-      window.sheet = nemaNotesTheme;
-      document.adoptedStyleSheets = [nemaNotesTheme];
+      const notes_global_theme = new CSSStyleSheet();
+      window.sheet = notes_global_theme;
+      document.adoptedStyleSheets = [notes_global_theme];
     </script>
   </body>
 </html>

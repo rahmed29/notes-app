@@ -2093,7 +2093,7 @@ hr {
 }
 
 .powerSearch .results {
-  max-height: 50vh;
+  max-height: 60vh;
   overflow-y: auto;
   scroll-behavior: smooth;
 }
@@ -2147,7 +2147,7 @@ hr {
 }
 
 .powerSearch .item {
-  min-height: 4.5vh;
+  height: 4.5vh;
   justify-content: space-between;
 }
 
