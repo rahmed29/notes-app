@@ -425,7 +425,7 @@ function deletePage(pgN = note.pgN) {
   }
 }
 
-async function saveNoteBookToDb(noteName) {
+async function saveNoteBookToDb(noteName, autoSave = false) {
   if (!validNoteName.test(noteName) || reserved(noteName)) {
     notyf.error("Something went wrong");
     return;
@@ -454,7 +454,9 @@ async function saveNoteBookToDb(noteName) {
       obj.aceSessions = newSessions;
     }
 
-    prepareForSave(desiredNote);
+    if (!autoSave) {
+      prepareForSave(desiredNote);
+    }
     if (!desiredNote.isEncrypted) {
       localStorage.setItem(desiredNote.name, JSON.stringify(note.content));
     }
@@ -475,7 +477,9 @@ async function saveNoteBookToDb(noteName) {
     });
     if (saveStatus.ok) {
       if (desiredNote.name === note.name) {
-        areNotesSavedIcon.classList.add("saved");
+        if (!autoSave) {
+          areNotesSavedIcon.classList.add("saved");
+        }
         desiredNote.dbSave = [...desiredNote.content];
         if (desiredNote.pgN > desiredNote.content.length - 1) {
           jumpToDesiredPage(desiredNote.content.length - 1);
@@ -490,14 +494,16 @@ async function saveNoteBookToDb(noteName) {
         desiredNote.saved = true;
         desiredNote.date = new Date().toLocaleString();
       }
-      notyf.success("Notebook was saved");
+      if (!autoSave) {
+        notyf.success("Notebook was saved");
+      }
       if (undoState.content.length !== desiredNote.content.length) {
         allowSingleRedo(noteName, undoState);
       }
     } else {
       notyf.error("An error occurred when saving a notebook");
     }
-    updateList();
+    updateList(!autoSave);
     // defineCmd();
   }
 }

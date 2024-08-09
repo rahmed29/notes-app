@@ -83,14 +83,14 @@ function addDropped(book) {
 async function showMorePages(e) {
   const buttons = note.content.reduce((arr, e, i) => {
     if (i >= 9) {
-      const app = i === note.pgN ? "currPage" : "random";
+      const appearance = i === note.pgN ? "currPage" : "random";
       arr.push({
         text: `Page ${i}`,
         click: (e) => {
           jumpToDesiredPage(i);
           showMorePages(e);
         },
-        appearance: app,
+        appearance,
       });
     }
     return arr;
@@ -124,7 +124,7 @@ function dropWrapper(e) {
   );
 }
 
-async function createList(customChildren) {
+async function createList(customChildren, getImageList = true) {
   nestedBooks = new Set();
   listHandlers = listHandlers.reduce((arr, { element, type, listener }) => {
     element.removeEventListener(type, listener);
@@ -143,7 +143,7 @@ async function createList(customChildren) {
     gigaFolder.innerHTML =
       "<span class = 'leaves'>🍃</span><span>No results</span>";
   }
-  if (!customChildren) {
+  if (!customChildren && getImageList) {
     appendUploads();
   }
   if (!customChildren) {
@@ -172,11 +172,11 @@ async function getList() {
   return listInMemory;
 }
 
-async function updateList() {
+async function updateList(getImages = true) {
   const list = await fetch("/api/get/list");
   const json = await list.json();
   listInMemory = json.data;
-  createList();
+  createList(null, getImages);
 }
 
 function nestedList(obj, allNotes) {

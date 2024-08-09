@@ -26,6 +26,7 @@ import { closeTab, savedWS } from "../tabs.js";
 import { editor } from "../important_stuff/editor.js";
 import { showSearch } from "./ctrl_f.js";
 import { showNotifs } from "./notif_palette.js";
+import { disableAutosave, enableAutosave } from "../autosave.js";
 
 export { showPal };
 
@@ -367,4 +368,12 @@ const commands = [
     searchTerm: "hide tree show tree",
     handler: toggleList,
   },
+  {
+    name: "Enable Auto Save",
+    handler: enableAutosave,
+  },
+  {
+    name: "Disable Auto Save",
+    handler: disableAutosave,
+  }
 ].sort((a, b) => a.name.localeCompare(b.name));

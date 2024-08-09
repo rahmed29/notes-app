@@ -84,6 +84,10 @@ function setupToolTips() {
       content: "Command Palette",
     },
     {
+      name: "#autoSaveSpinner",
+      content: "Auto Saving is On",
+    },
+    {
       name: "#goHome",
       content: "Quick Access",
     },

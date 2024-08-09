@@ -60,6 +60,7 @@ import {
   vaultDetails,
 } from "./frontend_modules/important_stuff/dom_refs.js";
 import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
+import { disableAutosave, enableAutosave } from "./frontend_modules/autosave.js";
 
 window.DOMPurify = DOMPurify;
 
@@ -102,6 +103,7 @@ document.body.innerHTML = `
         <span id="wordCount">00000</span>
         <span id="spacer">|</span>
         <button id="openCommandPal">>_</button>
+        <span id="autoSaveSpinner" class = "loader"></span>
       </div>
       <!---->
 
@@ -311,6 +313,12 @@ window.addEventListener(
       location.pathname.substring(1),
       parseInt(location.search.substring(1) || 1) - 1
     );
+    if (localStorage.getItem("/autosave") === "true") {
+      enableAutosave();
+    } else {
+      disableAutosave();
+    }
+    // startAutosave();
     progBar.style.width = "350px";
     editingWindow(localStorage.getItem("/viewPref") || "read");
     // bottom right buttons

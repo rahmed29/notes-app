@@ -20,6 +20,7 @@ import { listContextMenu } from "../list_utils";
 import themes from "../themes";
 import { changeTheme } from "../theming";
 import { eid } from "../dom_utils";
+import { toggleAutosave } from "../autosave";
 
 export default setupToolbar;
 
@@ -240,6 +241,13 @@ function setupToolbar() {
           text: "More Details",
           click: () => {
             showBookDiffPopup();
+            delContextMenu();
+          },
+        },
+        {
+          text: "Toggle Autosave",
+          click: () => {
+            toggleAutosave();
             delContextMenu();
           },
         },
