@@ -60,7 +60,6 @@ import {
   vaultDetails,
 } from "./frontend_modules/important_stuff/dom_refs.js";
 import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
-import { format } from "./frontend_modules/micromark_directives.js";
 
 window.DOMPurify = DOMPurify;
 
