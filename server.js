@@ -7,8 +7,8 @@ import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
 import axios from "axios";
-import validNoteName from "./modules/validNoteName.js";
-import removeMD from "./modules/removeMD.js";
+import validNoteName from "./shared_modules/validNoteName.js";
+import removeMD from "./shared_modules/removeMD.js";
 import Fuse from "fuse.js";
 
 const exludedNames = ["home", "sticky__notes", "todo__list", "flash__cards"];
@@ -523,5 +523,5 @@ app.all("*", (req, res) => {
 });
 
 app.listen(PORT_NUMBER, () => {
-  console.log("Server is running on port " + PORT_NUMBER);
+  console.log(`Server is running on port ${PORT_NUMBER}`);
 });

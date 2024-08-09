@@ -125,11 +125,12 @@ function accents(focusEditor = true) {
         saving(note.name);
         // timeout to prevent the server from being overloaded
         setTimeout(() => {
+          // make sure the user didn't switch notes while the timeout was running
           if (note.name === noteBeingAutoSaved) {
             saveNoteBookToDb(note.name, true);
           }
           doneSaving();
-        }, 500);
+        }, 100);
       }
     });
     note.aceSessions[note.pgN] = newSession;
@@ -206,7 +207,10 @@ function syncStatus() {
       areNotesSavedIcon.style.filter = "none";
     } else {
       // content is not in sync with db
-      editTabText(note.name, `* ${note.name}`);
+      if (!autosavingEnabled) {
+        // Add the asterisk (only if not autosaving, since autosaving saves quickly so the asterisk would be annoying)
+        editTabText(note.name, `* ${note.name}`);
+      }
       synced.setContent(
         `Notes shown differ from saved notes by ${Math.abs(
           JSON.stringify(note.content).length -

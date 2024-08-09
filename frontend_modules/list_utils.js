@@ -28,7 +28,7 @@ import { format } from "./micromark_directives";
 import { closeTab, switchTab, silentReset } from "./tabs";
 import { getFamily, nestNote, relinquishNote } from "./hierarchy";
 import { jumpToDesiredPage } from "./dom_formatting";
-import removeMD from "../modules/removeMD";
+import removeMD from "../shared_modules/removeMD";
 import { cmInput } from "./palettes/cmInput";
 
 export {

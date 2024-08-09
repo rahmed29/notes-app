@@ -8,7 +8,7 @@ import {
   saveNoteBookToDb,
   getAnyBookContent,
 } from "../note_utils.js";
-import removeMD from "../../modules/removeMD.js";
+import removeMD from "../../shared_modules/removeMD.js";
 import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
 import { cmInput, getList, toggleList } from "../list_utils.js";
 import { changeTheme } from "../theming.js";

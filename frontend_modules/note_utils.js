@@ -9,7 +9,7 @@ import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { savedWS, closeTab, makeTabInDom, silentReset } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { filterFlashcards, renameFlashcards } from "./popups/flashcards";
-import validNoteName from "../modules/validNoteName";
+import validNoteName from "../shared_modules/validNoteName";
 import { allowSingleRedo, youDeleted } from "./palettes/notif_palette";
 import { editor } from "./important_stuff/editor";
 

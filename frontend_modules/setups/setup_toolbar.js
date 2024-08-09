@@ -20,7 +20,7 @@ import { listContextMenu } from "../list_utils";
 import themes from "../themes";
 import { changeTheme } from "../theming";
 import { eid } from "../dom_utils";
-import { toggleAutosave } from "../autosave";
+import { autosavingEnabled, toggleAutosave } from "../autosave";
 
 export default setupToolbar;
 
@@ -245,7 +245,7 @@ function setupToolbar() {
           },
         },
         {
-          text: "Toggle Autosave",
+          text: autosavingEnabled ? "Disable Autosave" : "Enable Autosave",
           click: () => {
             toggleAutosave();
             delContextMenu();
