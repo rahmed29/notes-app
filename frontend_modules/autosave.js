@@ -8,8 +8,10 @@ export {
   doneSaving,
   autosavingEnabled,
   isSaving,
+  noteBeingAutoSaved,
 };
 
+let noteBeingAutoSaved = null;
 let autosavingEnabled = null;
 let isSaving = false;
 
@@ -33,10 +35,12 @@ function toggleAutosave() {
   }
 }
 
-function saving() {
+function saving(name) {
   isSaving = true;
+  noteBeingAutoSaved = name;
 }
 
 function doneSaving() {
   isSaving = false;
+  noteBeingAutoSaved = null;
 }

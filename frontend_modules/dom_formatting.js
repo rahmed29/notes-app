@@ -30,7 +30,7 @@ import { editor } from "./important_stuff/editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
-import { autosavingEnabled, doneSaving, isSaving, saving } from "./autosave";
+import { autosavingEnabled, doneSaving, isSaving, noteBeingAutoSaved, saving } from "./autosave";
 
 export {
   jumpWrapper,
@@ -122,10 +122,12 @@ function accents(focusEditor = true) {
     editor.session.on("change", updateAndSaveNotesLocally);
     editor.session.on("change", () => {
       if (autosavingEnabled && !isSaving) {
-        saving();
+        saving(note.name);
         // timeout to prevent the server from being overloaded
         setTimeout(() => {
-          saveNoteBookToDb(note.name, true);
+          if (note.name === noteBeingAutoSaved) {
+            saveNoteBookToDb(note.name, true);
+          }
           doneSaving();
         }, 500);
       }
