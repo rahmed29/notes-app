@@ -1,0 +1,47 @@
+import { eid } from "./dom_utils";
+
+export {
+  enableAutosave,
+  disableAutosave,
+  toggleAutosave,
+  saving,
+  doneSaving,
+  autosavingEnabled,
+  isAutoSaving,
+  noteBeingAutoSaved,
+};
+
+let noteBeingAutoSaved = undefined;
+// live bindings allow for these booleans to be read accurately from other modules
+let autosavingEnabled = false;
+let isAutoSaving = false;
+
+function enableAutosave() {
+  autosavingEnabled = true;
+  localStorage.setItem("/autosave", "true");
+  eid("autoSaveSpinner").style.display = "inline-block";
+}
+
+function disableAutosave() {
+  autosavingEnabled = false;
+  localStorage.setItem("/autosave", "false");
+  eid("autoSaveSpinner").style.display = "none";
+}
+
+function toggleAutosave() {
+  if (autosavingEnabled) {
+    disableAutosave();
+  } else {
+    enableAutosave();
+  }
+}
+
+function saving(name) {
+  isAutoSaving = true;
+  noteBeingAutoSaved = name;
+}
+
+function doneSaving() {
+  isAutoSaving = false;
+  noteBeingAutoSaved = undefined;
+}

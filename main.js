@@ -1,0 +1,470 @@
+import "tippy.js/dist/tippy.css";
+import tippy from "tippy.js";
+import "tippy.js/themes/light.css";
+import "tippy.js/animations/shift-toward-subtle.css";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css";
+import Dropzone from "dropzone";
+import DOMPurify from "dompurify";
+import { changeTheme } from "./frontend_modules/theming.js";
+import { switchNote, saveNoteBookToDb } from "./frontend_modules/note_utils.js";
+import { note } from "./frontend_modules/data/note.js";
+import { updateList } from "./frontend_modules/list_utils.js";
+import { updateAndSaveNotesLocally } from "./frontend_modules/dom_formatting.js";
+import { createWorkspace } from "./frontend_modules/create_workspace.js";
+import { initializeFlashcards } from "./frontend_modules/data/flashcard_data.js";
+import {
+  saveStickyNotes,
+  showStickyNotes,
+  hideStickyNotes,
+  initializeStickyNotes,
+} from "./frontend_modules/sticky_note.js";
+import { showFlashcards } from "./frontend_modules/popups/flashcards.js";
+import { wikiSearch } from "./frontend_modules/wikipedia.js";
+import {
+  cycleViewPreferences,
+  editingWindow,
+} from "./frontend_modules/editing_window.js";
+import setupToolbar from "./frontend_modules/setups/setup_toolbar.js";
+import setupList from "./frontend_modules/setups/setup_list.js";
+import { delContextMenu } from "./frontend_modules/context_menu.js";
+import { showSearch } from "./frontend_modules/palettes/ctrl_f.js";
+import { showPal } from "./frontend_modules/palettes/ctrl_space.js";
+import { eid } from "./frontend_modules/dom_utils.js";
+import { showNotifs } from "./frontend_modules/palettes/notif_palette.js";
+import {
+  editor,
+  setupEditor,
+} from "./frontend_modules/important_stuff/editor.js";
+import {
+  setup_dom_refs,
+  notesPreviewArea,
+  stickyNotesTextArea,
+  stickyNotes,
+  tabs,
+  flashcardPrac,
+  brDots,
+  yellowButtons,
+  bottomRightTools,
+  searchBar,
+  bottomLeftGeneralInfo,
+  vaultDetails,
+} from "./frontend_modules/important_stuff/dom_refs.js";
+import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
+import {
+  disableAutosave,
+  enableAutosave,
+} from "./frontend_modules/autosave.js";
+import { netCheck } from "./frontend_modules/important_stuff/netcheck.js";
+import { createLibrary } from "./frontend_modules/data/library.js";
+import {
+  setGlobalPaletteClose,
+  setGlobalPopupClose,
+} from "./frontend_modules/mediators/popup_closers.js";
+import { closePalette } from "./frontend_modules/palettes/cmd.js";
+import { closePopupWindow } from "./frontend_modules/popups/popup.js";
+import {
+  MDASTERQueryInstruction,
+  queryNotes,
+} from "./shared_modules/mdast_traversal.js";
+
+// used by note-map
+window.switchNoteWrapper = (name) => switchNote(name);
+
+// used a lot so just open to window
+window.DOMPurify = DOMPurify;
+
+document.body.innerHTML = `
+<!-- Not visible (for the most part) -->
+    <div id="loading">
+      <div id="progBarContainer">
+        <div id="progBar"></div>
+      </div>
+    </div>
+    <div id="wikipediaBrainAnimation"></div>
+    <div id="vaultDetails">🔐</div>
+    <!---->
+
+    <div id="mainContainer">
+      <div id="leftMostSideBar">
+        <div id="topLeftPageNumbers"></div>
+        <div class="whereTo" id="morePages" data-vis="hidden">...</div>
+        <div class="whereTo" id="newPage">+</div>
+        <div id="sideBarRetractList"></div>
+        <a id="goHome" class="whereTo">⚡</a>
+      </div>
+      <div id="listOfBooks">
+        <div id="searchItem">
+          <input placeholder="Search..." id="searchBar" />
+        </div>
+        <div id="listContainer"></div>
+        <div class="itemUpload">
+          <button id="yourUploads" class="folderName">Your Uploads</button>
+          <ul id="uploads"></ul>
+        </div>
+      </div>
+      <div id="border"></div>
+
+      <!-- Fixed position -->
+      <div id="bottomLeftGeneralInfo">
+        <span id="generalInfoPageNumber"></span>
+        <span id="generalInfoViewMode"></span>
+        <span id="letterCount">00000</span>
+        <span id="wordCount">00000</span>
+        <span id="spacer">|</span>
+        <button id="openCommandPal">>_</button>
+        <span id="autoSaveSpinner" class = "loader"></span>
+      </div>
+      <!---->
+
+      <div id="workspace">
+        <div id="tabs"></div>
+        <div id="notesAreaContainer">
+          <div id="notesTextArea" class="syncscroll" name="myElements">
+            <pre id="editor"></pre>
+          </div>
+          <div id="notesPreviewArea" class="syncscroll" name="myElements">
+            <div id="fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed position -->
+    <div id="toolBar">
+      <div id="icons">
+        <button id="icon1">
+          <img
+            alt="save notebook icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/floppy_disk_3d.png"
+          />
+        </button>
+        <button id="icon2">
+          <img
+            alt="manage notebook icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/open_book_3d.png"
+          />
+        </button>
+        <button id="icon3">
+          <img
+            alt="delete notebook icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/wastebasket_3d.png"
+          />
+        </button>
+        <button id="icon4">
+          <label for="getFile1" id="labelForImage">
+            <img
+              alt="insert image icon"
+              draggable="false"
+              class="emoji"
+              src="/assets/icons/framed_picture_3d.png"
+            />
+          </label>
+          <form id="myForm">
+            <input
+              id="getFile1"
+              type="file"
+              name="avatar"
+              style="display: none"
+            />
+          </form>
+        </button>
+        <button id="icon5">
+          <img
+            alt="switch view icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/eye_3d.png"
+          />
+        </button>
+        <button id="icon6">
+          <img
+            alt="previous page icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/left_arrow_3d.png"
+          />
+        </button>
+        <button id="icon7">
+          <img
+            alt="next page icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/right_arrow_3d.png"
+          />
+        </button>
+        <button id="icon8">
+          <img
+            alt="brain icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/brain_3d.png"
+          />
+        </button>
+        <button id="areNotesSavedIcon">
+          <img
+            alt="save status icon"
+            draggable="false"
+            class="emoji"
+            src="/assets/icons/recycling_symbol_3d.png"
+          />
+        </button>
+      </div>
+    </div>
+    <!---->
+
+    <!-- Fixed position -->
+    <div id="bottomRightTools">
+      <div id="brDots">
+        <button class="dot currPage"></button>
+        <button class="dot"></button>
+      </div>
+
+      <div id="yellowButtons">
+        <div id="flashcardsPrac">
+          <button id="flashcardsPracEmoji">
+            <img
+              draggable="false"
+              class="emoji"
+              src="/assets/icons/card_index_3d.png"
+            />
+          </button>
+        </div>
+
+        <div id="stickyNotes" class="gone" data-text="">
+          <textarea id="stickyNotesTextArea" autocomplete="false"></textarea>
+          <button id="stickyNotesEmoji">
+            <img
+              draggable="false"
+              class="emoji"
+              src="/assets/icons/memo_3d.png"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+    <!---->
+`;
+
+if (!localStorage.getItem("/updated")) {
+  Object.entries(localStorage).forEach(([key, value]) => {
+    if (key.slice(0, 1) !== "/") {
+      localStorage.removeItem(key);
+    }
+  });
+  window.location.reload();
+}
+
+localStorage.setItem("/updated", "true");
+
+// toast notifs, used a lot so just open to window
+const notyf = new Notyf({
+  position: {
+    y: "top",
+    x: "center",
+  },
+  dismissible: true,
+});
+// must be added to window after setting body HTML
+window.notyf = notyf;
+
+if (location.pathname === "/") {
+  location.replace("/home");
+}
+
+// setup our DOM refs which are used a lot. This is vanilla javascript after all :)
+setup_dom_refs();
+let progBar = document.getElementById("progBar");
+
+async function queryTest() {
+  return await queryNotes(
+    "asb222-unit1",
+    3,
+    new MDASTERQueryInstruction()
+      .filter("type", "list")
+      .select("all")
+      .previousSibling()
+      .filter("type", "text")
+      .accumulate("value")
+      .export()
+  );
+}
+
+window.queryTest = queryTest;
+
+async function finish() {
+  eid("loading").addEventListener(
+    "animationend",
+    function () {
+      this.remove();
+    },
+    { once: true }
+  );
+
+  // the library is any book that is open in memory. Here, we create the library by setting it to a newly instantiated map
+  createLibrary();
+
+  // Here, we begin the network check, create the tool tips, and set up the ace editor instance
+  netCheck();
+  setupToolTips();
+  setupEditor();
+
+  // Here we get our list of books from the server and store it in memory
+  await updateList();
+  progBar.style.width = "70px";
+
+  // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
+  changeTheme(localStorage.getItem("/theme") || "chrome");
+  createWorkspace();
+
+  // Here, we get the flashcard data from the server and store it in memory
+  await initializeFlashcards();
+  progBar.style.width = "140px";
+
+  // // Here we get the calendar data from the server and store it in memory// Here we get the calendar data from the server and store it in memory
+  // await initializeTodo();
+  progBar.style.width = "210px";
+
+  // attachPoller("importTodos", importTasksFromPage);
+
+  // Here we get the scratch pad aka sticky note data from the server and store it in memory
+  await initializeStickyNotes();
+  progBar.style.width = "280px";
+
+  // Here we switch to the note and page number that is in the url, if there is no note in the url
+  await switchNote(
+    location.pathname.substring(1),
+    parseInt(location.search.substring(1) || 1) - 1
+  );
+  progBar.style.width = "350px";
+
+  // Here we enable or disable autosave according to the value in local storage
+  if (localStorage.getItem("/autosave") === "true") {
+    enableAutosave();
+  } else {
+    disableAutosave();
+  }
+
+  // Here we set the editing window to the value in local storage
+  editingWindow(localStorage.getItem("/viewPref") || "read");
+
+  // Some event listeners
+  notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
+  bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.getElementById("openCommandPal").addEventListener("click", () => {
+    delContextMenu();
+    showPal();
+  });
+  tabs.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  // more event listeners, there's a lot of them so they are in their own files "setup_toolbar" and "setup_list" respectively
+  setupToolbar();
+  setupList();
+
+  // More event listeners, this time for the bottom right tools
+  stickyNotes.addEventListener("click", showStickyNotes, { once: true });
+  stickyNotesTextArea.addEventListener("input", saveStickyNotes);
+  stickyNotesTextArea.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      hideStickyNotes();
+    }
+  });
+  // openCalendar.addEventListener("click", () => showTodo(false));
+  flashcardPrac.addEventListener("click", () => {
+    showFlashcards(false, [note.name]);
+  });
+
+  // Here we add the event listeners for the bottom right tools
+  for (let i = 0, n = brDots.children.length; i < n; i++) {
+    const dotFunctions = ["Flashcards", "Scratch Pad"];
+    tippy([brDots.children[i]], {
+      animation: "shift-toward-subtle",
+      arrow: false,
+      content: dotFunctions[i],
+      placement: "left",
+    });
+    brDots.children[i].addEventListener("click", function () {
+      for (let j = 0, n = yellowButtons.children.length; j < n; j++) {
+        yellowButtons.children[j].classList.add("gone");
+        brDots.children[j].classList.remove("currPage");
+      }
+      yellowButtons.children[i].classList.remove("gone");
+      brDots.children[i].classList.add("currPage");
+    });
+  }
+
+  // key bindings
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey) {
+      switch (e.key.toLowerCase()) {
+        case "s":
+          e.preventDefault();
+          saveNoteBookToDb(note.name);
+          break;
+        case "e":
+          e.preventDefault();
+          cycleViewPreferences();
+          break;
+        case " ":
+          e.preventDefault();
+          showPal();
+          break;
+        case "f":
+          showSearch(e.shiftKey);
+          e.preventDefault();
+          break;
+        case ",":
+          e.preventDefault();
+          showNotifs();
+          break;
+        case "/":
+          e.preventDefault();
+          searchBar.focus();
+          break;
+        case ".":
+          e.preventDefault();
+          editor.focus();
+          break;
+      }
+    }
+  });
+
+  // Here we set up the dropzone for uploading images
+  new Dropzone(document.body, {
+    url: "/api/save/images",
+    paramName: "avatar",
+    clickable: false,
+    acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
+    error: () => notyf.error("An error occurred when saving an image"),
+    success: (file, response) => {
+      file.previewElement.remove();
+      editor.insert(`![](${response.image})`);
+      updateAndSaveNotesLocally();
+      // saveNoteBookToDb(note.name);
+      updateList();
+    },
+  });
+
+  // Resize observer for the bottom left general info and the vault details
+  const resizeObserver = new ResizeObserver((entries) => {
+    bottomLeftGeneralInfo.style.left = vaultDetails.style.left =
+      workspace.getBoundingClientRect().left + "px";
+  });
+  resizeObserver.observe(workspace);
+
+  setGlobalPaletteClose(closePalette);
+  setGlobalPopupClose(closePopupWindow);
+
+  progBar.style.width = "420px";
+  eid("loading").classList.add("loaded");
+  progBar = null;
+}
+
+finish();
