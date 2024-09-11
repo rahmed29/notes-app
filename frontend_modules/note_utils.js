@@ -172,11 +172,17 @@ async function switchNote(noteName, page, refresher = false) {
   note.name = noteName.replaceAll("/", "");
   note.isEncrypted = data.isEncrypted;
   // if the local data is newer than the data from the database, use the local data
+  if (data.saved === undefined || data.saved) {
+    // whether the note is saved to the database
+    note.saved = true;
+  } else {
+    note.saved = false;
+  }
   let localData = JSON.parse(localStorage.getItem(noteName));
   let content;
   if (note.isEncrypted) {
     content = data.content;
-  } else if (localData) {
+  } else if (localData && note.saved) {
     if (localData.timestamp > data.date) {
       content = localData.content;
     } else {
@@ -193,18 +199,12 @@ async function switchNote(noteName, page, refresher = false) {
   // remove empty pages
   note.content = getWrittenPages(content);
   note.pgN = page < note.content.length ? page : note.content.length - 1;
-  note.password = note.isEncrypted ? data.password : null;
+  note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
   note.children = data.children;
   note.parents = data.parents;
   note.date = data.date;
   note.beforeOpen = data.beforeOpen || null;
-  if (data.saved === undefined || data.saved) {
-    // whether the note is saved to the database
-    note.saved = true;
-  } else {
-    note.saved = false;
-  }
   note.aceSessions = data.aceSessions || [];
   // if (!note.pgN) {
   //   note.pgN = 0;

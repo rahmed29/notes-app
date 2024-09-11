@@ -180,19 +180,19 @@ app.get("/api/get/family/:book", async (req, res) => {
   res.status(200).json({ data: fam });
 });
 
-app.get("/api/fixdb", async (req, res) => {
-  const items = await Item.find();
-  const response = [];
-  for (const item of items) {
-    try {
-      item.set("canvases", undefined, { strict: false });
-      await item.save();
-    } catch (err) {
-      response.push([item.name, err]);
-    }
-  }
-  res.status(200).json({ status: response });
-});
+// app.get("/api/fixdb", async (req, res) => {
+//   const items = await Item.find();
+//   const response = [];
+//   for (const item of items) {
+//     try {
+//       item.set("canvases", undefined, { strict: false });
+//       await item.save();
+//     } catch (err) {
+//       response.push([item.name, err]);
+//     }
+//   }
+//   res.status(200).json({ status: response });
+// });
 
 app.get("/api/", (req, res) => {
   res.status(200).json({
@@ -270,7 +270,7 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
       res.status(404).json({ error: "Item not found with given name" });
     }
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -310,7 +310,7 @@ app.put("/api/save/notebooks/:name", async (req, res) => {
       res.status(204).json({ status: "Updated" });
     }
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -323,7 +323,7 @@ app.delete("/api/delete/images/:name", (req, res) => {
   const itemName = "./public/uploads/" + req.params.name;
   fs.unlink(itemName, (err) => {
     if (err) {
-      res.status(500).json({ status: "Internal Server Error" });
+      res.status(500).json({ error: "Internal Server Error" });
     } else {
       res.status(204).json({ status: "Removed" });
     }
@@ -342,7 +342,8 @@ app.post("/api/save/images", upload.single("avatar"), function (req, res) {
       .status(201)
       .json({ image: req.file.path.slice(req.file.path.indexOf("/")) });
   } catch (err) {
-    res.status(500).json({ image: "Internal Server Error" });
+    // Idk if the dropzone can check if response is not okay so just send this with this with image key so it doesn't break
+    res.status(500).json({ image: err.message });
   }
 });
 
@@ -429,8 +430,7 @@ app.patch("/api/nest/:child/:parent", async (req, res) => {
       }
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -460,7 +460,7 @@ app.patch("/api/relinquish/:child/:parent", async (req, res) => {
       res.status(400).json({ error: `${child} is not a child of ${parent}` });
     }
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -530,7 +530,7 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
       res.status(204).json({ status: "Renamed" });
     }
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -582,7 +582,7 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -613,7 +613,7 @@ app.get("/api/get/flashcards", async (req, res) => {
       res.status(404).json({ error: "Flashcards not found" });
     }
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -625,7 +625,7 @@ app.post("/api/chatgpt", async (req, res) => {
       const response = await gpt(req.body.content, req.body.prompt);
       res.status(200).json({ data: response });
     } catch (err) {
-      res.status(502).json({ error: "ChatGPT API Could not reached" });
+      res.status(502).json({ error: err.message });
     }
     generating = false;
   } else {
@@ -662,11 +662,11 @@ app.post("/api/ollama", async (req, res) => {
       } else {
         res
           .status(502)
-          .json({ error: "Ollama API could not be reached properly" });
+          .json({ error: "Ollama API could not be reached" });
       }
     } catch (err) {
       console.log(err);
-      res.status(502).json({ error: "Ollama API Could not be reached" });
+      res.status(502).json({ error: err.message });
     }
     generating = false;
   } else {

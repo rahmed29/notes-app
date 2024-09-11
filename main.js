@@ -252,17 +252,6 @@ document.body.innerHTML = `
     <!---->
 `;
 
-if (!localStorage.getItem("/updated")) {
-  Object.entries(localStorage).forEach(([key, value]) => {
-    if (key.slice(0, 1) !== "/") {
-      localStorage.removeItem(key);
-    }
-  });
-  window.location.reload();
-}
-
-localStorage.setItem("/updated", "true");
-
 // toast notifs, used a lot so just open to window
 const notyf = new Notyf({
   position: {
