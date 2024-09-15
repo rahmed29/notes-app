@@ -1,10 +1,5 @@
-import { renameDropped, updateList } from "./list_utils";
-import {
-  accents,
-  syncStatus,
-  jumpToDesiredPage,
-  updateAndSaveNotesLocally,
-} from "./dom_formatting";
+import { renameDropped, removeDropped, updateList } from "./list_utils";
+import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { savedWS, closeTab, makeTabInDom, silentReset } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { filterFlashcards, renameFlashcards } from "./data/flashcard_data";
@@ -14,7 +9,6 @@ import { editor } from "./important_stuff/editor";
 import { reserved } from "./data/reserved_notes";
 import { note, setCurrNote } from "./data/note";
 import { library } from "./data/library";
-import { getWrittenPages } from "./data_utils";
 import { getAnyBookContent } from "./get_book_content";
 import { autosavingEnabled } from "./autosave";
 
@@ -88,6 +82,7 @@ async function switchNote(noteName, page, refresher = false) {
     setCurrNote(library.get(noteName));
     if (note.beforeOpen) {
       for (const func of note.beforeOpen) {
+        console.log("beforeOpen");
         func();
       }
     }
@@ -111,6 +106,11 @@ async function switchNote(noteName, page, refresher = false) {
     } else {
       document.body.classList.remove("isEncrypted");
     }
+    if (note.afterOpen) {
+      for (const func of note.afterOpen) {
+        func();
+      }
+    }
     return;
   }
   if (network.isOffline) {
@@ -129,6 +129,7 @@ async function switchNote(noteName, page, refresher = false) {
     parents: [],
     saved: false,
     isEncrypted: false,
+    isPublic: false,
   };
   try {
     if (data.isEncrypted && data.password === undefined) {
@@ -170,7 +171,7 @@ async function switchNote(noteName, page, refresher = false) {
   }
   setCurrNote({});
   note.name = noteName.replaceAll("/", "");
-  note.isEncrypted = data.isEncrypted;
+  note.isEncrypted = data.isEncrypted || false;
   // if the local data is newer than the data from the database, use the local data
   if (data.saved === undefined || data.saved) {
     // whether the note is saved to the database
@@ -196,20 +197,17 @@ async function switchNote(noteName, page, refresher = false) {
   } else {
     content = data.content;
   }
-  // remove empty pages
-  note.content = getWrittenPages(content);
+  note.content = content;
   note.pgN = page < note.content.length ? page : note.content.length - 1;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
-  note.children = data.children;
-  note.parents = data.parents;
+  note.children = data.children || [];
+  note.parents = data.parents || [];
   note.date = data.date;
   note.beforeOpen = data.beforeOpen || null;
+  note.afterOpen = data.afterOpen || null;
   note.aceSessions = data.aceSessions || [];
-  // if (!note.pgN) {
-  //   note.pgN = 0;
-  //   note.content = getWrittenPages(note.content);
-  // }
+  note.isPublic = data.isPublic || false;
   makeTabInDom(note.name, true);
   if (reserved(note.name)) {
     toolBar.classList.add("homeToolBar");
@@ -222,6 +220,11 @@ async function switchNote(noteName, page, refresher = false) {
   }
   library.set(note.name, note);
   accents();
+  if (data.afterOpen) {
+    for (const func of data.afterOpen) {
+      func();
+    }
+  }
   switching = false;
 }
 
@@ -235,24 +238,32 @@ async function forceUpdateNotes(noteName = note.name) {
   notyf.success(`${noteName} has been reset`);
 }
 
+// This breaks when you delete a page that isn't the last one
+
 function deletePage(pgN = note.pgN) {
   if (note.content.length > 1) {
     const undoState = {
       content: [...note.content],
       aceSessions: [...note.aceSessions],
     };
-    note.aceSessions[pgN] = null;
+    note.aceSessions.splice(pgN, 1);
     note.content.splice(pgN, 1);
-    note.pgN = note.content.length - 1;
-    // defineCmd();
-    updateAndSaveNotesLocally();
+    let newPage;
+    if (pgN === note.content.length) {
+      newPage = pgN - 1;
+    } else if (pgN === 0) {
+      newPage = 0;
+    } else {
+      newPage = pgN;
+    }
+    note.pgN = newPage;
+    accents();
     allowSingleRedo(note.name, undoState);
   } else {
     note.content[0] = "";
     editor.setValue("");
-    updateAndSaveNotesLocally();
+    accents();
   }
-  accents();
   if (autosavingEnabled) {
     saveNoteBookToDb(note.name, true);
   }
@@ -380,6 +391,7 @@ async function deleteNoteBookFromDb(noteName) {
 
     closeTab(noteName);
     filterFlashcards(noteName);
+    removeDropped(noteName);
     syncStatus();
     updateList();
     // defineCmd();
@@ -394,6 +406,10 @@ async function renameNote(name, newName) {
     return;
   }
   const data = await getAnyBookContent(name, "_data");
+  if (!data) {
+    notyf.error("Notebook not found");
+    return;
+  }
   if (data.isEncrypted) {
     notyf.error("Encrypted notebooks can't be renamed");
     return;
@@ -402,22 +418,19 @@ async function renameNote(name, newName) {
     method: "PATCH",
   });
   if (response.ok) {
-    const noteinMem = library.get(name);
-    if (noteinMem) {
-      noteinMem.parents.forEach((book) => {
-        const p = library.get(book);
-        if (p) {
-          p.children = p.children.map((e) => (e === name ? newName : e));
-        }
-      });
+    data.parents.forEach((book) => {
+      const p = library.get(book);
+      if (p) {
+        p.children = p.children.map((e) => (e === name ? newName : e));
+      }
+    });
 
-      noteinMem.children.forEach((book) => {
-        const c = library.get(book);
-        if (c) {
-          c.parents = c.parents.map((e) => (e === name ? newName : e));
-        }
-      });
-    }
+    data.children.forEach((book) => {
+      const c = library.get(book);
+      if (c) {
+        c.parents = c.parents.map((e) => (e === name ? newName : e));
+      }
+    });
 
     localStorage.setItem(
       newName,

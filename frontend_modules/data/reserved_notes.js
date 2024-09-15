@@ -1,5 +1,7 @@
 import { imageList } from "./list";
 import { library } from "./library";
+import { editTabText } from "../tabs";
+import { currentlyOpenPublicBook } from "../publishing";
 
 export { editReserved, reserved, reservedNames };
 
@@ -22,10 +24,6 @@ const reservedNames = [
     data: {
       name: "home",
       content: [],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
       beforeOpen: [
         () => {
           // update the home page to show accurate information
@@ -48,10 +46,6 @@ const reservedNames = [
       content: [
         "# Sorry!\n\nThis notebook is reserved for storing your todo data. Sorry!",
       ],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
     },
   },
   {
@@ -60,10 +54,6 @@ const reservedNames = [
       content: [
         "This notebook is reserved for storing your scratch pad content. Sorry!",
       ],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
     },
   },
   {
@@ -72,10 +62,6 @@ const reservedNames = [
       content: [
         "# Sorry!\n\nThis notebook is reserved for storing your flashcard data.",
       ],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
     },
   },
   {
@@ -84,10 +70,6 @@ const reservedNames = [
       content: [
         "# Sorry!\n\nThis notebook is reserved for displaying AI Summaries.",
       ],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
     },
   },
   {
@@ -96,10 +78,6 @@ const reservedNames = [
       content: [
         "# Sorry\nnThis notebook name is reserved for previewing uploaded images.",
       ],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
       beforeOpen: [
         () => {
           // update the list of images in the image preview notebook
@@ -131,10 +109,22 @@ const reservedNames = [
     data: {
       name: "Note-Map",
       content: ["# Note-Map\n\n:fdg[]"],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
+    },
+  },
+  {
+    data: {
+      name: "Shared-Notebook",
+      content: ["This notebook is reserved for viewing public notebooks"],
+      beforeOpen: [() => {
+        if (currentlyOpenPublicBook) {
+          editTabText("Shared-Notebook", `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`);
+        }
+      }],
+      afterOpen: [() => {
+        if (currentlyOpenPublicBook) {
+          editTabText("Shared-Notebook", `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`);
+        }
+      }],
     },
   },
 ];

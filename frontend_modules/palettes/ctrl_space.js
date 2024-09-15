@@ -21,13 +21,15 @@ import { showBookDiffPopup } from "../popups/book_diff.js";
 import { flashcardMode, showFlashcards } from "../popups/flashcards.js";
 import { createPalette } from "./cmd.js";
 import { eid } from "../dom_utils.js";
-import { closeTab, savedWS } from "../tabs.js";
+import { closeTab, editTabText, savedWS } from "../tabs.js";
 import { editor } from "../important_stuff/editor.js";
 import { showSearch } from "./ctrl_f.js";
 import { showNotifs } from "./notif_palette.js";
 import { disableAutosave, enableAutosave } from "../autosave.js";
 import { cmInput } from "./cm_input.js";
 import { getAnyBookContent } from "../get_book_content.js";
+import { editReserved } from "../data/reserved_notes.js";
+import { publishBook, setCurrentPublicBook, unpublishBook } from "../publishing.js";
 // import { showTodo } from "../popups/todo.js";
 
 export { showPal };
@@ -110,6 +112,28 @@ const commands = [
           handler: () => switchNote(e),
         };
       });
+    },
+  },
+  {
+    name: "View Public Notebooks",
+    searchTerm: "open public notebooks",
+    populater: async () => {
+      const publics = await fetch("/api/get/published");
+      const json = await publics.json();
+      const children = json.data.map((e) => {
+        return {
+          name: `${e.name} (${e.user})`,
+          handler: async () => {
+            editReserved("Shared-Notebook", e.content);
+            setCurrentPublicBook([e.name, e.user]);
+            await closeTab("Shared-Notebook", {
+              refresh: true,
+              switchAsFallBack: true,
+            });
+          },
+        };
+      });
+      return children;
     },
   },
   {

@@ -121,6 +121,7 @@ class Tab {
 
   editText(text) {
     this.tabRef.firstChild.innerText = text;
+    this.tippy.setContent(text);
     document.title = text;
   }
 

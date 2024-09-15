@@ -34,7 +34,6 @@ import {
   saving,
 } from "./autosave";
 import removeMD from "../shared_modules/removeMD";
-import { getWrittenPages } from "./data_utils";
 import { imageList, listInMemory } from "./data/list";
 import { getAnyBookContent } from "./get_book_content";
 
@@ -92,6 +91,9 @@ function handlePageMovement({
       note.content.push("");
       note.pgN += amount;
       accents();
+      if (autosavingEnabled) {
+        saveNoteBookToDb(note.name, true);
+      }
       // defineCmd();
     } else if (
       note.pgN + amount >= note.content.length &&
@@ -159,10 +161,13 @@ async function updateAndSaveNotesLocally() {
     noteInList.excerpt = note.content.map((e) => removeMD(e.split("\n")[0]));
   }
   if (!reserved(note.name) && !note.isEncrypted) {
-    localStorage.setItem(note.name, JSON.stringify({
-      content: note.content,
-      timestamp: Date.now(),
-    }));
+    localStorage.setItem(
+      note.name,
+      JSON.stringify({
+        content: note.content,
+        timestamp: Date.now(),
+      })
+    );
   }
   syncStatus();
   previewHandlers.forEach((e) => {
@@ -182,24 +187,20 @@ async function updateAndSaveNotesLocally() {
   formatNonText(previewContent);
   letterCount.innerText = editor
     .getValue()
-    .replaceAll(" ", "")
-    .replaceAll("\n", "")
+    .replace(/\s+/g, "")
     .length.toString()
     .padStart(5, "0");
-  wordCount.innerText = (
-    notesPreviewArea.innerText
-      .replaceAll("\n", " ")
-      .replace(/  +/g, " ")
-      .split(" ").length - 1
-  )
-    .toString()
+  wordCount.innerText = notesPreviewArea.innerText
+    .split(/\s+/)
+    .filter(e => e !== "")
+    .length.toString()
     .padStart(5, "0");
 }
 
 function syncStatus() {
   if (reserved(note.name)) {
     // note name reserved
-    editTabText(note.name, note.name);
+    // editTabText(note.name, note.name);
     areNotesSavedIcon.style.filter = "grayscale(1)";
   } else if (!note.saved) {
     // note not saved
@@ -208,9 +209,8 @@ function syncStatus() {
     areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
   } else {
     // note is saved
-    let writtenPages = getWrittenPages(note.content);
     // let writtenPages = note.content;
-    if (JSON.stringify(writtenPages) === JSON.stringify(note.dbSave)) {
+    if (JSON.stringify(note.content) === JSON.stringify(note.dbSave)) {
       // content is synced
       editTabText(note.name, note.name);
       synced.setContent(

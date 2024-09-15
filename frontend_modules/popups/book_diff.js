@@ -6,11 +6,27 @@ import { note } from "../data/note";
 
 export { showBookDiffPopup };
 
-function getDiff(one, other) {
+function getDiff(dbSave, content) {
   let span = null;
-
-  const diff = Diff.diffChars(one, other);
+  const diff = window.Diff.diffChars(dbSave, content);
   const fragment = document.createDocumentFragment();
+
+  function createSpan(value, bgColor, textColor, allowHTML) {
+    span = document.createElement("span");
+    span.style.background = bgColor;
+    span.style.color = textColor;
+    if (allowHTML) {
+      span.innerHTML = value;
+    } else {
+      span.innerText = value;
+    }
+    return span;
+  }
+
+  if (!dbSave && !content) {
+    fragment.appendChild(createSpan("<i><b>Empty Page</b></i>", "rgba(0,0,0,0)", "", true));
+    return fragment;
+  }
 
   diff.forEach((part) => {
     const [bgColor, textColor] = part.added
@@ -18,11 +34,7 @@ function getDiff(one, other) {
       : part.removed
       ? ["#ff5e5e", "black"]
       : ["rgba(0,0,0,0)", ""];
-    span = document.createElement("span");
-    span.style.background = bgColor;
-    span.style.color = textColor;
-    span.appendChild(document.createTextNode(part.value));
-    fragment.appendChild(span);
+    fragment.appendChild(createSpan(part.value, bgColor, textColor));
   });
   return fragment;
 }
@@ -64,11 +76,16 @@ function showBookDiffPopup(content = note.content, dbSave = note.dbSave) {
     try {
       pageDiff.appendChild(getDiff(dbSave[i], content[i]));
     } catch (err) {
+      console.log(err)
       const fragment = document.createDocumentFragment();
       const span = document.createElement("span");
       span.style.background = bgColor;
       span.style.color = textColor;
-      span.appendChild(document.createTextNode(missingPage[i]));
+      if (missingPage[i]) {
+        span.innerText = missingPage[i];
+      } else {
+        span.innerHTML = "<i><b>Empty Page</b></i>";
+      }
       fragment.appendChild(span);
       pageDiff.appendChild(fragment);
     }

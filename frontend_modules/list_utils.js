@@ -25,7 +25,7 @@ import {
 } from "./data/list";
 import { setInnerHTML } from "./dom_utils";
 
-export { updateList, search, showPagePreview, showMorePages, renameDropped };
+export { updateList, search, showPagePreview, showMorePages, renameDropped, removeDropped };
 
 const listHandlers = [];
 const imageListHandlers = [];
@@ -47,7 +47,18 @@ function renameDropped(oldName, newName) {
     if (e.name === oldName) {
       e.name = newName;
     }
+    if (e.parentName === oldName) {
+      e.parentName = newName;
+    }
   });
+}
+
+function removeDropped(name) {
+  const index = droppedFolders.findIndex((e) => e.name === name || e.parentName === name);
+  if (index !== -1) {
+    droppedFolders.splice(index, 1);
+  }
+  localStorage.setItem("/fileStructure", JSON.stringify(droppedFolders));
 }
 
 async function showMorePages(e) {

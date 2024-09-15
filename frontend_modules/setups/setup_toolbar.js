@@ -21,6 +21,7 @@ import { autosavingEnabled, toggleAutosave } from "../autosave";
 import { listContextMenu } from "../modify_note_context_menu";
 import { note } from "../data/note";
 import { updateList } from "../list_utils";
+import { publishBook, unpublishBook } from "../publishing";
 // import { showTodo } from "../popups/todo";
 
 export default setupToolbar;
@@ -254,6 +255,17 @@ function setupToolbar() {
           text: "Force Update",
           click: function () {
             confirmation_cm(this, forceUpdateNotes);
+          },
+        },
+        {
+          text: note.isPublic ? "Make Private" : "Make Public",
+          click: () => {
+            if (note.isPublic) {
+              unpublishBook(note.name);
+            } else {
+              publishBook(note.name);
+            }
+            delContextMenu();
           },
         },
         {

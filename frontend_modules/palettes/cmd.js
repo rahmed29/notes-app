@@ -6,6 +6,18 @@ import { globalPopupClose } from "../mediators/popup_closers";
 export { createPalette, closePalette };
 
 let finderNode;
+let async_pal_incoming = false;
+
+function beginAsyncPal() {
+  async_pal_incoming = true;
+}
+
+function asyncPalette(placeholder, searchHandler, init, showNoResults = true) {
+  if (async_pal_incoming) {
+    async_pal_incoming = false;
+    createPalette(placeholder, searchHandler, init, showNoResults);
+  }
+}
 
 function handleKeys(e) {
   if (e.key === "Enter" && finderNode) {
@@ -41,6 +53,7 @@ function handleKeys(e) {
 }
 
 function closePalette() {
+  async_pal_incoming = false;
   attemptRemoval([eid("paletteContainer")]);
   finderNode = null;
   document.removeEventListener("keydown", handleKeys);
@@ -71,8 +84,9 @@ async function render_p(version, arr, results) {
     // a populater populates the children when the item is clicked
     if (cmd.populater) {
       item.addEventListener("click", async () => {
+        beginAsyncPal();
         const children = await cmd.populater();
-        createPalette(
+        asyncPalette(
           "Search...",
           (results, text, render, filter) => {
             render(version, filter(children, text), results);
@@ -123,6 +137,9 @@ async function render_p(version, arr, results) {
 // 3. an optional function to run when the palette is created
 // 4. an optional boolean to show "No results" when the search bar is empty
 function createPalette(placeholder, searchHandler, init, showNoResults = true) {
+  if (async_pal_incoming) {
+    return;
+  }
   function resetFinder() {
     if (!results.firstChild && showNoResults) {
       results.innerHTML = "&nbsp;<br>&nbsp;&nbsp;No results<br>&nbsp;";

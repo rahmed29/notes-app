@@ -16,7 +16,7 @@ import cookieParser from "cookie-parser";
 // So when we create the list, or the FDG, we don't include these
 const excludedNames = ["sticky__notes", "flash__cards"];
 
-const unsavableNames = ["home", "AI-Summary", "Your-Uploads", "Note-Map"];
+const unsavableNames = ["home", "AI-Summary", "Your-Uploads", "Note-Map", "Shared-Notebook"];
 
 // Environment variables
 const PORT_NUMBER = parseInt(process.env.PORT_NUMBER);
@@ -159,6 +159,10 @@ const Item = mongoose.model("Item", {
     type: Boolean,
     required: true,
   },
+  isPublic: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 app.use(express.static("./public"));
@@ -180,19 +184,18 @@ app.get("/api/get/family/:book", async (req, res) => {
   res.status(200).json({ data: fam });
 });
 
-// app.get("/api/fixdb", async (req, res) => {
-//   const items = await Item.find();
-//   const response = [];
-//   for (const item of items) {
-//     try {
-//       item.set("canvases", undefined, { strict: false });
-//       await item.save();
-//     } catch (err) {
-//       response.push([item.name, err]);
-//     }
-//   }
-//   res.status(200).json({ status: response });
-// });
+app.get("/api/fixdb", async (req, res) => {
+  const items = await Item.find();
+  const response = [];
+  for (const item of items) {
+    try {
+      await item.save();
+    } catch (err) {
+      response.push([item.name, err]);
+    }
+  }
+  res.status(200).json({ status: response });
+});
 
 app.get("/api/", (req, res) => {
   res.status(200).json({
@@ -274,6 +277,56 @@ app.get("/api/get/notebooks/:name", async (req, res) => {
   }
 });
 
+app.get("/api/get/published", async (req, res) => {
+  try {
+    const response = [];
+    const existingItems = await Item.find({ isPublic: true });
+    for (const item of existingItems) {
+      response.push({
+        name: item.name,
+        user: item.user,
+        content: item.content,
+        date: item.date,
+      });
+    }
+    res.status(200).json({ data: response });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/publish/:name", async (req, res) => {
+  const name = req.params.name;
+  try {
+    const existing = await Item.findOne({ user: req.__user, name });
+    if (existing) {
+      existing.isPublic = true;
+      await existing.save();
+      res.status(204).json({ status: "Published" });
+    } else {
+      res.status(404).json({ error: "Item not found with given name" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/unpublish/:name", async (req, res) => {
+  const name = req.params.name;
+  try {
+    const existing = await Item.findOne({ user: req.__user, name });
+    if (existing) {
+      existing.isPublic = false;
+      await existing.save();
+      res.status(204).json({ status: "Unpublished" });
+    } else {
+      res.status(404).json({ error: "Item not found with given name" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.put("/api/save/notebooks/:name", async (req, res) => {
   const name = req.params.name;
   const { content, isEncrypted } = req.body;
@@ -295,9 +348,6 @@ app.put("/api/save/notebooks/:name", async (req, res) => {
         user: req.__user,
         name,
         content,
-        children: [],
-        parents: [],
-        date: Date.now(),
         isEncrypted: isEncrypted || false,
       });
       await newItem.save();
@@ -660,9 +710,7 @@ app.post("/api/ollama", async (req, res) => {
         const data = await response.json();
         res.status(200).json({ data: data.response });
       } else {
-        res
-          .status(502)
-          .json({ error: "Ollama API could not be reached" });
+        res.status(502).json({ error: "Ollama API could not be reached" });
       }
     } catch (err) {
       console.log(err);

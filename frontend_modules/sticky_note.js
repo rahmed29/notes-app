@@ -23,7 +23,7 @@ function insertStickyNote() {
     updateAndSaveNotesLocally();
     editor.focus();
   } else {
-    notyf.error("Reserved notebooks are read only");
+    notyf.error("This notebook is read only");
   }
 }
 
