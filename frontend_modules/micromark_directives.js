@@ -48,18 +48,36 @@ function fdg(d) {
 
 // No need to DOMPurify on this because Micromark is safe by default
 function format(str, { includeMath = true, includeDirs = true } = {}) {
-  return micromark(str, {
-    extensions: [
-      gfm(),
-      mark(),
-      includeMath ? math() : null,
-      includeDirs ? directive() : null,
-    ],
-    htmlExtensions: [
-      gfmHtml(),
-      markHTML(),
-      includeMath ? mathHtml() : null,
-      includeDirs ? directiveHtml({ ref, fdg }) : null,
-    ],
-  });
+let html;
+try {
+    html = micromark(str, {
+      extensions: [
+        gfm(),
+        mark(),
+        includeMath ? math() : null,
+        includeDirs ? directive() : null,
+      ],
+      htmlExtensions: [
+        gfmHtml(),
+        markHTML(),
+        includeMath ? mathHtml() : null,
+        includeDirs ? directiveHtml({ ref, fdg }) : null,
+      ],
+    });
+  } catch (err) {
+    html = micromark(str, {
+      extensions: [
+        gfm(),
+        mark(),
+        includeDirs ? directive() : null,
+      ],
+      htmlExtensions: [
+        gfmHtml(),
+        markHTML(),
+        includeDirs ? directiveHtml({ ref, fdg }) : null,
+      ],
+    });
+  }
+
+  return html;
 }

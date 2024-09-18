@@ -175,13 +175,7 @@ async function updateAndSaveNotesLocally() {
   });
   previewHandlers.length = 0;
   const v = document.createElement("div");
-  try {
-    v.innerHTML = format(editor.getValue());
-  } catch (err) {
-    v.innerHTML = format(editor.getValue(), {
-      includeMath: false,
-    });
-  }
+  v.innerHTML = format(editor.getValue());
   v.id = "fill";
   morphdom(previewContent, v);
   formatNonText(previewContent);

@@ -234,19 +234,22 @@ app.get("/api/", (req, res) => {
 });
 
 app.get("/api/get/users", async (req, res) => {
-  let users = await Item.find().distinct("user");
-  let response = [];
+  try {
 
-  for (const user of users) {
-    const configBook = await Item.findOne({ user, name: "user__config" });
-    let userSettings = {};
-    if (configBook) {
-      const codeBlock = queryAST(
-        astFromMarkdown(configBook.content[0]),
-        new MDASTERQueryInstruction()
+    const books = await Item.find();
+    const users = await Item.find().distinct("user");
+    const response = [];
+    
+    for (const user of users) {
+      const configBook = books.filter((book) => (book.name === "user__config" && book.user === user));
+      let userSettings = {};
+      if (configBook.length > 0) {
+        const codeBlock = queryAST(
+          astFromMarkdown(configBook[0].content[0]),
+          new MDASTERQueryInstruction()
           .filter("lang", ["js", "javascript", "json"])
           .export()
-      );
+        );
       if (codeBlock) {
         try {
           const obj = JSON.parse(codeBlock.matchingNodes[0].value);
@@ -262,15 +265,19 @@ app.get("/api/get/users", async (req, res) => {
         } catch (err) {}
       }
     }
-    const books = await Item.find({ user });
     response.push({
       email: user,
-      notebooks: books.length,
+      notebooks: books.filter(
+        (e) => e.user === user && !excludedNames.includes(e.name)
+      ).length,
       settings: userSettings,
     });
   }
-
+  
   res.status(200).json({ data: response });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/fdg", async (req, res) => {
@@ -680,8 +687,10 @@ app.get("/api/fuzzy/:term/", async (req, res) => {
     (book) => !excludedNames.includes(book.name) && !book.isEncrypted
   );
   const fuse = new Fuse(books, {
-    keys: ["name", "content"],
-    threshold: 0.6,
+    keys: ["name", "content",],
+    threshold: 0.15, // Lower is more strict
+    distance: 100,
+    ignoreLocation: true,
   });
 
   res.status(200).json({ data: fuse.search(term) });

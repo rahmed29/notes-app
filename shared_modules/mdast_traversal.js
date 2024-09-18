@@ -104,9 +104,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // this takes your 2d `accums` array and joins them line by line with the delimiter, kinda like a dot product type beat idk
-  // its just good for something like collecting `- [ ] Task` checked values and then going deeper and getting those checkbox text values
-  // and then collecting them into a single string
+  // Joins accumulated attributes into a single string with a delimiter
   /* example
 
       accums = [
@@ -125,9 +123,10 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // this selects a node from the list of filtered nodes
+  // this selects nodes from the list of filtered nodes
   // selecting does nothing to the list, until you operate on it
   // can be a single number, an array, or "last" or "all"
+  // This resets any previously selected nodes
   select(indices) {
     this.#query.push({
       operation: "select",
@@ -136,7 +135,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node in the filtered list with it's parent (if it has one)
+  // Replaces the selected node(s) in the filtered list with it's parent (if it has one)
   ascend() {
     this.#query.push({
       operation: "operate",
@@ -145,7 +144,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node in the filtered list with it's first child (if it has one)
+  // Replaces the selected node(s) in the filtered list with it's first child (if it has one)
   descend() {
     this.#query.push({
       operation: "operate",
@@ -154,7 +153,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node in the filtered list with it's previous sibling (if it has one)
+  // Replaces the selected node(s) in the filtered list with it's previous sibling (if it has one)
   previousSibling() {
     this.#query.push({
       operation: "operate",
@@ -163,7 +162,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replace the selected node in the filtered list with it's next sibling (if it has one)
+  // Replace the selected node(s) in the filtered list with it's next sibling (if it has one)
   nextSibling() {
     this.#query.push({
       operation: "operate",
@@ -295,7 +294,7 @@ function queryAST(root, instructions) {
           const delim = accums[i][j] ? instruction.delimiter : "";
           newAccum[j] = line + delim + newStuff;
         }
-      };
+      }
       accums = newAccum;
     }
 
