@@ -9,10 +9,11 @@ import {
   notesPreviewArea,
   brain,
 } from "../important_stuff/dom_refs";
-import { eid, attemptRemoval, appendText } from "../dom_utils";
+import { eid, attemptRemoval, appendText, alertUser, stopAlert } from "../dom_utils";
 import { AINotif } from "../palettes/notif_palette";
 import { format } from "../micromark_directives";
 import { flashcards, setFlashcards, saveFlashcards } from "../data/flashcard_data";
+import { currTheme } from "../theming";
 
 export {
   showFlashcards,
@@ -206,6 +207,7 @@ function flashcardMode() {
   notesPreviewArea.addEventListener("click", fcPop);
   notesPreviewArea.addEventListener("mouseover", fcId);
   cardFront.focus();
+  alertUser("flashcard", "You are in flashcard mode, click some text to add it to the focused side of the flashcard", currTheme.quizletPurple);
 }
 
 function leaveFlashcardMode() {
@@ -219,6 +221,7 @@ function leaveFlashcardMode() {
   toggleWikiSearch();
   showList();
   attemptRemoval([eid("fcArea")]);
+  stopAlert("flashcard");
 }
 
 let globalFilter = null;

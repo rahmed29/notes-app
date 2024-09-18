@@ -12,22 +12,48 @@ export {
   setInnerHTML,
 };
 
-function alertUser(text) {
-  const existingAlert = eid("fcAlert");
-  if (existingAlert && existingAlert.innerText === text) {
+let alerts = [];
+
+function maintainAlerts() {
+  if (alerts.length === 0) {
+    document.body.classList.remove("alerted");
+    attemptRemoval([eid("fcAlert")]);
+    return;
+  }
+  const topAlert = alerts.slice(-1)[0];
+  if (eid("fcAlert")) {
+    eid("fcAlert").innerText = topAlert.text;
+    eid("fcAlert").style.backgroundColor = topAlert.color;
     return;
   }
   const alert = document.createElement("div");
   alert.id = "fcAlert";
-  alert.innerText = text;
+  alert.innerText = topAlert.text;
+  alert.style.backgroundColor = topAlert.color;
   document.body.classList.add("alerted");
   mainContainer.after(alert);
 }
 
-function stopAlert() {
-  document.body.classList.remove("alerted");
-  attemptRemoval([eid("fcAlert")]);
+function alertUser(id, text, color = "red") {
+  if (alerts.find((alert) => alert.id === id)) {
+    return;
+  }
+  alerts.push({ id, text, color });
+  maintainAlerts();
 }
+
+window.alertUser = alertUser;
+
+function stopAlert(id) {
+  if (id) {
+    alerts = alerts.filter((alert) => alert.id !== id);
+  } else {
+    alerts.pop();
+  }
+  maintainAlerts();
+}
+
+window.stopAlert = stopAlert;
 
 function getTopMostAncestor(node) {
   while (

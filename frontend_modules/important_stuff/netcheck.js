@@ -1,6 +1,7 @@
 import { alertUser, stopAlert } from "../dom_utils";
 import { saveFlashcards } from "../data/flashcard_data";
 import { saveStickyNotes } from "../sticky_note";
+import { currTheme } from "../theming";
 
 export { online, offline, netCheck, attachPoller, removePoller };
 
@@ -13,7 +14,9 @@ function offline() {
   if (!network.isOffline) {
     network.isOffline = true;
     alertUser(
-      "Looks like you (or the server) is offline. Changes will be saved locally. Some features may not work."
+      "network",
+      "Looks like you (or the server) is offline. Changes will be saved locally. Some features may not work.",
+      currTheme.destructive
     );
   }
 }
@@ -23,7 +26,7 @@ function online() {
     network.isOffline = false;
     saveStickyNotes();
     saveFlashcards();
-    stopAlert();
+    stopAlert("network");
   }
 }
 
@@ -58,7 +61,6 @@ async function netCheck() {
       if (count > 5) {
         for (let poller of pollers) {
           poller.poller();
-          console.log(`Executing polling ${poller.name}`);
         }
         count = 0;
       }

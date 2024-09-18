@@ -3,7 +3,7 @@ import { eid, attemptRemoval, setInnerHTML } from "../dom_utils";
 import { editor } from "../important_stuff/editor";
 import { globalPopupClose } from "../mediators/popup_closers";
 
-export { createPalette, closePalette };
+export { createPalette, closePalette, beginAsyncPal, asyncPalette };
 
 let finderNode;
 let async_pal_incoming = false;

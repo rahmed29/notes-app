@@ -25,7 +25,14 @@ import {
 } from "./data/list";
 import { setInnerHTML } from "./dom_utils";
 
-export { updateList, search, showPagePreview, showMorePages, renameDropped, removeDropped };
+export {
+  updateList,
+  search,
+  showPagePreview,
+  showMorePages,
+  renameDropped,
+  removeDropped,
+};
 
 const listHandlers = [];
 const imageListHandlers = [];
@@ -54,7 +61,9 @@ function renameDropped(oldName, newName) {
 }
 
 function removeDropped(name) {
-  const index = droppedFolders.findIndex((e) => e.name === name || e.parentName === name);
+  const index = droppedFolders.findIndex(
+    (e) => e.name === name || e.parentName === name
+  );
   if (index !== -1) {
     droppedFolders.splice(index, 1);
   }
@@ -211,10 +220,10 @@ function nestedList(obj, allNotes, parentName = "/root") {
     a.setAttribute("data-bookname", obj.name);
     a.addEventListener("click", switchTab);
     listHandlers.push({ element: a, type: "click", listener: switchTab });
-    if (!obj.excerpt[i]) {
-      a.innerHTML = "<i>No title</i>";
-    } else if (obj.isEncrypted) {
+    if (obj.isEncrypted) {
       a.innerHTML = "<i>Encrypted</i>";
+    } else if (!obj.excerpt[i]) {
+      a.innerHTML = "<i>No title</i>";
     } else {
       a.innerText = obj.excerpt[i];
     }

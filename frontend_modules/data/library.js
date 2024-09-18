@@ -1,7 +1,3 @@
-export { createLibrary, library };
+export { library };
 
-let library;
-
-function createLibrary() {
-  library = new Map();
-}
+const library = new Map();

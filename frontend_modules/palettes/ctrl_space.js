@@ -21,7 +21,7 @@ import { showBookDiffPopup } from "../popups/book_diff.js";
 import { flashcardMode, showFlashcards } from "../popups/flashcards.js";
 import { createPalette } from "./cmd.js";
 import { eid } from "../dom_utils.js";
-import { closeTab, editTabText, savedWS } from "../tabs.js";
+import { closeTab, savedWS } from "../tabs.js";
 import { editor } from "../important_stuff/editor.js";
 import { showSearch } from "./ctrl_f.js";
 import { showNotifs } from "./notif_palette.js";
@@ -29,7 +29,8 @@ import { disableAutosave, enableAutosave } from "../autosave.js";
 import { cmInput } from "./cm_input.js";
 import { getAnyBookContent } from "../get_book_content.js";
 import { editReserved } from "../data/reserved_notes.js";
-import { publishBook, setCurrentPublicBook, unpublishBook } from "../publishing.js";
+import { setCurrentPublicBook } from "../publishing.js";
+import { showUserList } from "./user_list.js";
 // import { showTodo } from "../popups/todo.js";
 
 export { showPal };
@@ -75,6 +76,11 @@ const commands = [
     handler: () => showSearch(true),
   },
   {
+    name: "List Users",
+    searchTerm: "user list show users find users",
+    handler: () => showUserList(),
+  },
+  {
     name: "New Page",
     searchTerm: "create page",
     handler: () => jumpToDesiredPage(note.content.length),
@@ -116,7 +122,7 @@ const commands = [
   },
   {
     name: "View Public Notebooks",
-    searchTerm: "open public notebooks",
+    searchTerm: "open public notebooks open shared notebooks",
     populater: async () => {
       const publics = await fetch("/api/get/published");
       const json = await publics.json();

@@ -56,17 +56,12 @@ import {
   enableAutosave,
 } from "./frontend_modules/autosave.js";
 import { netCheck } from "./frontend_modules/important_stuff/netcheck.js";
-import { createLibrary } from "./frontend_modules/data/library.js";
 import {
   setGlobalPaletteClose,
   setGlobalPopupClose,
 } from "./frontend_modules/mediators/popup_closers.js";
 import { closePalette } from "./frontend_modules/palettes/cmd.js";
 import { closePopupWindow } from "./frontend_modules/popups/popup.js";
-import {
-  MDASTERQueryInstruction,
-  queryNotes,
-} from "./shared_modules/mdast_traversal.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -271,22 +266,6 @@ if (location.pathname === "/") {
 setup_dom_refs();
 let progBar = document.getElementById("progBar");
 
-async function queryTest() {
-  return await queryNotes(
-    "asb222-unit1",
-    3,
-    new MDASTERQueryInstruction()
-      .filter("type", "list")
-      .select("all")
-      .previousSibling()
-      .filter("type", "text")
-      .accumulate("value")
-      .export()
-  );
-}
-
-window.queryTest = queryTest;
-
 async function finish() {
   eid("loading").addEventListener(
     "animationend",
@@ -295,9 +274,6 @@ async function finish() {
     },
     { once: true }
   );
-
-  // the library is any book that is open in memory. Here, we create the library by setting it to a newly instantiated map
-  createLibrary();
 
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance
   netCheck();
@@ -316,11 +292,7 @@ async function finish() {
   await initializeFlashcards();
   progBar.style.width = "140px";
 
-  // // Here we get the calendar data from the server and store it in memory// Here we get the calendar data from the server and store it in memory
-  // await initializeTodo();
   progBar.style.width = "210px";
-
-  // attachPoller("importTodos", importTasksFromPage);
 
   // Here we get the scratch pad aka sticky note data from the server and store it in memory
   await initializeStickyNotes();
@@ -365,7 +337,6 @@ async function finish() {
       hideStickyNotes();
     }
   });
-  // openCalendar.addEventListener("click", () => showTodo(false));
   flashcardPrac.addEventListener("click", () => {
     showFlashcards(false, [note.name]);
   });
@@ -442,7 +413,7 @@ async function finish() {
   });
 
   // Resize observer for the bottom left general info and the vault details
-  const resizeObserver = new ResizeObserver((entries) => {
+  const resizeObserver = new ResizeObserver(() => {
     bottomLeftGeneralInfo.style.left = vaultDetails.style.left =
       workspace.getBoundingClientRect().left + "px";
   });

@@ -9,14 +9,25 @@ import OpenAI from "openai";
 import validNoteName from "./shared_modules/validNoteName.js";
 import removeMD from "./shared_modules/removeMD.js";
 import Fuse from "fuse.js";
-import { astFromMarkdown, queryAST } from "./shared_modules/mdast_traversal.js";
+import {
+  astFromMarkdown,
+  MDASTERQueryInstruction,
+  queryAST,
+} from "./shared_modules/mdast_traversal.js";
 import cookieParser from "cookie-parser";
 
-// These are the notebooks that we are reseving on the frontend
-// So when we create the list, or the FDG, we don't include these
-const excludedNames = ["sticky__notes", "flash__cards"];
+// These are notebooks that shouldn't be included creating the list, or the FDG
+// Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
+// The `user__config` provides a way for the user to edit their settings by just editing a notebook
+const excludedNames = ["sticky__notes", "flash__cards", "user__config"];
 
-const unsavableNames = ["home", "AI-Summary", "Your-Uploads", "Note-Map", "Shared-Notebook"];
+const unsavableNames = [
+  "home",
+  "AI-Summary",
+  "Your-Uploads",
+  "Note-Map",
+  "Shared-Notebook",
+];
 
 // Environment variables
 const PORT_NUMBER = parseInt(process.env.PORT_NUMBER);
@@ -168,7 +179,7 @@ const Item = mongoose.model("Item", {
 app.use(express.static("./public"));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   if (req.cookies && req.cookies.CF_Authorization) {
     req.__user = JSON.parse(
       atob(req.cookies.CF_Authorization.split(".")[1])
@@ -199,25 +210,26 @@ app.get("/api/fixdb", async (req, res) => {
 
 app.get("/api/", (req, res) => {
   res.status(200).json({
-    endpoints: [
+    get: [
       "/api/get/list",
       "/api/get/image-list",
       "/api/get/notebooks/:name",
       "/api/get/flashcards",
-      "/api/save/notebooks/:name",
-      "/api/save/images",
-      "/api/delete/notebooks/:name",
-      "/api/delete/images/:name",
-      "/api/rename/:name/:newName",
+      "/api/get/users",
+      "/api/get/published",
+      "/api/fdg",
+      "/api/fuzzy/:term",
+    ],
+    patch: [
       "/api/nest/:child/:parent",
       "/api/relinquish/:child/:parent",
-      "/api/fuzzy/:term",
-      "/api/chatgpt",
-      "/api/ollama",
-      "/api/fdg",
-      "/api/query",
-      "/api/get/users",
+      "/api/rename/:name/:newName",
+      "/api/publish/:name",
+      "/api/unpublish/:name",
     ],
+    put: ["/api/save/notebooks/:name"],
+    delete: ["/api/delete/notebooks/:name", "/api/delete/images/:name"],
+    post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
   });
 });
 
@@ -226,10 +238,35 @@ app.get("/api/get/users", async (req, res) => {
   let response = [];
 
   for (const user of users) {
+    const configBook = await Item.findOne({ user, name: "user__config" });
+    let userSettings = {};
+    if (configBook) {
+      const codeBlock = queryAST(
+        astFromMarkdown(configBook.content[0]),
+        new MDASTERQueryInstruction()
+          .filter("lang", ["js", "javascript", "json"])
+          .export()
+      );
+      if (codeBlock) {
+        try {
+          const obj = JSON.parse(codeBlock.matchingNodes[0].value);
+          if (obj.pfp) {
+            userSettings.pfp = obj.pfp;
+          }
+          if (obj.bio) {
+            userSettings.bio = obj.bio;
+          }
+          if (obj.nickname) {
+            userSettings.nickname = obj.nickname;
+          }
+        } catch (err) {}
+      }
+    }
     const books = await Item.find({ user });
     response.push({
       email: user,
       notebooks: books.length,
+      settings: userSettings,
     });
   }
 
@@ -295,7 +332,7 @@ app.get("/api/get/published", async (req, res) => {
   }
 });
 
-app.put("/api/publish/:name", async (req, res) => {
+app.patch("/api/publish/:name", async (req, res) => {
   const name = req.params.name;
   try {
     const existing = await Item.findOne({ user: req.__user, name });
@@ -311,7 +348,7 @@ app.put("/api/publish/:name", async (req, res) => {
   }
 });
 
-app.put("/api/unpublish/:name", async (req, res) => {
+app.patch("/api/unpublish/:name", async (req, res) => {
   const name = req.params.name;
   try {
     const existing = await Item.findOne({ user: req.__user, name });
@@ -650,6 +687,30 @@ app.get("/api/fuzzy/:term/", async (req, res) => {
   res.status(200).json({ data: fuse.search(term) });
 });
 
+// Flashcards are just stored as JSON in an inaccessable notebook
+// Not the best way to do it, but it works
+// We should probably validate the flashcards before sending them to the user
+function validateFlashcards(deck) {
+  if (!Array.isArray(deck)) {
+    return false;
+  }
+  for (const card of deck) {
+    if (typeof card !== "object") {
+      return false;
+    }
+    if (
+      card.front === undefined ||
+      card.back === undefined ||
+      card.subject === undefined ||
+      card.id === undefined ||
+      card.learning === undefined
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 app.get("/api/get/flashcards", async (req, res) => {
   try {
     const flashcards = await Item.findOne({
@@ -658,7 +719,13 @@ app.get("/api/get/flashcards", async (req, res) => {
     });
     if (flashcards) {
       const deck = JSON.parse(flashcards.content[0]);
-      res.status(200).json({ data: deck });
+      if (validateFlashcards(deck)) {
+        res.status(200).json({ data: deck });
+      } else {
+        flashcards.content = ["[]"];
+        await flashcards.save();
+        res.status(200).json({ data: [] });
+      }
     } else {
       res.status(404).json({ error: "Flashcards not found" });
     }

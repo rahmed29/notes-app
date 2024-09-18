@@ -82,7 +82,6 @@ async function switchNote(noteName, page, refresher = false) {
     setCurrNote(library.get(noteName));
     if (note.beforeOpen) {
       for (const func of note.beforeOpen) {
-        console.log("beforeOpen");
         func();
       }
     }

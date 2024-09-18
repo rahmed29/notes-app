@@ -10,10 +10,10 @@ function setCurrentPublicBook(book) {
 
 async function publishBook() {
   const response = await fetch(`/api/publish/${note.name}`, {
-    method: "PUT",
+    method: "PATCH",
   });
   if (response.ok) {
-    notyf.success("Notebook published successfully");
+    notyf.success("Notebook published");
   } else {
     notyf.error("There was an error publishing the notebook");
   }
@@ -22,10 +22,10 @@ async function publishBook() {
 
 async function unpublishBook() {
   const response = await fetch(`/api/unpublish/${note.name}`, {
-    method: "PUT",
+    method: "PATCH",
   });
   if (response.ok) {
-    notyf.success("Notebook unpublished successfully");
+    notyf.success("Notebook unpublished");
   } else {
     notyf.error("There was an error unpublishing the notebook");
   }

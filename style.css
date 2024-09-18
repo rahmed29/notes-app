@@ -17,11 +17,6 @@ body {
   background: var(--body);
 }
 
-.material-symbols-outlined {
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-  font-size: 16px;
-}
-
 iframe {
   width: 100%;
   height: 75vh;
@@ -1307,6 +1302,7 @@ hr {
 .pageDiff {
   font-family: "Reddit Mono";
   font-size: .8em;
+  white-space: pre-wrap;
 }
 
 .pageDiff h2 {
@@ -1520,6 +1516,7 @@ hr {
   color: var(--accent-font);
   font-size: 13px;
   padding: 3px;
+  user-select: none;
 }
 
 .flashcardMode #fill * {
@@ -1636,6 +1633,7 @@ hr {
   justify-content: center;
   align-items: center;
   background: var(--misc-buttons);
+  border: 1px solid var(--button-border);
   /* color: #d49764 */
 }
 

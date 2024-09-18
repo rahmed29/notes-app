@@ -138,7 +138,7 @@ function accents(focusEditor = true) {
             saveNoteBookToDb(note.name, true);
           }
           doneSaving();
-        }, 200);
+        }, 300);
       }
     });
     note.aceSessions[note.pgN] = newSession;
