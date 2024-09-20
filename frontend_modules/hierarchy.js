@@ -3,6 +3,7 @@ import { updateList } from "./list_utils";
 import { closeTab } from "./tabs";
 import { reserved } from "./data/reserved_notes";
 import { library } from "./data/library";
+import localforage from "localforage";
 
 export { getFamily, nestNote, relinquishNote, createChild, copyBook };
 
@@ -28,10 +29,10 @@ async function createChild(parent, child) {
       }),
     });
     if (saveStatus.ok) {
-      localStorage.setItem(child, JSON.stringify({
+      await localforage.setItem(child, {
         content: [""],
         timestamp: Date.now(),
-      }));
+      });
       await closeTab(child, {
         refresh: true,
         saveState: true,
@@ -67,10 +68,10 @@ async function copyBook(newName, bookToCopy) {
       }),
     });
     if (save.ok) {
-      localStorage.setItem(newName, JSON.stringify({
+      await localforage.setItem(newName, {
         content,
         timestamp: Date.now(),
-      }));
+      });
       updateList();
       closeTab(newName, {
         refresh: true,

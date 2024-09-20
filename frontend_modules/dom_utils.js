@@ -1,4 +1,5 @@
 import { border, mainContainer } from "./important_stuff/dom_refs.js";
+import { currTheme } from "./theming.js";
 
 export {
   loading,
@@ -9,6 +10,7 @@ export {
   getTopMostAncestor,
   alertUser,
   stopAlert,
+  editAlert,
   setInnerHTML,
 };
 
@@ -34,7 +36,18 @@ function maintainAlerts() {
   mainContainer.after(alert);
 }
 
-function alertUser(id, text, color = "red") {
+function editAlert(id, text, color = currTheme ? currTheme.destructive : "red") {
+  const alert = alerts.find((alert) => alert.id === id);
+  if (!alert) {
+    return;
+  } else {
+    alert.text = text;
+    alert.color = color;
+  }
+  maintainAlerts();
+}
+
+function alertUser(id, text, color = currTheme ? currTheme.destructive : "red") {
   if (alerts.find((alert) => alert.id === id)) {
     return;
   }

@@ -1,6 +1,7 @@
 import { editor } from "./important_stuff/editor.js";
 import { attemptRemoval, eid } from "./dom_utils.js";
 import themes from "./themes/index.js";
+import { changeSettings } from "./important_stuff/settings.js";
 
 // current theme
 let currTheme = null;
@@ -33,7 +34,7 @@ function changeTheme(themeName) {
     themes.find((e) => e.name === themeName) ||
     themes.find((e) => e.name === "chrome");
   currTheme = obj;
-  localStorage.setItem("/theme", themeName);
+  changeSettings("theme", themeName);
   notes_global_theme.replace(`
     :root {
       --quizlet-purple: ${obj.quizletPurple};

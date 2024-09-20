@@ -30,7 +30,7 @@ import setupList from "./frontend_modules/setups/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
 import { showSearch } from "./frontend_modules/palettes/ctrl_f.js";
 import { showPal } from "./frontend_modules/palettes/ctrl_space.js";
-import { eid } from "./frontend_modules/dom_utils.js";
+import { alertUser, eid, stopAlert } from "./frontend_modules/dom_utils.js";
 import { showNotifs } from "./frontend_modules/palettes/notif_palette.js";
 import {
   editor,
@@ -62,6 +62,7 @@ import {
 } from "./frontend_modules/mediators/popup_closers.js";
 import { closePalette } from "./frontend_modules/palettes/cmd.js";
 import { closePopupWindow } from "./frontend_modules/popups/popup.js";
+import { getSetting } from "./frontend_modules/important_stuff/settings.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -282,38 +283,36 @@ async function finish() {
 
   // Here we get our list of books from the server and store it in memory
   await updateList();
-  progBar.style.width = "70px";
+  progBar.style.width = "80px";
 
   // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
-  changeTheme(localStorage.getItem("/theme") || "chrome");
+  changeTheme(getSetting("theme", "chrome"));
   createWorkspace();
 
   // Here, we get the flashcard data from the server and store it in memory
   await initializeFlashcards();
-  progBar.style.width = "140px";
-
-  progBar.style.width = "210px";
+  progBar.style.width = "160px";
 
   // Here we get the scratch pad aka sticky note data from the server and store it in memory
   await initializeStickyNotes();
-  progBar.style.width = "280px";
+  progBar.style.width = "240px";
 
-  // Here we switch to the note and page number that is in the url, if there is no note in the url
+  // Here we switch to the note and page number that is in the url
   await switchNote(
     location.pathname.substring(1),
     parseInt(location.search.substring(1) || 1) - 1
   );
-  progBar.style.width = "350px";
+  progBar.style.width = "320px";
 
   // Here we enable or disable autosave according to the value in local storage
-  if (localStorage.getItem("/autosave") === "true") {
+  if (getSetting("autosave", true) === true) {
     enableAutosave();
   } else {
     disableAutosave();
   }
 
   // Here we set the editing window to the value in local storage
-  editingWindow(localStorage.getItem("/viewPref") || "read");
+  editingWindow(getSetting("viewPref", "read"));
 
   // Some event listeners
   notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));

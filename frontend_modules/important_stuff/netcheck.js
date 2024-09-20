@@ -1,7 +1,6 @@
 import { alertUser, stopAlert } from "../dom_utils";
 import { saveFlashcards } from "../data/flashcard_data";
 import { saveStickyNotes } from "../sticky_note";
-import { currTheme } from "../theming";
 
 export { online, offline, netCheck, attachPoller, removePoller };
 
@@ -15,8 +14,7 @@ function offline() {
     network.isOffline = true;
     alertUser(
       "network",
-      "Looks like you (or the server) is offline. Changes will be saved locally. Some features may not work.",
-      currTheme.destructive
+      "Looks like you (or the server) is offline. Changes will be saved locally. Some features may not work."
     );
   }
 }

@@ -12,6 +12,7 @@ import { contextMenu, delContextMenu } from "../context_menu";
 import { eid } from "../dom_utils";
 import { note } from "../data/note";
 import { toggleList, resizeList } from "../resize_list";
+import { changeSettings, getSetting } from "../important_stuff/settings";
 
 export default setupList;
 
@@ -30,7 +31,7 @@ function setupList() {
       {
         text: "Recent Notes",
         click: async () => {
-          const recents = JSON.parse(localStorage.getItem("/recents") || "[]").map(
+          const recents = getSetting("recents", []).map(
             (e) => {
               return {
                 text: e,
@@ -45,7 +46,7 @@ function setupList() {
           recents.push({
             text: "Clear List",
             click: async () => {
-              localStorage.setItem("/recents", "[]");
+              changeSettings("recents", []);
               delContextMenu();
             },
             appearance: "rios",
@@ -84,7 +85,7 @@ function setupList() {
     document.addEventListener(
       "mouseup",
       () => {
-        localStorage.setItem("/listSize", list.style.width);
+        changeSettings("listSize", list.style.width);
         border.classList.remove("currPage");
         document.body.style.cursor = "inherit";
         mainContainer.style.userSelect = "inherit";

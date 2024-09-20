@@ -24,6 +24,7 @@ import {
   setImageList,
 } from "./data/list";
 import { setInnerHTML } from "./dom_utils";
+import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export {
   updateList,
@@ -39,9 +40,7 @@ const imageListHandlers = [];
 
 // variable for the tree list
 let nestedBooks;
-const droppedFolders = JSON.parse(
-  localStorage.getItem("/fileStructure") || "[]"
-);
+const droppedFolders = getSetting("fileStructure", []);
 const root = {
   name: "/root",
   children: [],
@@ -67,7 +66,7 @@ function removeDropped(name) {
   if (index !== -1) {
     droppedFolders.splice(index, 1);
   }
-  localStorage.setItem("/fileStructure", JSON.stringify(droppedFolders));
+  changeSettings("fileStructure", droppedFolders);
 }
 
 async function showMorePages(e) {
@@ -126,7 +125,7 @@ function dropWrapper(e) {
     this.classList.add("down");
     this.setAttribute("data-down", "");
   }
-  localStorage.setItem("/fileStructure", JSON.stringify(droppedFolders));
+  changeSettings("fileStructure", droppedFolders);
 }
 
 async function createList(customChildren) {

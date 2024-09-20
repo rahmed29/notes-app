@@ -4,6 +4,7 @@ import { accents } from "../dom_formatting";
 import { switchNote } from "../note_utils";
 import { library } from "../data/library";
 import { getAnyBookContent } from "../get_book_content";
+import localforage from "localforage";
 
 export { allowSingleRedo, youDeleted, AINotif, showNotifs };
 
@@ -41,8 +42,8 @@ function AINotif(choice, name, handler) {
   });
 }
 
-function youDeleted(noteName) {
-  if (!localStorage.getItem(noteName)) {
+async function youDeleted(noteName) {
+  if (!(await localforage.getItem(noteName))) {
     return;
   }
   const id = Date.now();
@@ -61,8 +62,8 @@ function youDeleted(noteName) {
       {
         name: "Remove from Local Storage",
         icon: "?",
-        handler: () => {
-          localStorage.removeItem(noteName);
+        handler: async () => {
+          await localforage.removeItem(noteName);
           notifStack = notifStack.filter((e) => e.id !== id);
         },
       },

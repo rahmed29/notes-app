@@ -36,6 +36,7 @@ import {
 import removeMD from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
 import { getAnyBookContent } from "./get_book_content";
+import localforage from "localforage";
 
 export {
   jumpWrapper,
@@ -58,6 +59,9 @@ function jumpWrapper() {
 }
 
 function jumpToDesiredPage(desired) {
+  if (desired < 0 || parseInt(desired) === NaN) {
+    desired = 0;
+  }
   if (desired < note.pgN) {
     handlePageMovement({
       direction: "<-",
@@ -161,13 +165,12 @@ async function updateAndSaveNotesLocally() {
     noteInList.excerpt = note.content.map((e) => removeMD(e.split("\n")[0]));
   }
   if (!reserved(note.name) && !note.isEncrypted) {
-    localStorage.setItem(
-      note.name,
-      JSON.stringify({
-        content: note.content,
-        timestamp: Date.now(),
-      })
-    );
+    // not awaiting because not necessary
+    // good for performance
+    localforage.setItem(note.name, {
+      content: note.content,
+      timestamp: Date.now(),
+    });
   }
   syncStatus();
   previewHandlers.forEach((e) => {
@@ -186,7 +189,7 @@ async function updateAndSaveNotesLocally() {
     .padStart(5, "0");
   wordCount.innerText = notesPreviewArea.innerText
     .split(/\s+/)
-    .filter(e => e !== "")
+    .filter((e) => e !== "")
     .length.toString()
     .padStart(5, "0");
 }

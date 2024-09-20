@@ -4,6 +4,7 @@ import {
   tabs,
   workspace,
 } from "./important_stuff/dom_refs";
+import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { resizeList, toggleList, showList, hideList };
 
@@ -22,7 +23,7 @@ function hideList() {
   tabs.style.padding = "5px";
   workspace.style.width = "calc(100% - 20px";
   list.removeAttribute("data-shown");
-  localStorage.setItem("/listShown", "false");
+  changeSettings("listShown", false);
 }
 
 function showList() {
@@ -30,10 +31,10 @@ function showList() {
   border.style.display = "inline";
   tabs.style.padding = "5px 5px 5px 0";
   workspace.style.width = `calc(100% - 25px - ${
-    localStorage.getItem("/listSize") || "300px"
+    getSetting("listSize", "300px")
   })`;
   list.setAttribute("data-shown", "");
-  localStorage.setItem("/listShown", "true");
+  changeSettings("listShown", true);
 }
 
 var toggleList = () =>

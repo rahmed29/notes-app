@@ -11,6 +11,8 @@ import { note, setCurrNote } from "./data/note";
 import { library } from "./data/library";
 import { getAnyBookContent } from "./get_book_content";
 import { autosavingEnabled } from "./autosave";
+import { changeSettings, getSetting } from "./important_stuff/settings";
+import localforage from "localforage";
 
 export {
   switchNote,
@@ -26,19 +28,22 @@ let switching = false;
 
 function updateRecentBooks(noteName) {
   if (!reserved(noteName)) {
-    let recentBooks = JSON.parse(localStorage.getItem("/recents") || "[]");
+    let recentBooks = getSetting("recents", []);
     recentBooks = recentBooks.filter((e) => e !== noteName);
     recentBooks.unshift(noteName);
     if (recentBooks.length > 10) {
       recentBooks.pop();
     }
-    localStorage.setItem("/recents", JSON.stringify(recentBooks));
+    changeSettings("recents", recentBooks);
   }
 }
 
 // the main function driving the "game loop". Handles all the switching between notes.
 // refresher lets us know if we're refreshing. If we are, we shouldn't close the home tab like we usually do when it's the only tab open
 async function switchNote(noteName, page, refresher = false) {
+  if (page && (page < 0 || parseInt(page) === NaN)) {
+    page = undefined;
+  }
   // if we're already switching, return
   if (switching) {
     return;
@@ -178,7 +183,7 @@ async function switchNote(noteName, page, refresher = false) {
   } else {
     note.saved = false;
   }
-  let localData = JSON.parse(localStorage.getItem(noteName));
+  let localData = await localforage.getItem(noteName);
   let content;
   if (note.isEncrypted) {
     content = data.content;
@@ -229,7 +234,7 @@ async function switchNote(noteName, page, refresher = false) {
 
 async function forceUpdateNotes(noteName = note.name) {
   // temp
-  localStorage.removeItem(noteName);
+  await localforage.removeItem(noteName);
   await silentReset(noteName, {
     refresh: true,
     saveState: true,
@@ -305,13 +310,10 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
       prepareForSave(desiredNote);
     }
     if (!desiredNote.isEncrypted) {
-      localStorage.setItem(
-        desiredNote.name,
-        JSON.stringify({
-          content: note.content,
-          timestamp,
-        })
-      );
+      await localforage.setItem(desiredNote.name, {
+        content: note.content,
+        timestamp,
+      });
     }
     const saveStatus = await fetch(`/api/save/notebooks/${desiredNote.name}`, {
       method: "PUT",
@@ -431,18 +433,15 @@ async function renameNote(name, newName) {
       }
     });
 
-    localStorage.setItem(
-      newName,
-      JSON.stringify({
-        content: data.content,
-        timestamp: Date.now(),
-      })
-    );
-    localStorage.removeItem(name);
+    await localforage.setItem(newName, {
+      content: data.content,
+      timestamp: Date.now(),
+    });
+    await localforage.removeItem(name);
     renameDropped(name, newName);
-    let recentBooks = JSON.parse(localStorage.getItem("/recents") || "[]");
+    let recentBooks = getSetting("recents", []);
     recentBooks = recentBooks.map((e) => (e === name ? newName : e));
-    localStorage.setItem("/recents", JSON.stringify(recentBooks));
+    changeSettings("recents", recentBooks);
     if (library.get(name)) {
       if (!data.aceSessions) {
         data.aceSessions = [];

@@ -3,6 +3,7 @@ import tippy from "tippy.js";
 import "tippy.js/themes/light.css";
 import "tippy.js/animations/shift-toward-subtle.css";
 import { brain } from "./dom_refs";
+import { getSetting } from "./settings";
 export {
   wikipediaTippy,
   synced,
@@ -37,7 +38,7 @@ function setupToolTips() {
   editingModeTippy = tippy("#generalInfoViewMode", {
     animation: "shift-toward-subtle",
     arrow: false,
-    content: localStorage.getItem("/viewPref"),
+    content: getSetting("viewPref", "?"),
     placement: "top",
   })[0];
 

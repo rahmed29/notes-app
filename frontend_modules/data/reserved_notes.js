@@ -2,6 +2,7 @@ import { imageList } from "./list";
 import { library } from "./library";
 import { editTabText } from "../tabs";
 import { currentlyOpenPublicBook } from "../publishing";
+import { getSetting } from "../important_stuff/settings";
 
 export { editReserved, reserved, reservedNames };
 
@@ -28,13 +29,13 @@ const reservedNames = [
         () => {
           // update the home page to show accurate information
           editReserved("home", [
-            `# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the __note map__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!\n\n__Recent Notes__\n\n${JSON.parse(
+            `# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the __note map__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!\n\n__Recent Notes__\n\n${
               // get the recent notes from local storage and reduce them to a single markdown list
-              localStorage.getItem("/recents") || "[]"
-            ).reduce((str, e) => {
-              str += `- :ref[${e}]\n`;
-              return str;
-            }, "")}`,
+              getSetting("recents", []).reduce((str, e) => {
+                str += `- :ref[${e}]\n`;
+                return str;
+              }, "")
+            }`,
           ]);
         },
       ],
@@ -72,39 +73,39 @@ const reservedNames = [
       ],
     },
   },
-  {
-    data: {
-      name: "Your-Uploads",
-      content: [
-        "# Sorry\nnThis notebook name is reserved for previewing uploaded images.",
-      ],
-      beforeOpen: [
-        () => {
-          // update the list of images in the image preview notebook
-          editReserved(
-            "Your-Uploads",
-            imageList.map((url) => {
-              // get the occurrences of the image in local storage and reduce them to a single markdown list
-              const occ = Object.entries(localStorage).reduce(
-                (str, [key, value]) => {
-                  if (key.slice(0, 1) !== "/") {
-                    JSON.parse(value).content.map((page, i) => {
-                      if (page.includes(`/uploads/${url}`)) {
-                        str += `- :ref[${key}:${i + 1}]\n`;
-                      }
-                    });
-                  }
-                  return str;
-                },
-                "**Occurrences in local storage:**\n"
-              );
-              return `![User Uploaded Image](/uploads/${url})\n\n${occ}`;
-            })
-          );
-        },
-      ],
-    },
-  },
+  // {
+  //   data: {
+  //     name: "Your-Uploads",
+  //     content: [
+  //       "# Sorry\nnThis notebook name is reserved for previewing uploaded images.",
+  //     ],
+  //     beforeOpen: [
+  //       () => {
+  //         // update the list of images in the image preview notebook
+  //         editReserved(
+  //           "Your-Uploads",
+  //           imageList.map((url) => {
+  //             // get the occurrences of the image in local storage and reduce them to a single markdown list
+  //             const occ = Object.entries(localStorage).reduce(
+  //               (str, [key, value]) => {
+  //                 if (key.slice(0, 1) !== "/" || key === "$settings") {
+  //                   JSON.parse(value).content.map((page, i) => {
+  //                     if (page.includes(`/uploads/${url}`)) {
+  //                       str += `- :ref[${key}:${i + 1}]\n`;
+  //                     }
+  //                   });
+  //                 }
+  //                 return str;
+  //               },
+  //               "**Occurrences in local storage:**\n"
+  //             );
+  //             return `![User Uploaded Image](/uploads/${url})\n\n${occ}`;
+  //           })
+  //         );
+  //       },
+  //     ],
+  //   },
+  // },
   {
     data: {
       name: "Note-Map",
@@ -115,16 +116,26 @@ const reservedNames = [
     data: {
       name: "Shared-Notebook",
       content: ["This notebook is reserved for viewing public notebooks"],
-      beforeOpen: [() => {
-        if (currentlyOpenPublicBook) {
-          editTabText("Shared-Notebook", `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`);
-        }
-      }],
-      afterOpen: [() => {
-        if (currentlyOpenPublicBook) {
-          editTabText("Shared-Notebook", `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`);
-        }
-      }],
+      beforeOpen: [
+        () => {
+          if (currentlyOpenPublicBook) {
+            editTabText(
+              "Shared-Notebook",
+              `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`
+            );
+          }
+        },
+      ],
+      afterOpen: [
+        () => {
+          if (currentlyOpenPublicBook) {
+            editTabText(
+              "Shared-Notebook",
+              `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`
+            );
+          }
+        },
+      ],
     },
   },
 ];

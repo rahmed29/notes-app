@@ -1,4 +1,5 @@
 import { eid } from "./dom_utils";
+import { changeSettings } from "./important_stuff/settings";
 
 export {
   enableAutosave,
@@ -18,13 +19,13 @@ let isAutoSaving = false;
 
 function enableAutosave() {
   autosavingEnabled = true;
-  localStorage.setItem("/autosave", "true");
+  changeSettings("autosave", true);
   eid("autoSaveSpinner").style.display = "inline-block";
 }
 
 function disableAutosave() {
   autosavingEnabled = false;
-  localStorage.setItem("/autosave", "false");
+  changeSettings("autosave", false);
   eid("autoSaveSpinner").style.display = "none";
 }
 

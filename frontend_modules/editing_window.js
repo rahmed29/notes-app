@@ -7,24 +7,25 @@ import {
 } from "./important_stuff/dom_refs";
 import { note } from "./data/note";
 import { editor } from "./important_stuff/editor";
+import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { cycleViewPreferences, editingWindow };
 
 // 'Editing window'
 function cycleViewPreferences() {
-  let viewPref = localStorage.getItem("/viewPref");
+  let viewPref = getSetting("viewPref");
   switch (viewPref) {
     case "split":
-      localStorage.setItem("/viewPref", "write");
+      changeSettings("viewPref", "write");
       break;
     case "write":
-      localStorage.setItem("/viewPref", "read");
+      changeSettings("viewPref", "read");
       break;
     default:
-      localStorage.setItem("/viewPref", "split");
+      changeSettings("viewPref", "split");
       break;
   }
-  editingWindow(localStorage.getItem("/viewPref"));
+  editingWindow(getSetting("viewPref"));
 }
 
 function editingWindow(choice) {
@@ -35,7 +36,7 @@ function editingWindow(choice) {
       notesAreaContainer.classList.add("readMode");
       notesAreaContainer.classList.remove("writeMode");
       notesAreaContainer.classList.remove("splitMode");
-      localStorage.setItem("/viewPref", "read");
+      changeSettings("viewPref", "read");
       break;
     case "write":
       mode.innerText = "W";
@@ -43,7 +44,7 @@ function editingWindow(choice) {
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.add("writeMode");
       notesAreaContainer.classList.remove("splitMode");
-      localStorage.setItem("/viewPref", "write");
+      changeSettings("viewPref", "write");
       break;
     default:
       mode.innerText = "S";
@@ -51,7 +52,7 @@ function editingWindow(choice) {
       notesAreaContainer.classList.remove("readMode");
       notesAreaContainer.classList.remove("writeMode");
       notesAreaContainer.classList.add("splitMode");
-      localStorage.setItem("/viewPref", "split");
+      changeSettings("viewPref", "split");
   }
   notesPreviewArea.scrollTop = 0;
   notesTextArea.scrollTop = 0;

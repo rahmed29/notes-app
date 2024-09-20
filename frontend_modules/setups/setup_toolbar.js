@@ -22,6 +22,7 @@ import { listContextMenu } from "../modify_note_context_menu";
 import { note } from "../data/note";
 import { updateList } from "../list_utils";
 import { publishBook, unpublishBook } from "../publishing";
+import { changeSettings } from "../important_stuff/settings";
 // import { showTodo } from "../popups/todo";
 
 export default setupToolbar;
@@ -105,7 +106,7 @@ function setupToolbar() {
         {
           text: "Split",
           click: () => {
-            localStorage.setItem("/viewPref", "split");
+            changeSettings("viewPref", "split");
             editingWindow("split");
             delContextMenu();
           },
@@ -113,7 +114,7 @@ function setupToolbar() {
         {
           text: "Read",
           click: () => {
-            localStorage.setItem("/viewPref", "read");
+            changeSettings("viewPref", "read");
             editingWindow("read");
             delContextMenu();
           },
@@ -121,7 +122,7 @@ function setupToolbar() {
         {
           text: "Write",
           click: () => {
-            localStorage.setItem("/viewPref", "write");
+            changeSettings("viewPref", "write");
             editingWindow("write");
             delContextMenu();
           },

@@ -5,10 +5,11 @@ import { delContextMenu } from "./context_menu";
 import { allowSingleRedo } from "./palettes/notif_palette";
 import { note } from "./data/note";
 import { library } from "./data/library";
+import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { savedWS, makeTabInDom, switchTab, closeTab, editTabText, silentReset };
 
-const savedWS = new Set(JSON.parse(localStorage.getItem("/workspace"))) || [];
+const savedWS = new Set(getSetting("workspace", []));
 const tabMap = new Map();
 
 // Things you can do with tabs
@@ -76,7 +77,7 @@ class Tab {
   } = {}) {
     // these must stay up here so that we properly switch tabs after closing one
     savedWS.delete(this.name);
-    localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+    changeSettings("workspace", Array.from(savedWS));
     tabMap.delete(this.name);
     //
 
@@ -192,7 +193,7 @@ function makeTabInDom(name, shouldOpen = false) {
   }
   tabs.prepend(div);
   savedWS.add(name);
-  localStorage.setItem("/workspace", JSON.stringify(Array.from(savedWS)));
+  changeSettings("workspace", Array.from(savedWS));
 }
 
 function switchTab() {

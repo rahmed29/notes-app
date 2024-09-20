@@ -31,6 +31,7 @@ import { getAnyBookContent } from "../get_book_content.js";
 import { editReserved } from "../data/reserved_notes.js";
 import { setCurrentPublicBook } from "../publishing.js";
 import { showUserList } from "./user_list.js";
+import { getSetting } from "../important_stuff/settings.js";
 // import { showTodo } from "../popups/todo.js";
 
 export { showPal };
@@ -48,23 +49,23 @@ function showPal() {
 }
 
 const commands = [
-  {
-    name: "Clear Local Storage",
-    searchTerm: "reset local storage update delete",
-    children: [
-      {
-        name: "Confirm",
-        handler: () => {
-          Object.entries(localStorage).forEach(([key, value]) => {
-            if (key.slice(0, 1) !== "/") {
-              localStorage.removeItem(key);
-            }
-          });
-          window.location.reload();
-        },
-      },
-    ],
-  },
+  // {
+  //   name: "Clear Local Storage",
+  //   searchTerm: "reset local storage update delete",
+  //   children: [
+  //     {
+  //       name: "Confirm",
+  //       handler: () => {
+  //         Object.entries(localStorage).forEach(([key, value]) => {
+  //           if (key.slice(0, 1) !== "/") {
+  //             localStorage.removeItem(key);
+  //           }
+  //         });
+  //         window.location.reload();
+  //       },
+  //     },
+  //   ],
+  // },
   {
     name: "Open Notification Palette",
     searchTerm: "ai summary notifs ai flashcards restore state revert",
@@ -112,7 +113,7 @@ const commands = [
     name: "Open Recent Notebooks",
     searchTerm: "open notebooks switch notebooks",
     populater: () => {
-      return JSON.parse(localStorage.getItem("/recents")).map((e) => {
+      return getSetting("recents", []).map((e) => {
         return {
           name: `${e}`,
           handler: () => switchNote(e),
