@@ -1,3 +1,4 @@
+import { attemptRemoval, eid } from "./dom_utils";
 import { currTheme } from "./theming";
 
 export { alertUser, stopAlert, editAlert };

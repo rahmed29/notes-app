@@ -14,7 +14,7 @@ import { AINotif } from "../palettes/notif_palette";
 import { format } from "../micromark_directives";
 import { flashcards, setFlashcards, saveFlashcards } from "../data/flashcard_data";
 import { currTheme } from "../theming";
-import { alertUser } from "../alerts";
+import { alertUser, stopAlert } from "../alerts";
 
 export {
   showFlashcards,
