@@ -195,18 +195,18 @@ app.get("/api/get/family/:book", async (req, res) => {
   res.status(200).json({ data: fam });
 });
 
-app.get("/api/fixdb", async (req, res) => {
-  const items = await Item.find();
-  const response = [];
-  for (const item of items) {
-    try {
-      await item.save();
-    } catch (err) {
-      response.push([item.name, err]);
-    }
-  }
-  res.status(200).json({ status: response });
-});
+// app.get("/api/fixdb", async (req, res) => {
+//  const items = await Item.find();
+//  const response = [];
+//  for (const item of items) {
+//    try {
+//      await item.save();
+//    } catch (err) {
+//      response.push([item.name, err]);
+//    }
+//  }
+//  res.status(200).json({ status: response });
+//});
 
 app.get("/api/", (req, res) => {
   res.status(200).json({

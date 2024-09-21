@@ -1586,6 +1586,11 @@ hr {
   display: none !important;
 }
 
+.flashcardMode #vaultDetails {
+  top: 0%;
+  left: 0%;
+}
+
 .extra {
   width: 100%;
   display: flex;

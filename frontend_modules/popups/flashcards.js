@@ -9,11 +9,12 @@ import {
   notesPreviewArea,
   brain,
 } from "../important_stuff/dom_refs";
-import { eid, attemptRemoval, appendText, alertUser, stopAlert } from "../dom_utils";
+import { eid, attemptRemoval, appendText} from "../dom_utils";
 import { AINotif } from "../palettes/notif_palette";
 import { format } from "../micromark_directives";
 import { flashcards, setFlashcards, saveFlashcards } from "../data/flashcard_data";
 import { currTheme } from "../theming";
+import { alertUser } from "../alerts";
 
 export {
   showFlashcards,
@@ -122,7 +123,7 @@ function flashcardMode() {
   aibutton.classList.add("fcButtons");
   const generated = document.createElement("button");
   generated.innerHTML = "✨ Generate Cards";
-  appendText(generated, "ChatGPT");
+  appendText(generated, note.isEncrypted ? "Unavailable" : "ChatGPT");
   generated.addEventListener("click", AIFlashcards);
   if (aiGenerating || note.isEncrypted) {
     generated.classList.add("unavailable");
@@ -207,7 +208,7 @@ function flashcardMode() {
   notesPreviewArea.addEventListener("click", fcPop);
   notesPreviewArea.addEventListener("mouseover", fcId);
   cardFront.focus();
-  alertUser("flashcard", "You are in flashcard mode, click some text to add it to the focused side of the flashcard", currTheme.quizletPurple);
+  alertUser("flashcard", `You are in flashcard mode, click some text to add it to the focused side of the flashcard.${note.isEncrypted ? " Flashcards are NOT encrypted!" : ""}`, currTheme.quizletPurple);
 }
 
 function leaveFlashcardMode() {

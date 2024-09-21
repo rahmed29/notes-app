@@ -198,6 +198,8 @@ async function switchNote(noteName, page, refresher = false) {
       };
       allowSingleRedo(noteName, undoState);
     }
+  } else if (localData) {
+    content = localData.content;
   } else {
     content = data.content;
   }
@@ -309,12 +311,14 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
     if (!autoSave) {
       prepareForSave(desiredNote);
     }
+
     if (!desiredNote.isEncrypted) {
       await localforage.setItem(desiredNote.name, {
         content: note.content,
         timestamp,
       });
     }
+    
     const saveStatus = await fetch(`/api/save/notebooks/${desiredNote.name}`, {
       method: "PUT",
       headers: {

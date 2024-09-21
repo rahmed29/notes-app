@@ -3,6 +3,8 @@ import { attemptRemoval, eid } from "./dom_utils.js";
 import themes from "./themes/index.js";
 import { changeSettings } from "./important_stuff/settings.js";
 
+export { currTheme, changeTheme };
+
 // current theme
 let currTheme = null;
 
@@ -80,5 +82,3 @@ function changeTheme(themeName) {
   document.head.appendChild(prismTheme);
   editor.setTheme(`ace/theme/${themeName}`);
 }
-
-export { currTheme, changeTheme };

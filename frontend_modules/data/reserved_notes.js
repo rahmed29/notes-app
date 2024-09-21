@@ -73,39 +73,25 @@ const reservedNames = [
       ],
     },
   },
-  // {
-  //   data: {
-  //     name: "Your-Uploads",
-  //     content: [
-  //       "# Sorry\nnThis notebook name is reserved for previewing uploaded images.",
-  //     ],
-  //     beforeOpen: [
-  //       () => {
-  //         // update the list of images in the image preview notebook
-  //         editReserved(
-  //           "Your-Uploads",
-  //           imageList.map((url) => {
-  //             // get the occurrences of the image in local storage and reduce them to a single markdown list
-  //             const occ = Object.entries(localStorage).reduce(
-  //               (str, [key, value]) => {
-  //                 if (key.slice(0, 1) !== "/" || key === "$settings") {
-  //                   JSON.parse(value).content.map((page, i) => {
-  //                     if (page.includes(`/uploads/${url}`)) {
-  //                       str += `- :ref[${key}:${i + 1}]\n`;
-  //                     }
-  //                   });
-  //                 }
-  //                 return str;
-  //               },
-  //               "**Occurrences in local storage:**\n"
-  //             );
-  //             return `![User Uploaded Image](/uploads/${url})\n\n${occ}`;
-  //           })
-  //         );
-  //       },
-  //     ],
-  //   },
-  // },
+  {
+    data: {
+      name: "Your-Uploads",
+      content: [
+        "# Sorry\nnThis notebook name is reserved for previewing uploaded images.",
+      ],
+      beforeOpen: [
+        () => {
+          // update the list of images in the image preview notebook
+          editReserved(
+            "Your-Uploads",
+            imageList.map((url) => {
+              return `![User Uploaded Image](/uploads/${url})`;
+            })
+          );
+        },
+      ],
+    },
+  },
   {
     data: {
       name: "Note-Map",

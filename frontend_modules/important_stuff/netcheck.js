@@ -1,4 +1,4 @@
-import { alertUser, stopAlert } from "../dom_utils";
+import { alertUser, stopAlert } from "../alerts";
 import { saveFlashcards } from "../data/flashcard_data";
 import { saveStickyNotes } from "../sticky_note";
 

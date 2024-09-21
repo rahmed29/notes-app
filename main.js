@@ -30,7 +30,7 @@ import setupList from "./frontend_modules/setups/setup_list.js";
 import { delContextMenu } from "./frontend_modules/context_menu.js";
 import { showSearch } from "./frontend_modules/palettes/ctrl_f.js";
 import { showPal } from "./frontend_modules/palettes/ctrl_space.js";
-import { alertUser, eid, stopAlert } from "./frontend_modules/dom_utils.js";
+import { eid } from "./frontend_modules/dom_utils.js";
 import { showNotifs } from "./frontend_modules/palettes/notif_palette.js";
 import {
   editor,
