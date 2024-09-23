@@ -1,5 +1,5 @@
 import { mainContainer } from "../important_stuff/dom_refs";
-import { eid, attemptRemoval, setInnerHTML } from "../dom_utils";
+import { eid, attemptRemoval, setInnerHTML, appendText } from "../dom_utils";
 import { editor } from "../important_stuff/editor";
 import { globalPopupClose } from "../mediators/popup_closers";
 
@@ -117,15 +117,27 @@ async function render_p(version, arr, results) {
     item.classList.add("item");
     // version 1 is just text
     if (version === 1) {
-      item.innerText = cmd.name;
+      const span = document.createElement("span");
+      span.innerText = cmd.name;
+      item.appendChild(span);
+      if (cmd.info) {
+        appendText(
+          span,
+          `<mark style = 'padding: 3px; border-radius: 3px; background'>${cmd.info}</mark>`,
+          0.8
+        );
+      }
     } else {
-      // version 2 is centered text with an left aligned 'icon'. The icon can be anything including HTML.
+      // version 2 is centered text with an left aligned 'icon'. The icon can be any HTML, also the main text can be any HTML in this version.
       const h3 = document.createElement("h3");
       setInnerHTML(h3, cmd.icon);
       item.appendChild(h3);
       const finder = document.createElement("div");
       finder.classList.add("finder");
       setInnerHTML(finder, cmd.name);
+      if (cmd.info) {
+        appendText(item, cmd.info, 0.5);
+      }
       item.appendChild(finder);
     }
     results.appendChild(item);

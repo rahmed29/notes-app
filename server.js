@@ -334,7 +334,7 @@ app.get("/api/get/published", async (req, res) => {
         date: item.date,
       });
     }
-    res.status(200).json({ data: response });
+    res.status(200).json({ data: response.sort((a, b) => b.date - a.date) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -488,6 +488,7 @@ app.get("/api/get/list/", async (req, res) => {
         children: notebook.children,
         parents: notebook.parents,
         isEncrypted: notebook.isEncrypted,
+        date: notebook.date,
       });
     }
   }

@@ -32,7 +32,7 @@ import { editReserved } from "../data/reserved_notes.js";
 import { setCurrentPublicBook } from "../publishing.js";
 import { showUserList } from "./user_list.js";
 import { getSetting } from "../important_stuff/settings.js";
-// import { showTodo } from "../popups/todo.js";
+import localforage from "localforage";
 
 export { showPal };
 
@@ -49,23 +49,19 @@ function showPal() {
 }
 
 const commands = [
-  // {
-  //   name: "Clear Local Storage",
-  //   searchTerm: "reset local storage update delete",
-  //   children: [
-  //     {
-  //       name: "Confirm",
-  //       handler: () => {
-  //         Object.entries(localStorage).forEach(([key, value]) => {
-  //           if (key.slice(0, 1) !== "/") {
-  //             localStorage.removeItem(key);
-  //           }
-  //         });
-  //         window.location.reload();
-  //       },
-  //     },
-  //   ],
-  // },
+  {
+    name: "Clear Local Storage",
+    searchTerm: "reset local storage update delete",
+    children: [
+      {
+        name: "Confirm",
+        handler: async () => {
+          await localforage.clear();
+          window.location.reload();
+        },
+      },
+    ],
+  },
   {
     name: "Open Notification Palette",
     searchTerm: "ai summary notifs ai flashcards restore state revert",
@@ -123,7 +119,8 @@ const commands = [
   },
   {
     name: "View Public Notebooks",
-    searchTerm: "open public notebooks open shared notebooks",
+    searchTerm:
+      "open public notebooks open shared notebooks view shared notebooks",
     populater: async () => {
       const publics = await fetch("/api/get/published");
       const json = await publics.json();
@@ -138,6 +135,10 @@ const commands = [
               switchAsFallBack: true,
             });
           },
+          info:
+            Date.now() - e.date < 1000 * 60 * 60 * 24 * 2
+              ? "Updated Recently"
+              : "",
         };
       });
       return children;
@@ -145,11 +146,15 @@ const commands = [
   },
   {
     name: "Open Saved Notebook",
-    searchTerm: "open notebooks switch notebooks",
+    searchTerm: "open notebooks switch notebooks view saved notebooks",
     populater: async () => {
       return listInMemory.map((e) => ({
         name: `${e.name}`,
         handler: () => switchNote(e.name),
+        info:
+          Date.now() - e.date < 1000 * 60 * 60 * 24 * 2
+            ? "Updated Recently"
+            : "",
       }));
     },
   },

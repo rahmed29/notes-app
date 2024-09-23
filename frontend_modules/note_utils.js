@@ -12,6 +12,7 @@ import { library } from "./data/library";
 import { getAnyBookContent } from "./get_book_content";
 import { autosavingEnabled } from "./autosave";
 import { changeSettings, getSetting } from "./important_stuff/settings";
+import { arraysAreEqual } from "./data_utils";
 import localforage from "localforage";
 
 export {
@@ -192,11 +193,13 @@ async function switchNote(noteName, page, refresher = false) {
       content = localData.content;
     } else {
       content = data.content;
-      const undoState = {
-        content: [...localData.content],
-        aceSessions: [],
-      };
-      allowSingleRedo(noteName, undoState);
+      if (!arraysAreEqual(localData.content, data.content)) {
+        const undoState = {
+          content: [...localData.content],
+          aceSessions: [],
+        };
+        allowSingleRedo(noteName, undoState);
+      }
     }
   } else if (localData) {
     content = localData.content;
@@ -248,10 +251,14 @@ async function forceUpdateNotes(noteName = note.name) {
 
 function deletePage(pgN = note.pgN) {
   if (note.content.length > 1) {
+    const pageTemp = note.content[pgN];
     const undoState = {
       content: [...note.content],
       aceSessions: [...note.aceSessions],
     };
+    if (pageTemp) {
+      allowSingleRedo(note.name, undoState);
+    }
     note.aceSessions.splice(pgN, 1);
     note.content.splice(pgN, 1);
     let newPage;
@@ -264,7 +271,6 @@ function deletePage(pgN = note.pgN) {
     }
     note.pgN = newPage;
     accents();
-    allowSingleRedo(note.name, undoState);
   } else {
     note.content[0] = "";
     editor.setValue("");
@@ -318,7 +324,7 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
         timestamp,
       });
     }
-    
+
     const saveStatus = await fetch(`/api/save/notebooks/${desiredNote.name}`, {
       method: "PUT",
       headers: {
@@ -338,13 +344,13 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
       if (desiredNote.name === note.name) {
         if (!autoSave) {
           areNotesSavedIcon.classList.add("saved");
+          if (desiredNote.pgN > desiredNote.content.length - 1) {
+            jumpToDesiredPage(desiredNote.content.length - 1);
+          } else {
+            accents(false);
+          }
         }
         desiredNote.dbSave = [...desiredNote.content];
-        if (desiredNote.pgN > desiredNote.content.length - 1) {
-          jumpToDesiredPage(desiredNote.content.length - 1);
-        } else {
-          accents(false);
-        }
         desiredNote.saved = true;
         desiredNote.date = timestamp;
         syncStatus();

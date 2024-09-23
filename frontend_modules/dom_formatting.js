@@ -37,6 +37,7 @@ import removeMD from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
 import { getAnyBookContent } from "./get_book_content";
 import localforage from "localforage";
+import { arraysAreEqual, charDifferCount } from "./data_utils";
 
 export {
   jumpWrapper,
@@ -194,41 +195,41 @@ async function updateAndSaveNotesLocally() {
     .padStart(5, "0");
 }
 
-function syncStatus() {
-  if (reserved(note.name)) {
-    // note name reserved
-    // editTabText(note.name, note.name);
-    areNotesSavedIcon.style.filter = "grayscale(1)";
-  } else if (!note.saved) {
-    // note not saved
-    editTabText(note.name, `* ${note.name}`);
-    synced.setContent(`Notes are not saved`);
-    areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
-  } else {
-    // note is saved
-    // let writtenPages = note.content;
-    if (JSON.stringify(note.content) === JSON.stringify(note.dbSave)) {
-      // content is synced
-      editTabText(note.name, note.name);
-      synced.setContent(
-        `Notes were saved at ${new Date(note.date).toLocaleString()}`
-      );
-      areNotesSavedIcon.style.filter = "none";
-    } else {
-      // content is not in sync with db
-      if (!autosavingEnabled) {
-        // Add the asterisk (only if not autosaving, since autosaving saves quickly so the asterisk would be annoying)
-        editTabText(note.name, `* ${note.name}`);
-      }
-      synced.setContent(
-        `Notes shown differ from saved notes by ${Math.abs(
-          JSON.stringify(note.content).length -
-            JSON.stringify(note.dbSave).length
-        )} chars`
-      );
+async function syncStatus() {
+  return new Promise((resolve) => {
+    if (reserved(note.name)) {
+      // note name reserved
+      // editTabText(note.name, note.name);
       areNotesSavedIcon.style.filter = "grayscale(1)";
+    } else if (!note.saved) {
+      // note not saved
+      editTabText(note.name, `* ${note.name}`);
+      synced.setContent(`Notes are not saved`);
+      areNotesSavedIcon.style.filter = "hue-rotate(270deg)";
+    } else {
+      // note is saved
+      // let writtenPages = note.content;
+      if (arraysAreEqual(note.content, note.dbSave)) {
+        // content is synced
+        editTabText(note.name, note.name);
+        synced.setContent(
+          `Notes were saved at ${new Date(note.date).toLocaleString()}`
+        );
+        areNotesSavedIcon.style.filter = "none";
+      } else {
+        // content is not in sync with db
+        if (!autosavingEnabled) {
+          // Add the asterisk (only if not autosaving, since autosaving saves quickly so the asterisk would be annoying)
+          editTabText(note.name, `* ${note.name}`);
+        }
+        synced.setContent(
+          `Notes shown differ from saved notes by ${charDifferCount(note.content, note.dbSave)} chars`
+        );
+        areNotesSavedIcon.style.filter = "grayscale(1)";
+      }
     }
-  }
+    resolve();
+  });
 }
 
 function formatNonText(ele) {
@@ -275,6 +276,7 @@ function formatNonText(ele) {
 
 // page numbers on the left
 function createPageNumbers() {
+  console.log("Rendering")
   pageHandlers.forEach((e) => {
     e.element.removeEventListener(e.type, e.listener);
   });

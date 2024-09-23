@@ -9,10 +9,14 @@ import {
   notesPreviewArea,
   brain,
 } from "../important_stuff/dom_refs";
-import { eid, attemptRemoval, appendText} from "../dom_utils";
+import { eid, attemptRemoval, appendText } from "../dom_utils";
 import { AINotif } from "../palettes/notif_palette";
 import { format } from "../micromark_directives";
-import { flashcards, setFlashcards, saveFlashcards } from "../data/flashcard_data";
+import {
+  flashcards,
+  setFlashcards,
+  saveFlashcards,
+} from "../data/flashcard_data";
 import { currTheme } from "../theming";
 import { alertUser, stopAlert } from "../alerts";
 
@@ -208,7 +212,13 @@ function flashcardMode() {
   notesPreviewArea.addEventListener("click", fcPop);
   notesPreviewArea.addEventListener("mouseover", fcId);
   cardFront.focus();
-  alertUser("flashcard", `You are in flashcard mode, click some text to add it to the focused side of the flashcard.${note.isEncrypted ? " Flashcards are NOT encrypted!" : ""}`, currTheme.quizletPurple);
+  alertUser(
+    "flashcard",
+    `You are in flashcard mode, click some text to add it to the focused side of the flashcard.${
+      note.isEncrypted ? " Flashcards are NOT encrypted!" : ""
+    }`,
+    currTheme.quizletPurpleAccents
+  );
 }
 
 function leaveFlashcardMode() {
@@ -281,24 +291,23 @@ function showFlashcards(noAnimation, filter) {
   reset.classList.add("reset");
   reset.innerText = "🔁 Reset All";
   reset.addEventListener("click", (e) => {
-      contextMenu(e, [
-        {
-          text: "Confirm",
-          click: () => {
-            availableCards = availableCards.map((e) => {
-              if (filter.includes(e.subject)) {
-                e.learning = "unattempted";
-                return e;
-              }
-            });
-            saveFlashcards();
-            showFlashcards(true);
-          },
-          appearance: "rios",
-        }
-      ])
-    },
-  );
+    contextMenu(e, [
+      {
+        text: "Confirm",
+        click: () => {
+          availableCards = availableCards.map((e) => {
+            if (filter.includes(e.subject)) {
+              e.learning = "unattempted";
+              return e;
+            }
+          });
+          saveFlashcards();
+          showFlashcards(true);
+        },
+        appearance: "rios",
+      },
+    ]);
+  });
   const pracAll = document.createElement("button");
   pracAll.classList.add("reset");
   pracAll.innerText = "🗂️ Practice All";
@@ -409,9 +418,11 @@ function showFlashcards(noAnimation, filter) {
             text: `Delete Card`,
             click: function () {
               confirmation_cm(this, () => {
-                setFlashcards(flashcards.filter(
-                  (e) => e.id != this.getAttribute("data-props")
-                ));
+                setFlashcards(
+                  flashcards.filter(
+                    (e) => e.id != this.getAttribute("data-props")
+                  )
+                );
                 saveFlashcards();
                 delContextMenu();
                 showFlashcards(true);

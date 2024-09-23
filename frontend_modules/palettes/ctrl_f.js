@@ -3,6 +3,7 @@ import { jumpToDesiredPage } from "../dom_formatting";
 import { createPalette } from "./cmd";
 import { previewContent } from "../important_stuff/dom_refs";
 import { editor } from "../important_stuff/editor";
+import removeMD from "../../shared_modules/removeMD";
 
 export { showSearch };
 
@@ -24,7 +25,9 @@ function showSearch(shift = false) {
     const before = mainStr.slice(start, index);
     const after = mainStr.slice(index + subStr.length, end);
 
-    return `<span class = 'leftFade'>${before}</span><mark>${subStr}</mark><span class = 'rightFade'>${after}</span>`;
+    const middle = mainStr.slice(index, index + subStr.length);
+
+    return `<span class = 'leftFade'>${before}</span><mark>${middle}</mark><span class = 'rightFade'>${after}</span>`;
   }
 
   createPalette(
@@ -38,7 +41,7 @@ function showSearch(shift = false) {
             icon: `Page ${i + 1}`,
             handler: () => {
               jumpToDesiredPage(i);
-              findStringOnPage(text);
+              findStringOnPage(removeMD(text));
             },
           });
         }
