@@ -42,7 +42,7 @@ function fdg(d) {
   }
 
   this.tag(
-    `<iframe class = 'directiveFrame' src = '/api/fdg#${currTheme.notesColor}-${currTheme.body}-${currTheme.mainAccent}'></iframe>`
+    `<iframe class = 'directiveFrame' src = '/api/get/fdg#${currTheme.notesColor}-${currTheme.body}-${currTheme.mainAccent}'></iframe>`
   );
 }
 

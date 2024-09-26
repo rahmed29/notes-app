@@ -250,6 +250,9 @@ async function forceUpdateNotes(noteName = note.name) {
 // This breaks when you delete a page that isn't the last one
 
 function deletePage(pgN = note.pgN) {
+  if (reserved(note.name)) {
+    return;
+  }
   if (note.content.length > 1) {
     const pageTemp = note.content[pgN];
     const undoState = {

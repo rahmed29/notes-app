@@ -24,7 +24,9 @@ const reservedNames = [
   {
     data: {
       name: "home",
-      content: [],
+      content: [
+        "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the __note map__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
+      ],
       beforeOpen: [
         () => {
           // update the home page to show accurate information

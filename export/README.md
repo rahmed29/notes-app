@@ -1,0 +1,1 @@
+This directory serves as an intermediary for storing exported notebooks to be sent to the client.

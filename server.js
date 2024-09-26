@@ -15,6 +15,7 @@ import {
   queryAST,
 } from "./shared_modules/mdast_traversal.js";
 import cookieParser from "cookie-parser";
+import AdmZip from "adm-zip";
 
 // These are notebooks that shouldn't be included creating the list, or the FDG
 // Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
@@ -195,30 +196,18 @@ app.get("/api/get/family/:book", async (req, res) => {
   res.status(200).json({ data: fam });
 });
 
-// app.get("/api/fixdb", async (req, res) => {
-//  const items = await Item.find();
-//  const response = [];
-//  for (const item of items) {
-//    try {
-//      await item.save();
-//    } catch (err) {
-//      response.push([item.name, err]);
-//    }
-//  }
-//  res.status(200).json({ status: response });
-//});
-
 app.get("/api/", (req, res) => {
   res.status(200).json({
     get: [
       "/api/get/list",
       "/api/get/image-list",
       "/api/get/notebooks/:name",
+      "/api/get/family/:book",
       "/api/get/flashcards",
       "/api/get/users",
       "/api/get/published",
-      "/api/fdg",
-      "/api/fuzzy/:term",
+      "/api/get/fdg",
+      "/api/get/fuzzy/:term",
     ],
     patch: [
       "/api/nest/:child/:parent",
@@ -281,7 +270,61 @@ app.get("/api/get/users", async (req, res) => {
   }
 });
 
-app.get("/api/fdg", async (req, res) => {
+// app.get("/api/export/:name", async (req, res) => {
+//   if (req.__user !== SUPER_USER) {
+//     return res
+//       .status(403)
+//       .json({ status: "As of now, only the super user can export notes" });
+//   }
+
+//   try {
+//     let notebooks;
+//     let unzippedFolder;
+//     if (req.params.name === "$ALL") {
+//       notebooks = await Item.find({ user: req.__user });
+//       unzippedFolder = `./export/${req.__user}`
+//     } else {
+//       notebooks = await Item.find({ user: req.__user, name: req.params.name });
+//       unzippedFolder = `./export/${req.params.name}`
+//     }
+    
+//     fs.mkdirSync(unzippedFolder, { recursive: true });
+//     for (const notebook of notebooks) {
+//       if (notebook.isEncrypted || excludedNames.includes(notebook.name)) {
+//         continue;
+//       }
+//       const notebookDir = `${unzippedFolder}/${notebook.name}`;
+//       fs.mkdirSync(notebookDir, { recursive: true });
+//       for (let i = 0; i < notebook.content.length; i++) {
+//         let possibleName = removeMD(notebook.content[i].split("\n")[0]);
+//         if (!possibleName || possibleName.length > 100) {
+//           possibleName = `Page ${i}`;
+//         }
+//         fs.writeFileSync(
+//           `${notebookDir}/${possibleName.replace(/[/\\?%*:|"<>]/g, "-")}.md`,
+//           notebook.content[i].replace(/:ref\[(.+)\]/g, (m, s) => {
+//             return `[[${s.split(":")[0]}]]`;
+//           })
+//         );
+//       }
+//     }
+
+//     const zippedFolder = `${unzippedFolder}.zip`;
+
+//     const zip = new AdmZip();
+//     zip.addLocalFolder(unzippedFolder);
+//     zip.writeZip(zippedFolder);
+//     const file = fs.realpathSync(zippedFolder);
+//     res.download(file, () => {
+//       fs.rmSync(unzippedFolder, { recursive: true, force: true });
+//       fs.rmSync(file, { recursive: true, force: true });
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+app.get("/api/get/fdg", async (req, res) => {
   const result = await Item.find({ user: req.__user });
   const nodes = [];
   const links = [];
@@ -682,7 +725,7 @@ app.delete("/api/delete/notebooks/:name", async (req, res) => {
   }
 });
 
-app.get("/api/fuzzy/:term/", async (req, res) => {
+app.get("/api/get/fuzzy/:term/", async (req, res) => {
   const term = req.params.term;
   let books = await Item.find({ user: req.__user });
   books = books.filter(

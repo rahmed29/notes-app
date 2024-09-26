@@ -295,7 +295,7 @@ const commands = [
   },
   {
     name: "Delete This Page",
-    searchTerm: "trash remove",
+    searchTerm: "trash remove page delete page",
     children: [
       {
         name: "Confirm",
