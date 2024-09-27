@@ -20,7 +20,7 @@ if not os.path.exists("./public/assets/prism-all-themes"):
     subprocess.run(["git clone https://github.com/rahmed29/prism-all-themes ./public/assets/prism-all-themes"], shell=True)
 
 if not os.path.exists("./public/assets/ace-editor"):
-    print(f"Creating user uploads folder")
+    print(f"Cloning Ace Editor")
     subprocess.run(["git clone https://github.com/ajaxorg/ace-builds.git"], shell=True)
     subprocess.run(["mv ./ace-builds/src-min ./public/assets/ace-editor"], shell=True)
     subprocess.run(["rm -rf ./ace-builds"], shell=True)
