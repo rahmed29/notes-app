@@ -23,21 +23,26 @@ async function wikiSearch(event) {
   if (!(selection.includes("\n") || !selection.length) && wikiEnabled) {
     let wiki = selection.trim().replace(/ /g, "_").toLowerCase();
     document.body.style.cursor = "wait";
-    const response = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}?redirect=true`,
-      {
-        cache: "default",
+    try {
+
+      const response = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}?redirect=true`,
+        {
+          cache: "default",
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        let summary = `<b>${selection.trim()}</b>:<br>${DOMPurify.sanitize(
+          result["extract_html"]
+        )}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`;
+        wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
+        moneyAnimation(event, "🧠");
       }
-    );
-    if (response.ok) {
-      const result = await response.json();
-      let summary = `<b>${selection.trim()}</b>:<br>${DOMPurify.sanitize(
-        result["extract_html"]
-      )}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`;
-      wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
-      moneyAnimation(event, "🧠");
+      document.body.style.cursor = "inherit";
+    } catch (err) {
+      document.body.style.cursor = "inherit";
     }
-    document.body.style.cursor = "inherit";
   }
 }
 

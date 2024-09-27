@@ -211,7 +211,7 @@ function setupToolbar() {
         },
         { spacer: true },
         {
-          text: "Insert Sticky Note",
+          text: "Insert Scratchpad",
           click: () => {
             insertStickyNote();
             delContextMenu();

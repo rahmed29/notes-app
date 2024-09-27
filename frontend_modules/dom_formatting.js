@@ -199,7 +199,7 @@ async function syncStatus() {
   return new Promise((resolve) => {
     if (reserved(note.name)) {
       // note name reserved
-      // editTabText(note.name, note.name);
+      editTabText(note.name, note.name);
       areNotesSavedIcon.style.filter = "grayscale(1)";
     } else if (!note.saved) {
       // note not saved
@@ -276,7 +276,6 @@ function formatNonText(ele) {
 
 // page numbers on the left
 function createPageNumbers() {
-  console.log("Rendering")
   pageHandlers.forEach((e) => {
     e.element.removeEventListener(e.type, e.listener);
   });

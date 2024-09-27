@@ -3,14 +3,20 @@ import { gfmFromMarkdown } from "mdast-util-gfm";
 import { mathFromMarkdown } from "mdast-util-math";
 import { gfm } from "micromark-extension-gfm";
 import { math } from "micromark-extension-math";
+import { directive } from "micromark-extension-directive";
+import { directiveFromMarkdown } from "mdast-util-directive";
 
 export { queryAST, MDASTERQueryInstruction, astFromMarkdown, queryNotes, DFS };
 
 // TODO, make this support <mark> might need to write a plugin
 function astFromMarkdown(markdown) {
   return fromMarkdown(markdown, {
-    extensions: [gfm(), math()],
-    mdastExtensions: [gfmFromMarkdown(), mathFromMarkdown()],
+    extensions: [gfm(), math(), directive()],
+    mdastExtensions: [
+      gfmFromMarkdown(),
+      mathFromMarkdown(),
+      directiveFromMarkdown(),
+    ],
   });
 }
 
@@ -77,8 +83,19 @@ class MDASTERQueryInstruction {
   filter(attr, values) {
     this.#query.push({
       operation: "filter",
+      type: "single",
       attr: attr,
       values: values,
+    });
+    return this;
+  }
+
+  filterMulti(attr, values) {
+    this.#query.push({
+      operation: "filter",
+      type: "multiple",
+      attr: attr, // ["type", "value"]
+      values: values, // [["textDirective", "text"], ["ref", "test", "one"]],
     });
     return this;
   }
@@ -192,9 +209,37 @@ function attachParent(node, currId = { num: 0 }) {
   }
 }
 
+function validateNode(node, attr, acceptedValues, multiple) {
+  if (multiple) {
+    let flag = true;
+    for (let i = 0; i < attr.length; i++) {
+      if (
+        node[attr[i]] &&
+        acceptedValues[i] &&
+        acceptedValues[i].includes(node[attr[i]])
+      ) {
+        console.log(attr[i] + " - GOOD -> " + acceptedValues[i]);
+        continue;
+      } else {
+        console.log(attr[i] + " - FAIL -> " + acceptedValues[i]);
+        flag = false;
+        break;
+      }
+    }
+    return flag;
+  } else {
+    return node[attr] && acceptedValues.includes(node[attr].toString());
+  }
+}
+
 // DFS but accumulates children into an array
-function accumulateMatching(node, attr, acceptedValues, arr) {
-  if (!attr || !acceptedValues || acceptedValues.length === 0) {
+function accumulateMatching(node, attr, acceptedValues, arr, multiple = false) {
+  if (
+    !attr ||
+    attr.length === 0 ||
+    !acceptedValues ||
+    acceptedValues.length === 0
+  ) {
     arr = arr.concat(node.children);
     return arr;
   }
@@ -202,7 +247,7 @@ function accumulateMatching(node, attr, acceptedValues, arr) {
     return arr;
   }
 
-  if (node[attr] && acceptedValues.includes(node[attr].toString())) {
+  if (validateNode(node, attr, acceptedValues, multiple)) {
     arr.push(node);
   }
 
@@ -211,7 +256,7 @@ function accumulateMatching(node, attr, acceptedValues, arr) {
   if (node && node.children) {
     node.children.forEach((child) => {
       // array is passed by reference and accumulates results
-      accumulateMatching(child, attr, acceptedValues, arr, node._id);
+      accumulateMatching(child, attr, acceptedValues, arr, multiple);
     });
   }
   return arr;
@@ -251,6 +296,7 @@ function queryAST(root, instructions) {
     // Filter operation
     else if (
       instruction.operation === "filter" &&
+      instruction.type === "single" &&
       instruction.attr &&
       instruction.values
     ) {
@@ -262,6 +308,19 @@ function queryAST(root, instructions) {
         instruction.attr,
         instruction.values,
         []
+      );
+    } else if (
+      instruction.operation === "filter" &&
+      instruction.type === "multiple" &&
+      instruction.attr &&
+      instruction.values
+    ) {
+      matchingNodes.children = accumulateMatching(
+        matchingNodes,
+        instruction.attr,
+        instruction.values,
+        [],
+        true
       );
     }
 

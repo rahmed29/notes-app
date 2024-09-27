@@ -314,6 +314,14 @@ const commands = [
     ],
   },
   {
+    name: "Download All Notebooks",
+    info: ".zip",
+    searchTerm: "export zip",
+    handler: () => {
+      window.open("/api/export/$ALL");
+    },
+  },
+  {
     name: "Force Update Notebook",
     searchTerm: "local storage",
     children: [
@@ -342,16 +350,6 @@ const commands = [
     searchTerm: "quizlet open flashcards",
     handler: () => showFlashcards(true, [note.name]),
   },
-  // {
-  //   name: "Open Calendar",
-  //   searchTerm: "open todo",
-  //   handler: () => showTodo(),
-  // },
-  // {
-  //   name: "Insert Calendar Event",
-  //   searchTerm: "import todo insert todo",
-  //   handler: () => showTodo(true),
-  // },
   {
     name: "Insert Scratchpad Content",
     searchTerm: "import sticky note import scratchpad insert sticky note",

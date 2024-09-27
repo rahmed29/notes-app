@@ -42,7 +42,7 @@ function updateRecentBooks(noteName) {
 // the main function driving the "game loop". Handles all the switching between notes.
 // refresher lets us know if we're refreshing. If we are, we shouldn't close the home tab like we usually do when it's the only tab open
 async function switchNote(noteName, page, refresher = false) {
-  if (page && (page < 0 || parseInt(page) === NaN)) {
+  if (page && (page < 0 || isNaN(parseInt(page)))) {
     page = undefined;
   }
   // if we're already switching, return
@@ -275,7 +275,6 @@ function deletePage(pgN = note.pgN) {
     note.pgN = newPage;
     accents();
   } else {
-    note.content[0] = "";
     editor.setValue("");
     accents();
   }

@@ -1313,7 +1313,7 @@ hr {
 }
 
 .pageDiff {
-  font-family: "Reddit Mono";
+  font-family: "Reddit Mono", monospace;
   font-size: .8em;
   white-space: pre-wrap;
 }

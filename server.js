@@ -16,6 +16,7 @@ import {
 } from "./shared_modules/mdast_traversal.js";
 import cookieParser from "cookie-parser";
 import AdmZip from "adm-zip";
+import { parseReference } from "./shared_modules/parse_ref.js";
 
 // These are notebooks that shouldn't be included creating the list, or the FDG
 // Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
@@ -237,7 +238,10 @@ app.get("/api/get/users", async (req, res) => {
         const codeBlock = queryAST(
           astFromMarkdown(configBook[0].content[0]),
           new MDASTERQueryInstruction()
-            .filter("lang", ["js", "javascript", "json"])
+            .filterMulti(
+              ["type", "lang"],
+              [["code"], ["js", "javascript", "json"]]
+            )
             .export()
         );
         if (codeBlock) {
@@ -270,59 +274,104 @@ app.get("/api/get/users", async (req, res) => {
   }
 });
 
-// app.get("/api/export/:name", async (req, res) => {
-//   if (req.__user !== SUPER_USER) {
-//     return res
-//       .status(403)
-//       .json({ status: "As of now, only the super user can export notes" });
-//   }
+app.get("/api/test", async (req, res) => {
+  const randomBook = await Item.findOne({ name: "misc" });
+  const page = randomBook.content[3];
+  const ast = astFromMarkdown(page);
+  res.status(200).json({ data: ast });
+});
 
-//   try {
-//     let notebooks;
-//     let unzippedFolder;
-//     if (req.params.name === "$ALL") {
-//       notebooks = await Item.find({ user: req.__user });
-//       unzippedFolder = `./export/${req.__user}`
-//     } else {
-//       notebooks = await Item.find({ user: req.__user, name: req.params.name });
-//       unzippedFolder = `./export/${req.params.name}`
-//     }
-    
-//     fs.mkdirSync(unzippedFolder, { recursive: true });
-//     for (const notebook of notebooks) {
-//       if (notebook.isEncrypted || excludedNames.includes(notebook.name)) {
-//         continue;
-//       }
-//       const notebookDir = `${unzippedFolder}/${notebook.name}`;
-//       fs.mkdirSync(notebookDir, { recursive: true });
-//       for (let i = 0; i < notebook.content.length; i++) {
-//         let possibleName = removeMD(notebook.content[i].split("\n")[0]);
-//         if (!possibleName || possibleName.length > 100) {
-//           possibleName = `Page ${i}`;
-//         }
-//         fs.writeFileSync(
-//           `${notebookDir}/${possibleName.replace(/[/\\?%*:|"<>]/g, "-")}.md`,
-//           notebook.content[i].replace(/:ref\[(.+)\]/g, (m, s) => {
-//             return `[[${s.split(":")[0]}]]`;
-//           })
-//         );
-//       }
-//     }
+app.get("/api/export/:name", async (req, res) => {
+  // if (req.__user !== SUPER_USER) {
+  //   return res
+  //     .status(403)
+  //     .json({ status: "As of now, only the super user can export notes" });
+  // }
 
-//     const zippedFolder = `${unzippedFolder}.zip`;
+  try {
+    let notebooks;
+    let unzippedFolder;
+    if (req.params.name === "$ALL") {
+      notebooks = await Item.find({ user: req.__user });
+      unzippedFolder = `./export/${req.__user}`;
+    } else {
+      notebooks = await Item.find({ user: req.__user, name: req.params.name });
+      unzippedFolder = `./export/${req.params.name}`;
+    }
 
-//     const zip = new AdmZip();
-//     zip.addLocalFolder(unzippedFolder);
-//     zip.writeZip(zippedFolder);
-//     const file = fs.realpathSync(zippedFolder);
-//     res.download(file, () => {
-//       fs.rmSync(unzippedFolder, { recursive: true, force: true });
-//       fs.rmSync(file, { recursive: true, force: true });
-//     });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
+    const booksToZip = [];
+
+    fs.mkdirSync(unzippedFolder, { recursive: true });
+    for (const notebook of notebooks) {
+      if (notebook.isEncrypted || excludedNames.includes(notebook.name)) {
+        continue;
+      }
+
+      const pages = [];
+
+      for (let i = 0; i < notebook.content.length; i++) {
+        let possibleName = removeMD(notebook.content[i].split("\n")[0]);
+        if (!possibleName || possibleName.length > 100) {
+          possibleName = `Page ${i}`;
+        }
+        pages.push({
+          title: possibleName.replace(/[/\\?%*:|"<>]/g, "-"),
+          md: notebook.content[i],
+        });
+      }
+
+      booksToZip.push({
+        name: notebook.name,
+        pages,
+      });
+    }
+
+    booksToZip.forEach(({ name, pages }) => {
+      const notebookDir = `${unzippedFolder}/${name}`;
+      fs.mkdirSync(notebookDir, { recursive: true });
+      pages.forEach((page) => {
+        fs.writeFileSync(
+          `${notebookDir}/${page.title}.md`,
+          // Change `:ref[book:page|title]` to `[[book/path-to-page|title]]`
+          page.md.replace(/:ref\[(.+?)\]/g, (m, s) => {
+            let raw = "[[";
+            const ref = parseReference(s);
+            if (!ref.name) {
+              return "[[]]";
+            }
+            raw += ref.name;
+            ref.page = ref.page || 1;
+            const foundBook = booksToZip.find((e) => e.name === ref.name);
+            if (foundBook && foundBook.pages && foundBook.pages[ref.page - 1]) {
+              raw += `/${foundBook.pages[ref.page - 1].title}`;
+            }
+            if (ref.title) {
+              raw += `|${ref.title}`;
+            }
+            return raw + "]]";
+          })
+        );
+      });
+    });
+
+    fs.mkdirSync(`${unzippedFolder}/uploads`, { recursive: true });
+    fs.cpSync("./public/uploads", `${unzippedFolder}/uploads`, {
+      recursive: true,
+    });
+    const zippedFolder = `${unzippedFolder}.zip`;
+
+    const zip = new AdmZip();
+    zip.addLocalFolder(unzippedFolder);
+    zip.writeZip(zippedFolder);
+    const file = fs.realpathSync(zippedFolder);
+    res.download(file, () => {
+      fs.rmSync(unzippedFolder, { recursive: true, force: true });
+      fs.rmSync(file, { recursive: true, force: true });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get("/api/get/fdg", async (req, res) => {
   const result = await Item.find({ user: req.__user });

@@ -267,6 +267,8 @@ if (location.pathname === "/") {
 setup_dom_refs();
 let progBar = document.getElementById("progBar");
 
+let savingStickyNotes = false;
+
 async function finish() {
   eid("loading").addEventListener(
     "animationend",
@@ -329,7 +331,15 @@ async function finish() {
 
   // More event listeners, this time for the bottom right tools
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });
-  stickyNotesTextArea.addEventListener("input", saveStickyNotes);
+  stickyNotesTextArea.addEventListener("input", () => {
+    if (!savingStickyNotes) {
+      savingStickyNotes = true;
+      setTimeout(() => {
+        saveStickyNotes();
+        savingStickyNotes = false;
+      }, 300);
+    }
+  });
   stickyNotesTextArea.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       e.preventDefault();
@@ -342,7 +352,7 @@ async function finish() {
 
   // Here we add the event listeners for the bottom right tools
   for (let i = 0, n = brDots.children.length; i < n; i++) {
-    const dotFunctions = ["Flashcards", "Scratch Pad"];
+    const dotFunctions = ["Flashcards", "Scratchpad"];
     tippy([brDots.children[i]], {
       animation: "shift-toward-subtle",
       arrow: false,

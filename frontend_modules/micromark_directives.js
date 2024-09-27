@@ -4,33 +4,37 @@ import { gfm, gfmHtml } from "micromark-extension-gfm";
 import { mark, markHTML } from "../micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import { currTheme } from "./theming.js";
+import { parseReference } from "../shared_modules/parse_ref.js";
 
 export { format };
 
 function ref(d) {
-  // :ref[bookName:optional page|optional title]
+  // :ref[bookName:page]
+  // :ref[bookName|title]
+  // :ref[]
 
   // return if empty
   if (d.type !== "textDirective" || !d.label) return false;
 
-  // book name, first part of label
-  let bookName = d.label.split(":")[0].replaceAll(" ", "");
-  // attributes, second part of label (page number and optional title)
-  const atrs = d.label.split(":")[1];
-  // parse int from attributes
-  const page = parseInt(atrs);
+  const { name, page, title } = parseReference(d.label);
+
+  if (!name) {
+    return false;
+  }
+
   this.tag(
     `<span class="reference" data-bookname="${DOMPurify.sanitize(
-      bookName
+      name
     )}" data-page="${page ? page - 1 : 0}">`
   );
+
   let raw;
-  if (atrs && atrs.indexOf("|") > 0) {
-    // inner text becomes optional title if it exists
-    raw = atrs.split("|").slice(-1);
+  if (title) {
+    raw = DOMPurify.sanitize(title);
+  } else if (page) {
+    raw = DOMPurify.sanitize(`${name} pg. ${page}`);
   } else {
-    // else it becomes book name or book name plus page number if it exists
-    raw = DOMPurify.sanitize(`${bookName} ${page ? `pg. ${page}` : ""}`);
+    raw = DOMPurify.sanitize(`${name}`);
   }
   this.raw(raw || "");
   this.tag("</span>");
@@ -48,8 +52,8 @@ function fdg(d) {
 
 // No need to DOMPurify on this because Micromark is safe by default
 function format(str, { includeMath = true, includeDirs = true } = {}) {
-let html;
-try {
+  let html;
+  try {
     html = micromark(str, {
       extensions: [
         gfm(),
@@ -66,11 +70,7 @@ try {
     });
   } catch (err) {
     html = micromark(str, {
-      extensions: [
-        gfm(),
-        mark(),
-        includeDirs ? directive() : null,
-      ],
+      extensions: [gfm(), mark(), includeDirs ? directive() : null],
       htmlExtensions: [
         gfmHtml(),
         markHTML(),

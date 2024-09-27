@@ -23,6 +23,7 @@
     "express": "^4.19.2",
     "fuse.js": "^7.0.0",
     "localforage": "^1.10.0",
+    "mdast-util-directive": "^3.0.0",
     "mdast-util-from-markdown": "^2.0.1",
     "mdast-util-gfm": "^3.0.0",
     "mdast-util-math": "^3.0.0",
