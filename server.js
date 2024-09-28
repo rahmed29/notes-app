@@ -209,6 +209,7 @@ app.get("/api/", (req, res) => {
       "/api/get/published",
       "/api/get/fdg",
       "/api/get/fuzzy/:term",
+      "/api/export/:name",
     ],
     patch: [
       "/api/nest/:child/:parent",
