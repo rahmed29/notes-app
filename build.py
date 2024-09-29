@@ -29,6 +29,10 @@ if not os.path.exists("./public/uploads"):
     print(f"Creating user uploads folder")
     subprocess.run(["mkdir ./public/uploads"], shell=True)
 
+if not os.path.exists("./export"):
+    print(f"Creating export folder")
+    subprocess.run(["mkdir ./export"], shell=True)
+
 # build
 subprocess.run(["npm run build"], shell=True) 
 

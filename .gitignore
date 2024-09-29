@@ -16,8 +16,8 @@ dist-ssr
 /public/assets/ace-editor
 /micromark-extension-mark
 /public/assets/prism-all-themes
-/public/uploads/*
-./export/*
+/public/uploads/
+/export/
 .env
 
 # Editor directories and files
