@@ -29,6 +29,8 @@ async function getAnyBookContent(bookName, desiredInfo) {
     const objectInList = listInMemory.find((e) => e.name === bookName);
     if (objectInList) {
       return objectInList[desiredInfo];
+    } else {
+      return null;
     }
   }
   const response = await fetch(`/api/get/notebooks/${bookName}`);

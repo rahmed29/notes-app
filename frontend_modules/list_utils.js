@@ -26,14 +26,7 @@ import {
 import { setInnerHTML } from "./dom_utils";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 
-export {
-  updateList,
-  search,
-  showPagePreview,
-  showMorePages,
-  renameDropped,
-  removeDropped,
-};
+export { updateList, search, showPagePreview, showMorePages, renameDropped };
 
 const listHandlers = [];
 const imageListHandlers = [];
@@ -42,7 +35,7 @@ const imageListHandlers = [];
 let nestedBooks;
 const droppedFolders = getSetting("fileStructure", []);
 const root = {
-  name: "/root",
+  name: "$root",
   children: [],
   excerpt: [],
   parents: [],
@@ -57,16 +50,6 @@ function renameDropped(oldName, newName) {
       e.parentName = newName;
     }
   });
-}
-
-function removeDropped(name) {
-  const index = droppedFolders.findIndex(
-    (e) => e.name === name || e.parentName === name
-  );
-  if (index !== -1) {
-    droppedFolders.splice(index, 1);
-  }
-  changeSettings("fileStructure", droppedFolders);
 }
 
 async function showMorePages(e) {
@@ -92,6 +75,18 @@ async function showMorePages(e) {
   );
 }
 
+async function updateDropped() {
+  for (let i = 0; i < droppedFolders.length; i++) {
+    const p = await getAnyBookContent(droppedFolders[i].name, "parents");
+    if (p && p.length === 0) {
+      p.push("$root")
+    }
+    if (!p || !p.includes(droppedFolders[i].parentName)) {
+      droppedFolders.splice(i, 1);
+    }
+  }
+}
+
 // creating the tree list
 function dropWrapper(e) {
   e.stopPropagation();
@@ -100,11 +95,12 @@ function dropWrapper(e) {
     const index = droppedFolders.findIndex(
       (e) =>
         e.name === this.parentNode.getAttribute("data-bookname") &&
-        e.parentName === this.getAttribute("data-parent")
+      e.parentName === this.getAttribute("data-parent")
     );
     if (index !== -1) {
       droppedFolders.splice(index, 1);
     }
+    updateDropped();
     this.nextElementSibling.style.display = "none";
     this.classList.remove("down");
     this.removeAttribute("data-down");
@@ -113,7 +109,7 @@ function dropWrapper(e) {
       !droppedFolders.find(
         (e) =>
           e.name === this.parentNode.getAttribute("data-bookname") &&
-          e.parentName === this.getAttribute("data-parent")
+        e.parentName === this.getAttribute("data-parent")
       )
     ) {
       droppedFolders.push({
@@ -121,6 +117,7 @@ function dropWrapper(e) {
         parentName: this.getAttribute("data-parent"),
       });
     }
+    updateDropped();
     this.nextElementSibling.style.display = "flex";
     this.classList.add("down");
     this.setAttribute("data-down", "");
@@ -184,7 +181,7 @@ async function updateList(refetch = true) {
   }
 }
 
-function nestedList(obj, allNotes, parentName = "/root") {
+function nestedList(obj, allNotes, parentName = "$root") {
   if (obj.parents.length > 0) {
     nestedBooks.add(obj.name);
   }

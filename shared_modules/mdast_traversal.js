@@ -218,10 +218,8 @@ function validateNode(node, attr, acceptedValues, multiple) {
         acceptedValues[i] &&
         acceptedValues[i].includes(node[attr[i]])
       ) {
-        console.log(attr[i] + " - GOOD -> " + acceptedValues[i]);
         continue;
       } else {
-        console.log(attr[i] + " - FAIL -> " + acceptedValues[i]);
         flag = false;
         break;
       }

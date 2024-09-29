@@ -116,6 +116,7 @@ document.body.innerHTML = `
       <div id="workspace">
         <div id="tabs"></div>
         <div id="notesAreaContainer">
+          <div id ="cover"></div>
           <div id="notesTextArea" class="syncscroll" name="myElements">
             <pre id="editor"></pre>
           </div>

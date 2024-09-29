@@ -1,4 +1,4 @@
-import { renameDropped, removeDropped, updateList } from "./list_utils";
+import { renameDropped, updateList } from "./list_utils";
 import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { savedWS, closeTab, makeTabInDom, silentReset } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
@@ -404,7 +404,6 @@ async function deleteNoteBookFromDb(noteName) {
 
     closeTab(noteName);
     filterFlashcards(noteName);
-    removeDropped(noteName);
     syncStatus();
     updateList();
     // defineCmd();

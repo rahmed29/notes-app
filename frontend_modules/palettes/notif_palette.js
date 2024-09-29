@@ -48,7 +48,10 @@ async function youDeleted(noteName) {
   }
   const id = Date.now();
   appendNotif({
-    name: `${noteName} - Book was deleted at ${new Date().toLocaleTimeString()} but is still available in local storage`,
+    name: `${noteName} - Book was deleted at ${new Date().toLocaleTimeString(
+      [],
+      { hour: "2-digit", minute: "2-digit" }
+    )} but is still available in local storage`,
     icon: "💡",
     id,
     children: [

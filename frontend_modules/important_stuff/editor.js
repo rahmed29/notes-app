@@ -11,5 +11,7 @@ function setupEditor() {
   editor.commands.bindKey("F1", null);
   editor.commands.bindKey("ctrl+,", null);
   editor.commands.bindKey("ctrl+/", null);
+  editor.commands.bindKey("ctrl+l", null);
+  editor.commands.bindKey("ctrl+e", null);
   editor.setOption("showPrintMargin", false);
 }

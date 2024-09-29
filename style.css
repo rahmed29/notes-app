@@ -368,7 +368,7 @@ a {
 
 .itemUpload ul {
   padding-bottom: 3px;
-  max-height: 500px;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
@@ -825,7 +825,6 @@ table th {
   user-select: none;
   max-width: 80%;
   height: auto;
-  border-radius: 12px;
   transition: 0.25s;
 }
 
