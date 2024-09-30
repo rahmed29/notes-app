@@ -75,18 +75,6 @@ async function showMorePages(e) {
   );
 }
 
-async function updateDropped() {
-  for (let i = 0; i < droppedFolders.length; i++) {
-    const p = await getAnyBookContent(droppedFolders[i].name, "parents");
-    if (p && p.length === 0) {
-      p.push("$root")
-    }
-    if (!p || !p.includes(droppedFolders[i].parentName)) {
-      droppedFolders.splice(i, 1);
-    }
-  }
-}
-
 // creating the tree list
 function dropWrapper(e) {
   e.stopPropagation();
@@ -100,7 +88,6 @@ function dropWrapper(e) {
     if (index !== -1) {
       droppedFolders.splice(index, 1);
     }
-    updateDropped();
     this.nextElementSibling.style.display = "none";
     this.classList.remove("down");
     this.removeAttribute("data-down");
@@ -117,7 +104,6 @@ function dropWrapper(e) {
         parentName: this.getAttribute("data-parent"),
       });
     }
-    updateDropped();
     this.nextElementSibling.style.display = "flex";
     this.classList.add("down");
     this.setAttribute("data-down", "");

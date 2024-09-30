@@ -3,7 +3,7 @@ export default {
     proxy: {
       "/api": {
         // No path in the target
-        target: "http://localhost:5556",
+        target: "http://localhost:5555",
         changeOrigin: true,
         secure: false,
       },
