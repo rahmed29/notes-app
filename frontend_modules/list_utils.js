@@ -26,7 +26,14 @@ import {
 import { setInnerHTML } from "./dom_utils";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 
-export { updateList, search, showPagePreview, showMorePages, renameDropped };
+export {
+  updateList,
+  search,
+  showPagePreview,
+  showMorePages,
+  renameDropped,
+  removeDropped,
+};
 
 const listHandlers = [];
 const imageListHandlers = [];
@@ -50,6 +57,17 @@ function renameDropped(oldName, newName) {
       e.parentName = newName;
     }
   });
+  changeSettings("fileStructure", droppedFolders);
+}
+
+function removeDropped(name) {
+  const index = droppedFolders.findIndex(
+    (e) => e.name === name || e.parentName === name
+  );
+  if (index !== -1) {
+    droppedFolders.splice(index, 1);
+  }
+  changeSettings("fileStructure", droppedFolders);
 }
 
 async function showMorePages(e) {
@@ -83,7 +101,7 @@ function dropWrapper(e) {
     const index = droppedFolders.findIndex(
       (e) =>
         e.name === this.parentNode.getAttribute("data-bookname") &&
-      e.parentName === this.getAttribute("data-parent")
+        e.parentName === this.getAttribute("data-parent")
     );
     if (index !== -1) {
       droppedFolders.splice(index, 1);
@@ -96,7 +114,7 @@ function dropWrapper(e) {
       !droppedFolders.find(
         (e) =>
           e.name === this.parentNode.getAttribute("data-bookname") &&
-        e.parentName === this.getAttribute("data-parent")
+          e.parentName === this.getAttribute("data-parent")
       )
     ) {
       droppedFolders.push({

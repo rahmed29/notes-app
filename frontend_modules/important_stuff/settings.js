@@ -8,6 +8,9 @@ function changeSettings(key, value) {
   }
   settings[key] = value;
   localStorage.setItem("$settings", JSON.stringify(settings));
+  if (key === "fileStructure") {
+    console.log(settings[key])
+  }
 }
 
 function getSetting(key, defaultValue = null) {
