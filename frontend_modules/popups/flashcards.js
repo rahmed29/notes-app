@@ -52,6 +52,9 @@ async function AIFlashcards() {
     "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags.",
     "chatgpt"
   );
+  if (response === 0) {
+    notyf.error("Flashcards could not be generated");
+  }
   const shadow = document.createElement("div");
   shadow.innerHTML = format(response, {
     includeDirs: false,
