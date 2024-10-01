@@ -64,7 +64,7 @@ function setupToolTips() {
     },
     {
       name: "#icon4",
-      content: "Insert Image",
+      content: "Insert File",
     },
     {
       name: "#icon5",

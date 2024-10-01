@@ -119,6 +119,9 @@ function contextMenu(e, buttons, position, noAnimation) {
       if (option.attr) {
         item.setAttribute("data-props", option.attr);
       }
+      if (noAnimation) {
+        item.style.animation = "none";
+      }
       item.classList.add("contextMenuItem");
       item.innerText = option.text;
       item.addEventListener("click", option.click);

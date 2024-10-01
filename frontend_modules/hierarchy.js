@@ -1,8 +1,8 @@
-import { getAnyBookContent } from "./get_book_content";
-import { updateList } from "./list_utils";
+import getAnyBookContent from "./get_book_content";
+import { removeSpecificDropped, updateList } from "./list_utils";
 import { closeTab } from "./tabs";
 import { reserved } from "./data/reserved_notes";
-import { library } from "./data/library";
+import library from "./data/library";
 import localforage from "localforage";
 
 export { getFamily, nestNote, relinquishNote, createChild, copyBook };
@@ -138,6 +138,7 @@ async function relinquishNote(child, parent) {
         );
       }
 
+      removeSpecificDropped(child, parent);
       updateList();
       // defineCmd();
     } else {

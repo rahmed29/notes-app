@@ -15,7 +15,7 @@ import { cmInput } from "./palettes/cm_input";
 import { getFamily, nestNote, relinquishNote } from "./hierarchy";
 import { listInMemory } from "./data/list";
 import { note } from "./data/note";
-import { getAnyBookContent } from "./get_book_content";
+import getAnyBookContent from "./get_book_content";
 
 // this is messy
 export function listContextMenu(e, toolBar) {

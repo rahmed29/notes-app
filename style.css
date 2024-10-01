@@ -62,6 +62,42 @@ a {
   color: var(--main-accent);
 }
 
+a[href^="https://youtube.com"], a[href^="https://www.youtube.com"]
+{
+  background: var(--code);
+  border-radius: 0.25rem;
+  padding-left: 3px;
+  padding-right: 3px;
+  text-decoration: none;
+}
+
+a[href^="https://youtube.com"]::before, a[href^="https://www.youtube.com"]::before
+{
+  content: "📺";
+  margin-right: 3px;
+  filter: drop-shadow(1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em 1px 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(-1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em -1px 0.01em rgba(0, 0, 0, 0.2));
+}
+
+a[href$=".pdf"] {
+  background: var(--code);
+  border-radius: 0.25rem;
+  padding-left: 3px;
+  padding-right: 3px;
+  text-decoration: none;
+}
+
+a[href$=".pdf"]::before {
+  content: "📄";
+  margin-right: 3px;
+  filter: drop-shadow(1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em 1px 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(-1px 0.01em 0.01em rgba(0, 0, 0, 0.2))
+    drop-shadow(0.01em -1px 0.01em rgba(0, 0, 0, 0.2));
+}
+
 .cmOpen .tippy-box {
   visibility: hidden !important;
 }
@@ -759,6 +795,11 @@ mark {
   transition: 0.25s;
 }
 
+.reference::before {
+  content: "🔗";
+  margin-right: 3px;
+}
+
 .reference:hover {
   filter: brightness(120%);
 }
@@ -841,12 +882,14 @@ table th {
 }
 
 #notesPreviewArea code {
-  padding: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
   background: var(--code);
   border-radius: 0.25rem;
   font-size: 1rem;
   line-height: 1.25em;
-  font-size: 15px;
+  font-size: 14px;
+  font-family: "Reddit Mono", monospace;
 }
 
 .pagePreviewContainer pre,
@@ -857,13 +900,13 @@ table th {
   font-size: 1rem;
   line-height: 1.25em;
   padding: 0.75rem 1rem;
-  font-size: 15px;
   overflow-x: auto;
 }
 
 .pagePreviewContainer pre code,
 #notesPreviewArea pre code {
-  font-family: monospace;
+  font-family: "Reddit Mono", monospace;
+  font-size: 14px;
   background: none;
   padding: 0;
   border: none;
@@ -876,7 +919,8 @@ blockquote {
   border-width: 0.25em;
 }
 
-.quizlet blockquote, .cardFront blockquote {
+.quizlet blockquote,
+.cardFront blockquote {
   border-color: var(--quizlet-purple-accents);
 }
 
@@ -1161,7 +1205,7 @@ hr {
   outline: none;
   cursor: pointer;
   gap: 5px;
-  animation: fade .25s;
+  animation: fade 0.25s;
 }
 
 #contextMenu .spacer {
@@ -1313,7 +1357,7 @@ hr {
 
 .pageDiff {
   font-family: "Reddit Mono", monospace;
-  font-size: .8em;
+  font-size: 0.8em;
   white-space: pre-wrap;
 }
 
@@ -1813,11 +1857,13 @@ hr {
 }
 
 /* calendar popup */
-#seePast, #importTasks {
+#seePast,
+#importTasks {
   cursor: pointer;
 }
 
-#seePast:hover, #importTasks:hover {
+#seePast:hover,
+#importTasks:hover {
   background: var(--hovers);
 }
 

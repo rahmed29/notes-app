@@ -3,6 +3,7 @@ import { updateAndSaveNotesLocally } from "./dom_formatting";
 import { updateList } from "./list_utils";
 import { note } from "./data/note";
 import { reserved } from "./data/reserved_notes";
+import { properLink } from "./data_utils";
 
 export { insertAndSaveImage, deleteImageFromDb };
 
@@ -15,7 +16,7 @@ async function insertAndSaveImage() {
     });
     if (imageUploadStatus.ok) {
       const response = await imageUploadStatus.json();
-      editor.insert(`![](${response.image})`);
+      editor.insert(`${properLink(response.image)}(${response.image})`);
       updateAndSaveNotesLocally();
       updateList();
       // saveNoteBookToDb(note.name);
@@ -35,7 +36,7 @@ async function deleteImageFromDb(image) {
     method: "DELETE",
   });
   if (imageDelete.ok) {
-    editor.setValue(editor.getValue().replaceAll(imageInText, ""));
+    editor.setValue(editor.getValue().replace(imageInText, ""));
     updateAndSaveNotesLocally();
     // if (!note.readOnly) {
     //   saveNoteBookToDb(note.name);

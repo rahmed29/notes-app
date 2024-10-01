@@ -11,7 +11,7 @@ import {
 } from "../important_stuff/dom_refs";
 import { eid, attemptRemoval, appendText } from "../dom_utils";
 import { AINotif } from "../palettes/notif_palette";
-import { format } from "../micromark_directives";
+import format from "../micromark_directives";
 import {
   flashcards,
   setFlashcards,

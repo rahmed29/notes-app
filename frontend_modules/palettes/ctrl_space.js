@@ -27,7 +27,7 @@ import { showSearch } from "./ctrl_f.js";
 import { showNotifs } from "./notif_palette.js";
 import { disableAutosave, enableAutosave } from "../autosave.js";
 import { cmInput } from "./cm_input.js";
-import { getAnyBookContent } from "../get_book_content.js";
+import getAnyBookContent from "../get_book_content.js";
 import { editReserved } from "../data/reserved_notes.js";
 import { setCurrentPublicBook } from "../publishing.js";
 import { showUserList } from "./user_list.js";
@@ -239,8 +239,8 @@ const commands = [
     handler: () => saveNoteBookToDb(note.name),
   },
   {
-    name: "Insert Image",
-    searchTerm: "upload image",
+    name: "Insert File",
+    searchTerm: "upload image upload file insert image insert pdf",
     handler: () => eid("getFile1").click(),
   },
   {

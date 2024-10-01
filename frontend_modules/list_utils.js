@@ -10,8 +10,8 @@ import {
   contextMenu,
   delContextMenu,
 } from "./context_menu";
-import { getAnyBookContent } from "./get_book_content";
-import { format } from "./micromark_directives";
+import getAnyBookContent from "./get_book_content";
+import format from "./micromark_directives";
 import { switchTab, silentReset } from "./tabs";
 import { jumpToDesiredPage } from "./dom_formatting";
 import removeMD from "../shared_modules/removeMD";
@@ -25,6 +25,7 @@ import {
 } from "./data/list";
 import { setInnerHTML } from "./dom_utils";
 import { changeSettings, getSetting } from "./important_stuff/settings";
+import { properLink } from "./data_utils";
 
 export {
   updateList,
@@ -33,6 +34,7 @@ export {
   showMorePages,
   renameDropped,
   removeDropped,
+  removeSpecificDropped,
 };
 
 const listHandlers = [];
@@ -63,6 +65,16 @@ function renameDropped(oldName, newName) {
 function removeDropped(name) {
   const index = droppedFolders.findIndex(
     (e) => e.name === name || e.parentName === name
+  );
+  if (index !== -1) {
+    droppedFolders.splice(index, 1);
+  }
+  changeSettings("fileStructure", droppedFolders);
+}
+
+function removeSpecificDropped(name, parentName) {
+  const index = droppedFolders.findIndex(
+    (e) => e.name === name || e.parentName === parentName
   );
   if (index !== -1) {
     droppedFolders.splice(index, 1);
@@ -263,7 +275,12 @@ function nestedList(obj, allNotes, parentName = "$root") {
 }
 
 function showImagePreview(e) {
-  showPagePreview(e, `![](${this.getAttribute("data-href")})`);
+  showPagePreview(
+    e,
+    `${properLink(this.getAttribute("data-href"))}(${this.getAttribute(
+      "data-href"
+    )})`
+  );
 }
 
 async function appendUploads() {

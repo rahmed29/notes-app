@@ -119,7 +119,8 @@ var upload = multer({
       file.mimetype == "image/png" ||
       file.mimetype == "image/jpeg" ||
       file.mimetype == "image/webp" ||
-      file.mimetype == "image/gif"
+      file.mimetype == "image/gif" ||
+      file.mimetype == "application/pdf"
     ) {
       cb(null, true);
     }
@@ -257,7 +258,7 @@ app.get("/api/get/users", async (req, res) => {
             if (obj.nickname) {
               userSettings.nickname = obj.nickname;
             }
-          } catch (err) {}
+          } catch (err) { }
         }
       }
       response.push({
@@ -467,7 +468,7 @@ app.patch("/api/unpublish/:name", async (req, res) => {
 
 app.put("/api/save/notebooks/:name", async (req, res) => {
   const name = req.params.name;
-  const { content, isEncrypted } = req.body;
+  const { content, isEncrypted, date } = req.body;
   if (content.length === 0) {
     content.push("");
   }
@@ -487,6 +488,7 @@ app.put("/api/save/notebooks/:name", async (req, res) => {
         name,
         content,
         isEncrypted: isEncrypted || false,
+        date,
       });
       await newItem.save();
       res.status(201).json({ status: "Created" });

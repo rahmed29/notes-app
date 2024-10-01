@@ -5,8 +5,9 @@ import { mark, markHTML } from "../micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import { currTheme } from "./theming.js";
 import { parseReference } from "../shared_modules/parse_ref.js";
+import DOMPurify from "dompurify";
 
-export { format };
+export default format;
 
 function ref(d) {
   // :ref[bookName:page]

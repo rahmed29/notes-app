@@ -9,7 +9,7 @@ import {
   morePages,
 } from "./important_stuff/dom_refs";
 import morphdom from "morphdom";
-import { format } from "./micromark_directives";
+import format from "./micromark_directives";
 import {
   confirmation_cm,
   contextMenu,
@@ -35,9 +35,9 @@ import {
 } from "./autosave";
 import removeMD from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
-import { getAnyBookContent } from "./get_book_content";
+import getAnyBookContent from "./get_book_content";
 import localforage from "localforage";
-import { arraysAreEqual, charDifferCount } from "./data_utils";
+import { arraysAreEqual, charDifferCount, properLink } from "./data_utils";
 
 export {
   jumpWrapper,
@@ -223,7 +223,10 @@ async function syncStatus() {
           editTabText(note.name, `* ${note.name}`);
         }
         synced.setContent(
-          `Notes shown differ from saved notes by ${charDifferCount(note.content, note.dbSave)} chars`
+          `Notes shown differ from saved notes by ${charDifferCount(
+            note.content,
+            note.dbSave
+          )} chars`
         );
         areNotesSavedIcon.style.filter = "grayscale(1)";
       }
@@ -270,6 +273,14 @@ function formatNonText(ele) {
   for (const node of ele.getElementsByTagName("a")) {
     node.setAttribute("target", "_blank");
     node.setAttribute("rel", "noopener noreferrer");
+    if (properLink(node.href) === "[PDF]") {
+      node.addEventListener("contextmenu", removeImageToolTip);
+      previewHandlers.push({
+        element: node,
+        type: "contextmenu",
+        listener: removeImageToolTip,
+      });
+    }
   }
   Prism.highlightAllUnder(ele);
 }
@@ -326,7 +337,7 @@ function removeImageToolTip(e) {
   contextMenu(e, [
     navigator.clipboard
       ? {
-          attr: this.src,
+          attr: this.src || this.href,
           text: "Copy Link",
           click: function () {
             navigator.clipboard.writeText(this.getAttribute("data-props"));
@@ -335,17 +346,23 @@ function removeImageToolTip(e) {
         }
       : null,
     {
-      attr: this.src,
-      text: "Open Image",
+      attr: this.src || this.href,
+      text: "Open File",
       click: function () {
         window.open(`${this.getAttribute("data-props")}`, "_blank");
         delContextMenu();
       },
     },
-    imageList.includes(this.src.slice(this.src.indexOf("/uploads/") + 9))
+    imageList.includes(
+      (this.src || this.href).slice(
+        (this.src || this.href).indexOf("/uploads/") + 9
+      )
+    )
       ? {
-          attr: this.src.slice(this.src.indexOf("/uploads/") + 9),
-          text: "Delete Image",
+          attr: (this.src || this.href).slice(
+            (this.src || this.href).indexOf("/uploads/") + 9
+          ),
+          text: "Delete File",
           click: function () {
             confirmation_cm(this, () =>
               deleteImageFromDb(this.getAttribute("data-props"))

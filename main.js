@@ -63,6 +63,7 @@ import {
 import { closePalette } from "./frontend_modules/palettes/cmd.js";
 import { closePopupWindow } from "./frontend_modules/popups/popup.js";
 import { getSetting } from "./frontend_modules/important_stuff/settings.js";
+import { properLink } from "./frontend_modules/data_utils.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -157,7 +158,7 @@ document.body.innerHTML = `
         <button id="icon4">
           <label for="getFile1" id="labelForImage">
             <img
-              alt="insert image icon"
+              alt="insert file icon"
               draggable="false"
               class="emoji"
               src="/assets/icons/framed_picture_3d.png"
@@ -411,11 +412,11 @@ async function finish() {
     url: "/api/save/images",
     paramName: "avatar",
     clickable: false,
-    acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
+    acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
     error: () => notyf.error("An error occurred when saving an image"),
     success: (file, response) => {
       file.previewElement.remove();
-      editor.insert(`![](${response.image})`);
+      editor.insert(`${properLink(response.image)}(${response.image})`);
       updateAndSaveNotesLocally();
       // saveNoteBookToDb(note.name);
       updateList();

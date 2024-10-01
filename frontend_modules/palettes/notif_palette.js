@@ -2,8 +2,8 @@ import { showBookDiffPopup } from "../popups/book_diff";
 import { createPalette } from "./cmd";
 import { accents } from "../dom_formatting";
 import { switchNote } from "../note_utils";
-import { library } from "../data/library";
-import { getAnyBookContent } from "../get_book_content";
+import library from "../data/library";
+import getAnyBookContent from "../get_book_content";
 import localforage from "localforage";
 
 export { allowSingleRedo, youDeleted, AINotif, showNotifs };

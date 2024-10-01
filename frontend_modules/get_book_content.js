@@ -1,6 +1,6 @@
-export { getAnyBookContent };
+export default getAnyBookContent;
 
-import { library } from "./data/library";
+import library from "./data/library";
 import { listInMemory } from "./data/list";
 import { reserved, reservedNames } from "./data/reserved_notes";
 
@@ -33,10 +33,11 @@ async function getAnyBookContent(bookName, desiredInfo) {
       return null;
     }
   }
-  const response = await fetch(`/api/get/notebooks/${bookName}`);
+  const response = await fetch(`/api/get/notebooks/${bookName}`, {
+    cache: "no-store",
+  });
   if (response.ok) {
     let json = await response.json();
-    json.justFetched = true;
     if (desiredInfo === "_data") {
       return json["data"];
     }

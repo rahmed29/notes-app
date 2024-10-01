@@ -8,8 +8,8 @@ import { allowSingleRedo, youDeleted } from "./palettes/notif_palette";
 import { editor } from "./important_stuff/editor";
 import { reserved } from "./data/reserved_notes";
 import { note, setCurrNote } from "./data/note";
-import { library } from "./data/library";
-import { getAnyBookContent } from "./get_book_content";
+import library from "./data/library";
+import getAnyBookContent from "./get_book_content";
 import { autosavingEnabled } from "./autosave";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 import { arraysAreEqual } from "./data_utils";
@@ -186,6 +186,10 @@ async function switchNote(noteName, page, refresher = false) {
   }
   let localData = await localforage.getItem(noteName);
   let content;
+  if (localData) {
+    console.log(localData.timestamp)
+    console.log(data.date)
+  }
   if (note.isEncrypted) {
     content = data.content;
   } else if (localData && note.saved) {
@@ -339,6 +343,7 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
               encryptMsg(page, desiredNote.password)
             ),
         isEncrypted: desiredNote.isEncrypted,
+        timestamp,
       }),
     });
     const wasSaved = note.saved;
@@ -405,7 +410,7 @@ async function deleteNoteBookFromDb(noteName) {
     closeTab(noteName);
     filterFlashcards(noteName);
     syncStatus();
-    removeDropped(noteName)
+    removeDropped(noteName);
     updateList();
     // defineCmd();
     youDeleted(noteName);

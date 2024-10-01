@@ -1,8 +1,9 @@
 import { imageList } from "./list";
-import { library } from "./library";
+import library from "./library";
 import { editTabText } from "../tabs";
 import { currentlyOpenPublicBook } from "../publishing";
 import { getSetting } from "../important_stuff/settings";
+import { properLink } from "../data_utils";
 
 export { editReserved, reserved, reservedNames };
 
@@ -87,7 +88,7 @@ const reservedNames = [
           editReserved(
             "Your-Uploads",
             imageList.map((url) => {
-              return `![User Uploaded Image](/uploads/${url})`;
+              return `${properLink(url)}(/uploads/${url})`;
             })
           );
         },

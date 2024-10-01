@@ -4,7 +4,7 @@ import { tabs } from "./important_stuff/dom_refs";
 import { delContextMenu } from "./context_menu";
 import { allowSingleRedo } from "./palettes/notif_palette";
 import { note } from "./data/note";
-import { library } from "./data/library";
+import library from "./data/library";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { savedWS, makeTabInDom, switchTab, closeTab, editTabText, silentReset };

@@ -1,6 +1,11 @@
 import { note } from "./data/note";
 
-export { publishBook, unpublishBook, setCurrentPublicBook, currentlyOpenPublicBook };
+export {
+  publishBook,
+  unpublishBook,
+  setCurrentPublicBook,
+  currentlyOpenPublicBook,
+};
 
 let currentlyOpenPublicBook;
 

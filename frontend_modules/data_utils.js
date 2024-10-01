@@ -1,4 +1,39 @@
-export { getWrittenPages, timer, arraysAreEqual, charDifferCount };
+export {
+  getWrittenPages,
+  timer,
+  arraysAreEqual,
+  charDifferCount,
+  properLink,
+  swapWithNext,
+  swapWithPrev,
+};
+
+function swapWithPrev(index, arr, bypass) {
+  if ((arr[index] && arr[index - 1]) || bypass) {
+    const temp = arr[index - 1];
+    arr[index - 1] = arr[index];
+    arr[index] = temp;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function swapWithNext(index, arr, bypass = false) {
+  if ((arr[index] && arr[index + 1]) || bypass) {
+    const temp = arr[index + 1];
+    arr[index + 1] = arr[index];
+    arr[index] = temp;
+    return true;
+  } else {
+    console.log(index);
+    return false;
+  }
+}
+
+function properLink(link) {
+  return link.split(".").slice(-1)[0] === "pdf" ? "[PDF]" : "![]";
+}
 
 function charDifferCount(a, b) {
   let diffChars = 0;
