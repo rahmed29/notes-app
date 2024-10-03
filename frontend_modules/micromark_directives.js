@@ -51,8 +51,16 @@ function fdg(d) {
   );
 }
 
+let memo = {};
+
 // No need to DOMPurify on this because Micromark is safe by default
 function format(str, { includeMath = true, includeDirs = true } = {}) {
+  const startTIme = performance.now();
+  if (memo[`${str}${includeMath}${includeDirs}`]) {
+    console.log("Preview render time (w/ memo):", performance.now() - startTIme);
+    return memo[`${str}${includeMath}${includeDirs}`];
+  }
+
   let html;
   try {
     html = micromark(str, {
@@ -80,5 +88,12 @@ function format(str, { includeMath = true, includeDirs = true } = {}) {
     });
   }
 
+  if (Object.keys(memo).length > 99) {
+    memo = {};
+  }
+
+  memo[`${str}${includeMath}${includeDirs}`] = html;
+
+  console.log("Preview render time:", performance.now() - startTIme);
   return html;
 }

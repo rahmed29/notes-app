@@ -128,14 +128,29 @@ function handlePageMovement({
   }
 }
 
+let largeNote = [false, 0];
+let rendering = false;
+
+// For rendering we've implemented a few optimizations:
+// - Debouncing the rendering function to prevent it from running too often
+// - Memoization in the function that uses micromark
 function accents(focusEditor = true) {
   if (!note.aceSessions[note.pgN]) {
     const newSession = ace.createEditSession(note.content[note.pgN]);
     editor.setSession(newSession);
     editor.session.setUseWrapMode(true);
     editor.session.setMode("ace/mode/markdown");
-    editor.session.on("change", updateAndSaveNotesLocally);
-    editor.session.on("change", () => {
+    editor.session.on("change", (e) => {
+      if (largeNote[0] && !rendering) {
+        rendering = true;
+        console.log(`${(largeNote[1] / 50) / 1000} second throttle when rendering notes`);
+        setTimeout(() => {
+          updateAndSaveNotesLocally();
+          rendering = false;
+        }, largeNote[1] / 50);
+      } else if (!largeNote[0]) {
+        updateAndSaveNotesLocally();
+      }
       if (autosavingEnabled && !isAutoSaving) {
         saving(note.name);
         // timeout to prevent the server from being overloaded
@@ -162,7 +177,13 @@ function accents(focusEditor = true) {
 }
 
 async function updateAndSaveNotesLocally() {
-  note.content[note.pgN] = editor.getValue();
+  const md = editor.getValue();
+  if (md.length > 4000) {
+    largeNote = [true, md.length];
+  } else {
+    largeNote = [false, 0];
+  }
+  note.content[note.pgN] = md;
   const noteInList = listInMemory.find((e) => e.name === note.name);
   if (noteInList) {
     noteInList.excerpt = note.content.map((e) => removeMD(e.split("\n")[0]));
@@ -181,7 +202,7 @@ async function updateAndSaveNotesLocally() {
   });
   previewHandlers.length = 0;
   const v = document.createElement("div");
-  v.innerHTML = format(editor.getValue());
+  v.innerHTML = format(md);
   v.id = "fill";
   morphdom(previewContent, v);
   formatNonText(previewContent);
