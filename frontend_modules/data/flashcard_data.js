@@ -53,7 +53,7 @@ async function saveFlashcards() {
         card.front && card.front !== "\n" && card.back && card.back !== "\n"
     )
   );
-  const response = await notes_api.put.saveNotebooks("flashcards", {
+  const response = await notes_api.put.saveNotebooks("flash__cards", {
     content: [JSON.stringify(flashcards)],
   });
   if (!response.ok) {
