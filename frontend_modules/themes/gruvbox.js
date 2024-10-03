@@ -11,7 +11,7 @@ export const gruvbox = {
   notesBackground: "#1d2021",
   notesColor: "#ebdbb2",
   code: "#282828",
-  highlight: "#826524",
+  highlight: "#66501f",
   highlightColor: "#ebdbb2",
   selection: "#8d5332",
 

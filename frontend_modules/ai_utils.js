@@ -3,6 +3,7 @@ import { switchNote } from "./note_utils";
 import { AINotif } from "./palettes/notif_palette";
 import { editReserved } from "./data/reserved_notes";
 import { note } from "./data/note";
+import notes_api from "./important_stuff/api";
 
 export { prompt_ai, AISUmmary, aiGenerating };
 
@@ -19,16 +20,10 @@ async function prompt_ai(content, prompt, aiChoice) {
   }
   aiGenerating = true;
   loading();
-  const response = await fetch(`/api/${aiChoice}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content,
-      prompt,
-    }),
-  });
+  const response = await notes_api.post[aiChoice]({
+    content,
+    prompt,
+  })
   aiGenerating = false;
   stopLoading();
   if (response.ok) {

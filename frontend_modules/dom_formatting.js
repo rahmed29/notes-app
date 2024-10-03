@@ -26,6 +26,8 @@ import { editor } from "./important_stuff/editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-bash";
 import {
   autosavingEnabled,
   doneSaving,

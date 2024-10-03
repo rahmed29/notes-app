@@ -244,7 +244,7 @@ app.get("/api/get/users", async (req, res) => {
               ["type", "lang"],
               [["code"], ["js", "javascript", "json"]]
             )
-            .export()
+            .finalize()
         );
         if (codeBlock) {
           try {

@@ -1,3 +1,5 @@
+import notes_api from "../important_stuff/api";
+
 export {
   flashcards,
   filterFlashcards,
@@ -30,7 +32,7 @@ function renameFlashcards(oldName, newName) {
 
 // flashcards
 async function initializeFlashcards() {
-  const response = await fetch("/api/get/flashcards");
+  const response = await notes_api.get.flashcards();
   if (response.ok) {
     let json = await response.json();
     setFlashcards(json.data);
@@ -51,14 +53,8 @@ async function saveFlashcards() {
         card.front && card.front !== "\n" && card.back && card.back !== "\n"
     )
   );
-  const response = await fetch("/api/save/notebooks/flash__cards", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content: [JSON.stringify(flashcards)],
-    }),
+  const response = await notes_api.put.saveNotebooks("flashcards", {
+    content: [JSON.stringify(flashcards)],
   });
   if (!response.ok) {
     notyf.error("An error occurred when saving the flashcards");

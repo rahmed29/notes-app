@@ -190,7 +190,7 @@ class MDASTERQueryInstruction {
 
   // returns the query as an array, which can be sent to the server in the `instructions` field of the body
   // Last method to call, I didn't make the query array public because I wanted to enforce this since it looks cleaner when chaining
-  export() {
+  finalize() {
     return this.#query;
   }
 }

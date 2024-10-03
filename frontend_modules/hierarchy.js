@@ -4,11 +4,12 @@ import { closeTab } from "./tabs";
 import { reserved } from "./data/reserved_notes";
 import library from "./data/library";
 import localforage from "localforage";
+import notes_api from "./important_stuff/api";
 
 export { getFamily, nestNote, relinquishNote, createChild, copyBook };
 
 async function getFamily(bookName) {
-  const response = await fetch(`/api/get/family/${bookName}`);
+  const response = await notes_api.get.family(bookName);
   const json = await response.json();
   return json.data;
 }
@@ -17,16 +18,10 @@ async function createChild(parent, child) {
   if (network.isOffline) {
     return;
   }
-  const existingItem = await fetch(`/api/get/notebooks/${child}`);
+  const existingItem = await notes_api.get.notebooks(child);
   if (existingItem.status === 404 && child && parent && !reserved(parent)) {
-    const saveStatus = await fetch(`/api/save/notebooks/${child}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content: [""],
-      }),
+    const saveStatus = await notes_api.put.saveNotebooks(child, {
+      content: [""],
     });
     if (saveStatus.ok) {
       await localforage.setItem(child, {
@@ -51,22 +46,14 @@ async function copyBook(newName, bookToCopy) {
   if (network.isOffline) {
     return;
   }
-  const existingItem = await fetch(`/api/get/notebooks/${newName}`);
+  const existingItem = await notes_api.get.notebooks(newName);
   if (existingItem.status === 404 && newName && bookToCopy) {
     if (library.get(bookToCopy) && library.get(bookToCopy).isEncrypted) {
       notyf.error("Encrypted notebooks can't be copied");
       return;
     }
     const content = (await getAnyBookContent(bookToCopy, "content")) || [""];
-    const save = await fetch(`/api/save/notebooks/${newName}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content,
-      }),
-    });
+    const save = await notes_api.put.saveNotebooks(newName, { content });
     if (save.ok) {
       await localforage.setItem(newName, {
         content,
@@ -91,9 +78,7 @@ async function nestNote(child, parent) {
     return;
   }
   if (child && parent && !reserved(child)) {
-    const result = await fetch(`/api/nest/${child}/${parent}`, {
-      method: "PATCH",
-    });
+    const result = await notes_api.patch.nest(child, parent);
     if (result.ok) {
       const childInMem = library.get(child);
       if (childInMem) {
@@ -120,9 +105,7 @@ async function relinquishNote(child, parent) {
     return;
   }
   if (child && parent) {
-    const result = await fetch(`/api/relinquish/${child}/${parent}`, {
-      method: "PATCH",
-    });
+    const result = await notes_api.patch.relinquish(child, parent);
     if (result.ok) {
       const childInMem = library.get(child);
       if (childInMem) {

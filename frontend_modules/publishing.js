@@ -1,4 +1,5 @@
 import { note } from "./data/note";
+import notes_api from "./important_stuff/api";
 
 export {
   publishBook,
@@ -14,9 +15,7 @@ function setCurrentPublicBook(book) {
 }
 
 async function publishBook() {
-  const response = await fetch(`/api/publish/${note.name}`, {
-    method: "PATCH",
-  });
+  const response = await notes_api.patch.publish(note.name);
   if (response.ok) {
     notyf.success("Notebook published");
   } else {
@@ -26,9 +25,7 @@ async function publishBook() {
 }
 
 async function unpublishBook() {
-  const response = await fetch(`/api/unpublish/${note.name}`, {
-    method: "PATCH",
-  });
+  const response = await notes_api.patch.unpublish(note.name);
   if (response.ok) {
     notyf.success("Notebook unpublished");
   } else {

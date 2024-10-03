@@ -11,7 +11,7 @@ export const clouds_midnight = {
   notesBackground: "#191919",
   notesColor: "#929292",
   code: "#27292c",
-  highlight: "rgb(151, 115, 69)",
+  highlight: "rgb(94, 69, 38)",
   highlightColor: "#ccc",
   selection: "#3c3f41",
 

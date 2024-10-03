@@ -11,7 +11,7 @@ export const solarized_dark = {
   notesBackground: "#002b36",
   notesColor: "#839496",
   code: "#073642",
-  highlight: "#75632a",
+  highlight: "#5b4f29",
   highlightColor: "lightgray",
   selection: "#1a414b",
 

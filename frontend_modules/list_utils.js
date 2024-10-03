@@ -26,6 +26,7 @@ import {
 import { setInnerHTML } from "./dom_utils";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 import { properLink } from "./data_utils";
+import notes_api from "./important_stuff/api";
 
 export {
   updateList,
@@ -190,7 +191,7 @@ async function updateList(refetch = true) {
   if (!refetch) {
     createList(listInMemory);
   } else {
-    const list = await fetch("/api/get/list");
+    const list = await notes_api.get.list();
     const json = await list.json();
     setListInMemory(json.data);
     createList();
@@ -284,7 +285,7 @@ function showImagePreview(e) {
 }
 
 async function appendUploads() {
-  const images = await fetch("/api/get/image-list");
+  const images = await notes_api.get.imageList();
   if (!images.ok) {
     notyf.error("An error occurred when creating the image-list");
     return;
@@ -322,7 +323,7 @@ async function appendUploads() {
 async function search() {
   if (this.value) {
     const text = this.value;
-    const results = await fetch(`/api/get/fuzzy/${text}`);
+    const results = await notes_api.get.fuzzy(text);
     if (results.ok) {
       const json = await results.json();
       const tempChildren = json.data.map((e) => {

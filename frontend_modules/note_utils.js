@@ -14,6 +14,7 @@ import { autosavingEnabled } from "./autosave";
 import { changeSettings, getSetting } from "./important_stuff/settings";
 import { arraysAreEqual } from "./data_utils";
 import localforage from "localforage";
+import notes_api from "./important_stuff/api";
 
 export {
   switchNote,
@@ -186,10 +187,6 @@ async function switchNote(noteName, page, refresher = false) {
   }
   let localData = await localforage.getItem(noteName);
   let content;
-  if (localData) {
-    console.log(localData.timestamp)
-    console.log(data.date)
-  }
   if (note.isEncrypted) {
     content = data.content;
   } else if (localData && note.saved) {
@@ -331,20 +328,14 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
       });
     }
 
-    const saveStatus = await fetch(`/api/save/notebooks/${desiredNote.name}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content: !desiredNote.isEncrypted
-          ? desiredNote.content
-          : desiredNote.content.map((page) =>
-              encryptMsg(page, desiredNote.password)
-            ),
-        isEncrypted: desiredNote.isEncrypted,
-        timestamp,
-      }),
+    const saveStatus = await notes_api.put.saveNotebooks(desiredNote.name, {
+      content: !desiredNote.isEncrypted
+        ? desiredNote.content
+        : desiredNote.content.map((page) =>
+            encryptMsg(page, desiredNote.password)
+          ),
+      isEncrypted: desiredNote.isEncrypted,
+      timestamp,
     });
     const wasSaved = note.saved;
     if (saveStatus.ok) {
@@ -384,9 +375,7 @@ async function deleteNoteBookFromDb(noteName) {
   if (network.isOffline) {
     return;
   }
-  const noteDeleteStatus = await fetch(`/api/delete/notebooks/${noteName}`, {
-    method: "DELETE",
-  });
+  const noteDeleteStatus = await notes_api.del.notebooks(noteName);
   if (noteDeleteStatus.ok) {
     notyf.success("Notebook has been deleted from the database");
 
@@ -432,9 +421,7 @@ async function renameNote(name, newName) {
     notyf.error("Encrypted notebooks can't be renamed");
     return;
   }
-  const response = await fetch(`/api/rename/${name}/${newName}`, {
-    method: "PATCH",
-  });
+  const response = await notes_api.patch.rename(name, newName);
   if (response.ok) {
     data.parents.forEach((book) => {
       const p = library.get(book);

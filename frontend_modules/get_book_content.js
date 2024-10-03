@@ -3,6 +3,7 @@ export default getAnyBookContent;
 import library from "./data/library";
 import { listInMemory } from "./data/list";
 import { reserved, reservedNames } from "./data/reserved_notes";
+import notes_api from "./important_stuff/api";
 
 // Returns desired info of any given book. If possible, takes it from memory
 async function getAnyBookContent(bookName, desiredInfo) {
@@ -33,9 +34,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
       return null;
     }
   }
-  const response = await fetch(`/api/get/notebooks/${bookName}`, {
-    cache: "no-store",
-  });
+  const response = await notes_api.get.notebooks(bookName);
   if (response.ok) {
     let json = await response.json();
     if (desiredInfo === "_data") {

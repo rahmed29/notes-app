@@ -8,6 +8,7 @@ import {
 } from "./important_stuff/dom_refs.js";
 import { updateAndSaveNotesLocally } from "./dom_formatting.js";
 import { editor } from "./important_stuff/editor.js";
+import notes_api from "./important_stuff/api.js";
 
 export {
   saveStickyNotes,
@@ -32,14 +33,8 @@ async function saveStickyNotes() {
   if (network.isOffline) {
     return;
   }
-  const saveStatus = await fetch("/api/save/notebooks/sticky__notes", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content: [stickyNotesTextArea.value],
-    }),
+  const saveStatus = await notes_api.put.saveNotebooks("sticky__notes", {
+    content: [stickyNotesTextArea.value],
   });
   if (!saveStatus.ok) {
     notyf.error("An error occurred when saving the sticky note");
@@ -62,7 +57,7 @@ function hideStickyNotes() {
 }
 
 async function initializeStickyNotes() {
-  const response = await fetch("/api/get/notebooks/sticky__notes");
+  const response = await notes_api.get.notebooks("sticky__notes");
   if (response.ok) {
     let json = await response.json();
     stickyNotesTextArea.value = json["data"]["content"][0];

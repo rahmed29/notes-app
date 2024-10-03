@@ -33,6 +33,7 @@ import { setCurrentPublicBook } from "../publishing.js";
 import { showUserList } from "./user_list.js";
 import { getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
+import notes_api from "../important_stuff/api.js";
 
 export { showPal };
 
@@ -122,7 +123,7 @@ const commands = [
     searchTerm:
       "open public notebooks open shared notebooks view shared notebooks",
     populater: async () => {
-      const publics = await fetch("/api/get/published");
+      const publics = await notes_api.get.published();
       const json = await publics.json();
       const children = json.data.map((e) => {
         return {
