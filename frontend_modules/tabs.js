@@ -41,9 +41,9 @@ async function closeTab(name, settings = { switchAsFallBack: false }) {
   }
 }
 
-function editTabText(name, text) {
+function editTabText(name, text, perm = false) {
   try {
-    tabMap.get(name).editText(text);
+    tabMap.get(name).editText(text, perm);
   } catch (err) {
     console.log(err);
   }
@@ -64,17 +64,27 @@ class Tab {
     this.name = name;
     this.tabRef = tabRef;
     this.tippy = tippy;
+    this.alteredText = false;
   }
 
   // the close tab handles everything for closing a notebook. Unlike makeTabInDom, which is just for creating a tab in the DOM. switchNote is what is used for opening a note.
   // The big reason for this is so when you create a child, copy, or rename a notebook, it will deal with notebooks in memory that have the same name but were not saved.
   // It will close the unsaved notebook and open the newly saved one, even if the unsaved notebook was the one that was currently open.
-  async close({
-    refresh = false,
-    goto = undefined,
-    page = undefined,
-    saveState = false,
-  } = {}) {
+  async close(
+    {
+      refresh = false,
+      goto = undefined,
+      page = undefined,
+      props = undefined,
+      saveState = false,
+    } = {
+      refresh: false,
+      goto: undefined,
+      page: undefined,
+      props: undefined,
+      saveState: false,
+    }
+  ) {
     // these must stay up here so that we properly switch tabs after closing one
     savedWS.delete(this.name);
     changeSettings("workspace", Array.from(savedWS));
@@ -108,11 +118,11 @@ class Tab {
     // reload tab
     if (refresh) {
       // set the note to null so the switchNote function switches back to the current note.
-      await switchNote(
-        goto ? goto : this.name,
-        page !== undefined ? page : pg,
-        refresh
-      );
+      await switchNote(goto ? goto : this.name, {
+        refresher: refresh,
+        page: page !== undefined ? page : pg,
+        props: props,
+      });
       if (undoState && saveState) {
         // since refreshing a tab is almost always associated with a large change in notebook data, we also save the undo state.
         allowSingleRedo(this.name, undoState);
@@ -120,10 +130,13 @@ class Tab {
     }
   }
 
-  editText(text) {
-    this.tabRef.firstChild.innerText = text;
-    this.tippy.setContent(text);
-    document.title = text;
+  editText(text, perm = false) {
+    if (!this.alteredText || perm) {
+      this.alteredText = perm;
+      this.tabRef.firstChild.innerText = text;
+      this.tippy.setContent(text);
+      document.title = text;
+    }
   }
 
   select() {
@@ -197,15 +210,14 @@ function makeTabInDom(name, shouldOpen = false) {
 }
 
 function switchTab() {
-  // if (this.className.includes("reference") && eid("fcAlert")) {
-  //   return;
-  // }
   if (this.hasAttribute("data-page")) {
-    switchNote(
-      this.getAttribute("data-bookname"),
-      parseInt(this.getAttribute("data-page"))
-    );
+    switchNote(this.getAttribute("data-bookname"), {
+      page: parseInt(this.getAttribute("data-page")),
+      props: this.getAttribute("data-props"),
+    });
   } else {
-    switchNote(this.getAttribute("data-bookname"));
+    switchNote(this.getAttribute("data-bookname"), {
+      props: this.getAttribute("data-props"),
+    });
   }
 }

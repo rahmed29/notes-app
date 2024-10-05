@@ -302,10 +302,9 @@ async function finish() {
   progBar.style.width = "240px";
 
   // Here we switch to the note and page number that is in the url
-  await switchNote(
-    location.pathname.substring(1),
-    parseInt(location.search.substring(1) || 1) - 1
-  );
+  await switchNote(location.pathname.substring(1), {
+    page: parseInt(location.search.substring(1) || 1) - 1,
+  });
   progBar.style.width = "320px";
 
   // Here we enable or disable autosave according to the value in local storage

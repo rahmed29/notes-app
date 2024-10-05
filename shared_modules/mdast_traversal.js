@@ -213,6 +213,9 @@ function validateNode(node, attr, acceptedValues, multiple) {
   if (multiple) {
     let flag = true;
     for (let i = 0; i < attr.length; i++) {
+      if (!Array.isArray(acceptedValues[i])) {
+        acceptedValues[i] = [acceptedValues[i]];
+      }
       if (
         node[attr[i]] &&
         acceptedValues[i] &&

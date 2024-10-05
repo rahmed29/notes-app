@@ -42,10 +42,14 @@ function updateRecentBooks(noteName) {
 
 // the main function driving the "game loop". Handles all the switching between notes.
 // refresher lets us know if we're refreshing. If we are, we shouldn't close the home tab like we usually do when it's the only tab open
-async function switchNote(noteName, page, refresher = false) {
-  if (page && (page < 0 || isNaN(parseInt(page)))) {
-    page = undefined;
+async function switchNote(
+  noteName,
+  { page = undefined, refresher = false, props = "" } = {
+    page: undefined,
+    refresher: false,
+    props: "",
   }
+) {
   // if we're already switching, return
   if (switching) {
     return;
@@ -81,62 +85,47 @@ async function switchNote(noteName, page, refresher = false) {
       refresh: true,
       goto: noteName,
       page,
+      props: props,
     });
     return;
   }
-  // if the notebook is in the library we don't need to rebuild the note object
-  if (library.get(noteName)) {
-    setCurrNote(library.get(noteName));
-    if (note.beforeOpen) {
-      for (const func of note.beforeOpen) {
-        func();
-      }
-    }
-    if (page !== undefined) {
-      note.pgN = page;
-    }
-    updateRecentBooks(noteName);
-    makeTabInDom(note.name, true);
-    if (reserved(note.name)) {
-      toolBar.classList.add("homeToolBar");
-      note.readOnly = true;
-      editor.setReadOnly(true);
-    } else {
-      toolBar.classList.remove("homeToolBar");
-      note.readOnly = false;
-      editor.setReadOnly(false);
-    }
-    accents();
-    if (note.isEncrypted) {
-      document.body.classList.add("isEncrypted");
-    } else {
-      document.body.classList.remove("isEncrypted");
-    }
-    if (note.afterOpen) {
-      for (const func of note.afterOpen) {
-        func();
-      }
-    }
-    return;
-  }
+  // If network is offline, do nothing
   if (network.isOffline) {
     return;
   }
-  // none of the above, we need to fetch the note and build the note object
+  // None of the above, begin switching
   switching = true;
-  if (page === undefined) {
+  updateRecentBooks(noteName);
+  let data = undefined;
+  // Get note from library if possible
+  if (library.get(noteName)) {
+    data = library.get(noteName);
+  } else {
+    data = (await getAnyBookContent(noteName, "_data")) || {
+      name: noteName,
+      content: [""],
+      children: [],
+      parents: [],
+      saved: false,
+      isEncrypted: false,
+      isPublic: false,
+    };
+  }
+  if (page === undefined && data.pgN !== undefined) {
+    page = data.pgN;
+  } else if (page !== undefined && page >= data.content.length) {
+    page = data.content.length - 1;
+  } else if (page === undefined) {
     page = 0;
   }
-  updateRecentBooks(noteName);
-  const data = (await getAnyBookContent(noteName, "_data")) || {
-    name: noteName,
-    content: [""],
-    children: [],
-    parents: [],
-    saved: false,
-    isEncrypted: false,
-    isPublic: false,
-  };
+  // Fix beforeOpens to be arrays
+  if (data.beforeOpen && !Array.isArray(data.beforeOpen)) {
+    data.beforeOpen = [data.beforeOpen];
+  }
+  if (data.afterOpen && !Array.isArray(data.afterOpen)) {
+    data.afterOpen = [data.afterOpen];
+  }
+  // Decrypt notebook if encrypted
   try {
     if (data.isEncrypted && data.password === undefined) {
       data.password =
@@ -170,11 +159,13 @@ async function switchNote(noteName, page, refresher = false) {
     notyf.error("Something went wrong. Try again in a second");
     return;
   }
+  // Execute beforeOpens
   if (data.beforeOpen) {
     for (const func of data.beforeOpen) {
-      func();
+      func(props);
     }
   }
+  // Start building the note object
   setCurrNote({});
   note.name = noteName.replaceAll("/", "");
   note.isEncrypted = data.isEncrypted || false;
@@ -187,6 +178,7 @@ async function switchNote(noteName, page, refresher = false) {
   }
   let localData = await localforage.getItem(noteName);
   let content;
+  // If local data is newer, use it, else use the data from the database and make local data eligible for restoration
   if (note.isEncrypted) {
     content = data.content;
   } else if (localData && note.saved) {
@@ -207,8 +199,9 @@ async function switchNote(noteName, page, refresher = false) {
   } else {
     content = data.content;
   }
+  // Set attrs
   note.content = content;
-  note.pgN = page < note.content.length ? page : note.content.length - 1;
+  note.pgN = page;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
   note.children = data.children || [];
@@ -218,6 +211,7 @@ async function switchNote(noteName, page, refresher = false) {
   note.afterOpen = data.afterOpen || null;
   note.aceSessions = data.aceSessions || [];
   note.isPublic = data.isPublic || false;
+  // Setup stuff in DOM
   makeTabInDom(note.name, true);
   if (reserved(note.name)) {
     toolBar.classList.add("homeToolBar");
@@ -228,11 +222,15 @@ async function switchNote(noteName, page, refresher = false) {
     note.readOnly = false;
     editor.setReadOnly(false);
   }
+  // Add note to library
   library.set(note.name, note);
+  // accents makes the UI reflect the note
+  // Keep this here because our afterOpens could call accents themselves and we want to make sure the UI is up to date
   accents();
+  // Execute afterOpens
   if (data.afterOpen) {
     for (const func of data.afterOpen) {
-      func();
+      func(props);
     }
   }
   switching = false;

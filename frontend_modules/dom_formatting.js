@@ -143,7 +143,9 @@ function accents(focusEditor = true) {
     editor.session.on("change", (e) => {
       if (largeNote[0] && !rendering) {
         rendering = true;
-        console.log(`${(largeNote[1] / 50) / 1000} second throttle when rendering notes`);
+        console.log(
+          `${largeNote[1] / 50 / 1000} second throttle when rendering notes`
+        );
         setTimeout(() => {
           updateAndSaveNotesLocally();
           rendering = false;
@@ -260,30 +262,32 @@ async function syncStatus() {
 
 function formatNonText(ele) {
   for (const node of ele.getElementsByClassName("reference")) {
-    const button = document.createElement("button");
-    button.innerText = node.innerText;
-    button.setAttribute("data-bookname", node.getAttribute("data-bookname"));
-    button.setAttribute("data-page", node.getAttribute("data-page"));
-    button.classList.add("reference");
-    button.addEventListener("click", switchTab);
+    node.addEventListener("click", switchTab);
     previewHandlers.push({
-      element: button,
+      element: node,
       type: "click",
       listener: switchTab,
     });
-    button.addEventListener("mouseover", referToolTip);
+    node.addEventListener("mouseover", referToolTip);
     previewHandlers.push({
-      element: button,
+      element: node,
       type: "mouseover",
       listener: referToolTip,
     });
-    button.addEventListener("focus", referToolTip);
+    node.addEventListener("focus", referToolTip);
     previewHandlers.push({
-      element: button,
+      element: node,
       type: "focus",
       listener: referToolTip,
     });
-    node.replaceWith(button);
+  }
+  for (const node of ele.getElementsByClassName("sanctaTag")) {
+    node.addEventListener("click", switchTab);
+    previewHandlers.push({
+      element: node,
+      type: "click",
+      listener: switchTab,
+    });
   }
   for (const node of ele.getElementsByTagName("img")) {
     node.addEventListener("contextmenu", removeImageToolTip);
@@ -432,5 +436,4 @@ async function referToolTip() {
   } catch (err) {
     lastDynamicTippy.destroy();
   }
-  // console.log(document.getElementsByClassName("tippy-content")[0].parentElement.parentElement)
 }

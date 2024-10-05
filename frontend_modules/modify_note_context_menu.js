@@ -10,7 +10,7 @@ import {
   forceUpdateNotes,
   switchNote,
 } from "./note_utils";
-import { closeTab, makeTabInDom, savedWS } from "./tabs";
+import { closeTab, makeTabInDom } from "./tabs";
 import { cmInput } from "./palettes/cm_input";
 import { getFamily, nestNote, relinquishNote } from "./hierarchy";
 import { listInMemory } from "./data/list";

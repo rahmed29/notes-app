@@ -58,13 +58,6 @@ function setupList() {
         spacer: true,
       },
       {
-        text: "Note Map",
-        click: async () => {
-          await switchNote("Note-Map");
-          delContextMenu();
-        },
-      },
-      {
         text: "Home",
         click: async () => {
           await switchNote("home");

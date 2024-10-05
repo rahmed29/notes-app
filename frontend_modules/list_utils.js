@@ -142,7 +142,13 @@ function dropWrapper(e) {
   changeSettings("fileStructure", droppedFolders);
 }
 
-async function createList(customChildren) {
+// If no custom children, that means we want the regular list
+// Custom children is used to show search results
+// Or, when we don't watch to refetch the image list, we can just pass the list in memory as the custom children
+async function createList(customChildren, fromSearchFunc = false) {
+  if (searching && !fromSearchFunc) {
+    return;
+  }
   listHandlers.forEach((e) => {
     e.element.removeEventListener(e.type, e.listener);
   });
@@ -169,8 +175,6 @@ async function createList(customChildren) {
     });
     imageListHandlers.length = 0;
     appendUploads();
-  }
-  if (!customChildren) {
     searchBar.value = "";
   }
 
@@ -320,6 +324,8 @@ async function appendUploads() {
   });
 }
 
+let searching = false;
+
 async function search() {
   if (this.value) {
     const text = this.value;
@@ -334,9 +340,11 @@ async function search() {
           parents: [],
         };
       });
-      createList(tempChildren);
+      createList(tempChildren, true);
+      searching = true;
     }
   } else {
+    searching = false;
     createList(listInMemory);
   }
 }

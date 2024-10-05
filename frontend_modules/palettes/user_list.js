@@ -10,7 +10,7 @@ async function showUserList() {
   const dat = json.data.map((e) => ({
     name: e.settings.nickname ? `${e.settings.nickname} (${e.email})` : e.email,
     icon: e.settings.pfp
-      ? `<img src="${e.settings.pfp}" style="width: 2em; height: 2em; border-radius: 50%;">`
+      ? `<img src="${e.settings.pfp}" style="width: 2em; height: 2em; border-radius: 50%; object-fit: cover;">`
       : "?",
     handler: () => {
       console.log("Nothing here yet");

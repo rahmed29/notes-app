@@ -5,16 +5,23 @@ import { mark, markHTML } from "../micromark-extension-mark/dev/index.js";
 import { directive, directiveHtml } from "micromark-extension-directive";
 import { currTheme } from "./theming.js";
 import { parseReference } from "../shared_modules/parse_ref.js";
-import DOMPurify from "dompurify";
 
 export default format;
+
+function tag(d) {
+  if (d.type !== "textDirective" || !d.label) return false;
+  this.tag(
+    `<button class = "sanctaTag" data-bookname = "Tag-Viewer" data-props = "${d.label}">`
+  );
+  this.raw(d.label);
+  this.tag("</button>");
+}
 
 function ref(d) {
   // :ref[bookName:page]
   // :ref[bookName|title]
   // :ref[]
 
-  // return if empty
   if (d.type !== "textDirective" || !d.label) return false;
 
   const { name, page, title } = parseReference(d.label);
@@ -24,21 +31,21 @@ function ref(d) {
   }
 
   this.tag(
-    `<span class="reference" data-bookname="${DOMPurify.sanitize(
-      name
-    )}" data-page="${page ? page - 1 : 0}">`
+    `<button class="reference" data-bookname="${name}" data-page="${
+      page ? page - 1 : 0
+    }">`
   );
 
   let raw;
   if (title) {
-    raw = DOMPurify.sanitize(title);
+    raw = title;
   } else if (page) {
-    raw = DOMPurify.sanitize(`${name} pg. ${page}`);
+    raw = `${name} pg. ${page}`;
   } else {
-    raw = DOMPurify.sanitize(`${name}`);
+    raw = name;
   }
   this.raw(raw || "");
-  this.tag("</span>");
+  this.tag("</button>");
 }
 
 function fdg(d) {
@@ -55,12 +62,9 @@ let memo = {};
 
 // No need to DOMPurify on this because Micromark is safe by default
 function format(str, { includeMath = true, includeDirs = true } = {}) {
-  const startTIme = performance.now();
   if (memo[`${str}${includeMath}${includeDirs}`]) {
-    console.log("Preview render time (w/ memo):", performance.now() - startTIme);
     return memo[`${str}${includeMath}${includeDirs}`];
   }
-
   let html;
   try {
     html = micromark(str, {
@@ -74,7 +78,7 @@ function format(str, { includeMath = true, includeDirs = true } = {}) {
         gfmHtml(),
         markHTML(),
         includeMath ? mathHtml() : null,
-        includeDirs ? directiveHtml({ ref, fdg }) : null,
+        includeDirs ? directiveHtml({ ref, fdg, tag }) : null,
       ],
     });
   } catch (err) {
@@ -83,17 +87,15 @@ function format(str, { includeMath = true, includeDirs = true } = {}) {
       htmlExtensions: [
         gfmHtml(),
         markHTML(),
-        includeDirs ? directiveHtml({ ref, fdg }) : null,
+        includeDirs ? directiveHtml({ ref, fdg, tag }) : null,
       ],
     });
+    html = `<div class = 'previewErr'><b>Error:</b> ${err}</div>${html}`;
   }
 
   if (Object.keys(memo).length > 99) {
     memo = {};
   }
-
   memo[`${str}${includeMath}${includeDirs}`] = html;
-
-  console.log("Preview render time:", performance.now() - startTIme);
   return html;
 }

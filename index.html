@@ -32,7 +32,7 @@
     <!---->
     <script>
       function confirmLeaveWhenOffline() {
-        if (network.isOffline) {
+        if (network && network.isOffline) {
           return "Are you sure you want to leave?";
         }
       }

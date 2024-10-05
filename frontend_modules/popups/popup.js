@@ -19,7 +19,7 @@ function escape(e) {
 
 const hiddenNodes = [];
 
-function createPopupWindow({ closers = [], noAnimation = false } = {}) {
+function createPopupWindow({ closers = [], noAnimation = false } = { closers: [], noAnimation: false }) {
   closePopupWindow();
   globalPaletteClose();
   for (const node of document.querySelectorAll("*")) {

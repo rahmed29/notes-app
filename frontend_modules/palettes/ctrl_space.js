@@ -34,6 +34,7 @@ import { showUserList } from "./user_list.js";
 import { getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
+import { searchTag } from "./tags_pal.js";
 
 export { showPal };
 
@@ -102,6 +103,11 @@ const commands = [
     handler: () => jumpToDesiredPage(note.pgN - 1),
   },
   {
+    name: "Find By Tag",
+    searchTerm: "tag search tags filter by tag",
+    handler: () => searchTag(),
+  },
+  {
     name: "Next Page",
     searchTerm: "forward pages",
     handler: () => jumpToDesiredPage(note.pgN + 1),
@@ -129,9 +135,9 @@ const commands = [
         return {
           name: `${e.name} (${e.user})`,
           handler: async () => {
-            editReserved("Shared-Notebook", e.content);
+            editReserved("Public-Notebook", e.content);
             setCurrentPublicBook([e.name, e.user]);
-            await closeTab("Shared-Notebook", {
+            await closeTab("Public-Notebook", {
               refresh: true,
               switchAsFallBack: true,
             });

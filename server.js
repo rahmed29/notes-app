@@ -21,7 +21,7 @@ import { parseReference } from "./shared_modules/parse_ref.js";
 // These are notebooks that shouldn't be included creating the list, or the FDG
 // Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
 // The `user__config` provides a way for the user to edit their settings by just editing a notebook
-const excludedNames = ["sticky__notes", "flash__cards", "user__config"];
+const excludedNames = ["sticky__notes", "flash__cards", "user__config", "templates"];
 
 const unsavableNames = [
   "home",
@@ -29,6 +29,7 @@ const unsavableNames = [
   "Your-Uploads",
   "Note-Map",
   "Shared-Notebook",
+  "Tag-Viewer",
 ];
 
 // Environment variables
@@ -211,6 +212,7 @@ app.get("/api/", (req, res) => {
       "/api/get/fdg",
       "/api/get/fuzzy/:term",
       "/api/export/:name",
+      "/api/get/tags/:tag",
     ],
     patch: [
       "/api/nest/:child/:parent",
@@ -223,6 +225,40 @@ app.get("/api/", (req, res) => {
     delete: ["/api/delete/notebooks/:name", "/api/delete/images/:name"],
     post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
   });
+});
+
+app.get("/api/get/tags/:tag", async (req, res) => {
+  try {
+    const tag = req.params.tag;
+    const books = await Item.find({ user: req.__user });
+    const response = [];
+    const regex = /:tag\[[^\]]+\]/;
+    for (const book of books) {
+      if (book.isEncrypted || excludedNames.includes(book.name)) {
+        continue;
+      }
+      for (let i = 0; i < book.content.length; i++) {
+        if (regex.test(book.content[i])) {
+          const tags = queryAST(
+            astFromMarkdown(book.content[i]),
+            new MDASTERQueryInstruction()
+              .filterMulti(["type", "name"], ["textDirective", "tag"])
+              .filterMulti(["type", "value"], ["text", tag])
+              .finalize()
+          );
+          if (tags.matchingNodes.length > 0) {
+            response.push({
+              name: book.name,
+              page: i + 1,
+            });
+          }
+        }
+      }
+    }
+    res.status(200).json({ data: response });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/get/users", async (req, res) => {
@@ -258,7 +294,7 @@ app.get("/api/get/users", async (req, res) => {
             if (obj.nickname) {
               userSettings.nickname = obj.nickname;
             }
-          } catch (err) { }
+          } catch (err) {}
         }
       }
       response.push({
@@ -278,7 +314,7 @@ app.get("/api/get/users", async (req, res) => {
 
 app.get("/api/test", async (req, res) => {
   const randomBook = await Item.findOne({ name: "misc" });
-  const page = randomBook.content[3];
+  const page = randomBook.content[2];
   const ast = astFromMarkdown(page);
   res.status(200).json({ data: ast });
 });
@@ -291,6 +327,7 @@ app.get("/api/export/:name", async (req, res) => {
   // }
 
   try {
+    const regex = /:ref\[(.+?)\]/g;
     let notebooks;
     let unzippedFolder;
     if (req.params.name === "$ALL") {
@@ -335,7 +372,7 @@ app.get("/api/export/:name", async (req, res) => {
         fs.writeFileSync(
           `${notebookDir}/${page.title}.md`,
           // Change `:ref[book:page|title]` to `[[book/path-to-page|title]]`
-          page.md.replace(/:ref\[(.+?)\]/g, (m, s) => {
+          page.md.replace(regex, (m, s) => {
             let raw = "[[";
             const ref = parseReference(s);
             if (!ref.name) {
