@@ -232,7 +232,7 @@ app.get("/api/get/tags/:tag", async (req, res) => {
     const tag = req.params.tag;
     const books = await Item.find({ user: req.__user });
     const response = [];
-    const regex = /:tag\[[^\]]+\]/;
+    const regex = /:tag\[.+?\]/;
     for (const book of books) {
       if (book.isEncrypted || excludedNames.includes(book.name)) {
         continue;
@@ -327,7 +327,8 @@ app.get("/api/export/:name", async (req, res) => {
   // }
 
   try {
-    const regex = /:ref\[(.+?)\]/g;
+    const refReg = /:ref\[(.+?)\]/g;
+    const tagReg = /:tag\[(.+?)\]/g;
     let notebooks;
     let unzippedFolder;
     if (req.params.name === "$ALL") {
@@ -372,7 +373,7 @@ app.get("/api/export/:name", async (req, res) => {
         fs.writeFileSync(
           `${notebookDir}/${page.title}.md`,
           // Change `:ref[book:page|title]` to `[[book/path-to-page|title]]`
-          page.md.replace(regex, (m, s) => {
+          page.md.replace(refReg, (m, s) => {
             let raw = "[[";
             const ref = parseReference(s);
             if (!ref.name) {
@@ -388,6 +389,8 @@ app.get("/api/export/:name", async (req, res) => {
               raw += `|${ref.title}`;
             }
             return raw + "]]";
+          }).replace(tagReg, (m, s) => {
+            return `#${s}`;
           })
         );
       });

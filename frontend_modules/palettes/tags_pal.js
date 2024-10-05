@@ -14,7 +14,6 @@ function searchTag() {
             name: text,
             icon: "🏷️",
             handler: () => {
-                console.log("--> " + text);
               switchNote("Tag-Viewer", {
                 props: text,
               });
