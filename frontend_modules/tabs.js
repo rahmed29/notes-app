@@ -117,7 +117,6 @@ class Tab {
 
     // reload tab
     if (refresh) {
-      // set the note to null so the switchNote function switches back to the current note.
       await switchNote(goto ? goto : this.name, {
         refresher: refresh,
         page: page !== undefined ? page : pg,

@@ -312,12 +312,12 @@ app.get("/api/get/users", async (req, res) => {
   }
 });
 
-app.get("/api/test", async (req, res) => {
-  const randomBook = await Item.findOne({ name: "misc" });
-  const page = randomBook.content[2];
-  const ast = astFromMarkdown(page);
-  res.status(200).json({ data: ast });
-});
+// app.get("/api/test", async (req, res) => {
+//   const randomBook = await Item.findOne({ name: "misc" });
+//   const page = randomBook.content[2];
+//   const ast = astFromMarkdown(page);
+//   res.status(200).json({ data: ast });
+// });
 
 app.get("/api/export/:name", async (req, res) => {
   // if (req.__user !== SUPER_USER) {

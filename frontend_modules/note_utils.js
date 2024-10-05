@@ -54,6 +54,12 @@ async function switchNote(
   if (switching) {
     return;
   }
+  // make sure page is a number
+  if (typeof page !== "number" && !isNaN(parseInt(page))) {
+    page = parseInt(page);
+  } else if (typeof page !== "number") {
+    page = undefined;
+  }
   if (refresher) {
     setCurrNote(null);
   }
@@ -111,13 +117,6 @@ async function switchNote(
       isPublic: false,
     };
   }
-  if (page === undefined && data.pgN !== undefined) {
-    page = data.pgN;
-  } else if (page !== undefined && page >= data.content.length) {
-    page = data.content.length - 1;
-  } else if (page === undefined) {
-    page = 0;
-  }
   // Fix beforeOpens to be arrays
   if (data.beforeOpen && !Array.isArray(data.beforeOpen)) {
     data.beforeOpen = [data.beforeOpen];
@@ -164,6 +163,14 @@ async function switchNote(
     for (const func of data.beforeOpen) {
       func(props);
     }
+  }
+  // Fix page numbers
+  if (page === undefined && data.pgN !== undefined) {
+    page = data.pgN;
+  } else if (page !== undefined && (page >= data.content.length || page < 0)) {
+    page = data.content.length - 1;
+  } else if (page === undefined) {
+    page = 0;
   }
   // Start building the note object
   setCurrNote({});
@@ -233,6 +240,7 @@ async function switchNote(
       func(props);
     }
   }
+  console.log(`Switching complete: ${note.name} page ${page + 1}`);
   switching = false;
 }
 
