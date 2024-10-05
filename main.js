@@ -435,6 +435,11 @@ async function finish() {
   progBar.style.width = "420px";
   eid("loading").classList.add("loaded");
   progBar = null;
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.sancta) {
+      switchNote(e.state.note, { page: e.state.page });
+    }
+  });
 }
 
 finish();

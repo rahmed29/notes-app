@@ -109,7 +109,7 @@ const reservedNames = [
       afterOpen: async (tag) => {
         const content = await getTags(tag);
         editReserved("Tag-Viewer", content);
-        accents();
+        accents(false);
       },
     },
   },

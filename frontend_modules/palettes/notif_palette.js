@@ -92,13 +92,13 @@ function allowSingleRedo(noteName, { content, aceSessions }) {
         name: "Restore State",
         icon: "?",
         handler: async () => {
-          // TODO: make this better
-          // Maybe allow switchNote to take in a state
-          await switchNote(noteName);
-          library.get(noteName).content = content;
-          library.get(noteName).aceSessions = aceSessions;
+          await switchNote(noteName, {
+            state: {
+              content,
+              aceSessions,
+            },
+          });
           notifStack = notifStack.filter((e) => e.id !== id);
-          accents();
         },
       },
       {

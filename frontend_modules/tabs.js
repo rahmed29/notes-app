@@ -12,12 +12,12 @@ export { savedWS, makeTabInDom, switchTab, closeTab, editTabText, silentReset };
 const savedWS = new Set(getSetting("workspace", []));
 const tabMap = new Map();
 
-// Things you can do with tabs
-// 1. Close the tab
-// 2. Close the tab and then immediately reopen it (refresh)
-// 3. Close the tab and then immediately switch to a different notebook
-// 4. Silently delete the notebook from memory without closing the tab (unless it is the currently open notebook, then it will close the tab according to your settings)
-// 5. switchAsFallBack can be used If the tab fails to close, it will switch to the notebook that was supposed to be closed.
+// Things you can do with tabs and real uses
+// 1. Close the tab - closing
+// 2. Close the tab and then immediately reopen it (refresh) - honestly, we usually just opt for variations of this like the ones below
+// 3. Close the tab and then immediately switch to a different notebook - opening notebook when only the home tab is open
+// 4. Silently delete the notebook from memory without closing the tab (unless it is the currently open notebook, then it will close the tab according to your settings) - updating Your-Uploads when a new image is uploaded
+// 5. switchAsFallBack can be used If the tab fails to close, it will switch to the notebook that was supposed to be closed. - renaming, creating child (close possible notebook with the new name but unsaved and open the newly renamed notebook)
 
 async function silentReset(noteName, settings) {
   if (note && note.name === noteName) {
@@ -69,7 +69,6 @@ class Tab {
 
   // the close tab handles everything for closing a notebook. Unlike makeTabInDom, which is just for creating a tab in the DOM. switchNote is what is used for opening a note.
   // The big reason for this is so when you create a child, copy, or rename a notebook, it will deal with notebooks in memory that have the same name but were not saved.
-  // It will close the unsaved notebook and open the newly saved one, even if the unsaved notebook was the one that was currently open.
   async close(
     {
       refresh = false,

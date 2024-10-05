@@ -21,7 +21,12 @@ import { parseReference } from "./shared_modules/parse_ref.js";
 // These are notebooks that shouldn't be included creating the list, or the FDG
 // Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
 // The `user__config` provides a way for the user to edit their settings by just editing a notebook
-const excludedNames = ["sticky__notes", "flash__cards", "user__config", "templates"];
+const excludedNames = [
+  "sticky__notes",
+  "flash__cards",
+  "user__config",
+  "templates",
+];
 
 const unsavableNames = [
   "home",
@@ -373,25 +378,31 @@ app.get("/api/export/:name", async (req, res) => {
         fs.writeFileSync(
           `${notebookDir}/${page.title}.md`,
           // Change `:ref[book:page|title]` to `[[book/path-to-page|title]]`
-          page.md.replace(refReg, (m, s) => {
-            let raw = "[[";
-            const ref = parseReference(s);
-            if (!ref.name) {
-              return "[[]]";
-            }
-            raw += ref.name;
-            ref.page = ref.page || 1;
-            const foundBook = booksToZip.find((e) => e.name === ref.name);
-            if (foundBook && foundBook.pages && foundBook.pages[ref.page - 1]) {
-              raw += `/${foundBook.pages[ref.page - 1].title}`;
-            }
-            if (ref.title) {
-              raw += `|${ref.title}`;
-            }
-            return raw + "]]";
-          }).replace(tagReg, (m, s) => {
-            return `#${s}`;
-          })
+          page.md
+            .replace(refReg, (m, s) => {
+              let raw = "[[";
+              const ref = parseReference(s);
+              if (!ref.name) {
+                return "[[]]";
+              }
+              raw += ref.name;
+              ref.page = ref.page || 1;
+              const foundBook = booksToZip.find((e) => e.name === ref.name);
+              if (
+                foundBook &&
+                foundBook.pages &&
+                foundBook.pages[ref.page - 1]
+              ) {
+                raw += `/${foundBook.pages[ref.page - 1].title}`;
+              }
+              if (ref.title) {
+                raw += `|${ref.title}`;
+              }
+              return raw + "]]";
+            })
+            .replace(tagReg, (m, s) => {
+              return `#${s}`;
+            })
         );
       });
     });

@@ -44,10 +44,11 @@ function updateRecentBooks(noteName) {
 // refresher lets us know if we're refreshing. If we are, we shouldn't close the home tab like we usually do when it's the only tab open
 async function switchNote(
   noteName,
-  { page = undefined, refresher = false, props = "" } = {
+  { page = undefined, refresher = false, props = "", state = null } = {
     page: undefined,
     refresher: false,
     props: "",
+    state: null,
   }
 ) {
   // if we're already switching, return
@@ -60,6 +61,16 @@ async function switchNote(
   } else if (typeof page !== "number") {
     page = undefined;
   }
+  // make sure props is an array
+  // Props will get passed to the beforeOpens and afterOpens functions, as well as accents
+  if (props && !Array.isArray(props)) {
+    props = [props];
+  } else if (!props) {
+    props = [];
+  }
+  // This is when refreshing a tab. It stops the switch note function from doing nothing because of switching to the same note.
+  // Basically just set it to null so it internally it is switching from something, when visually it's not.
+  // Read more about refreshing notes in the tabs.js file.
   if (refresher) {
     setCurrNote(null);
   }
@@ -161,7 +172,7 @@ async function switchNote(
   // Execute beforeOpens
   if (data.beforeOpen) {
     for (const func of data.beforeOpen) {
-      func(props);
+      func(...props);
     }
   }
   // Fix page numbers
@@ -208,6 +219,12 @@ async function switchNote(
   }
   // Set attrs
   note.content = content;
+  note.aceSessions = data.aceSessions || [];
+  // if a custom state was supplied (restoring notebook) use that instead.
+  if (state && state.content && state.aceSessions) {
+    note.content = state.content;
+    note.aceSessions = state.aceSessions;
+  }
   note.pgN = page;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
@@ -216,7 +233,6 @@ async function switchNote(
   note.date = data.date;
   note.beforeOpen = data.beforeOpen || null;
   note.afterOpen = data.afterOpen || null;
-  note.aceSessions = data.aceSessions || [];
   note.isPublic = data.isPublic || false;
   // Setup stuff in DOM
   makeTabInDom(note.name, true);
@@ -233,14 +249,13 @@ async function switchNote(
   library.set(note.name, note);
   // accents makes the UI reflect the note
   // Keep this here because our afterOpens could call accents themselves and we want to make sure the UI is up to date
-  accents();
+  accents(...props);
   // Execute afterOpens
   if (data.afterOpen) {
     for (const func of data.afterOpen) {
-      func(props);
+      func(...props);
     }
   }
-  console.log(`Switching complete: ${note.name} page ${page + 1}`);
   switching = false;
 }
 
