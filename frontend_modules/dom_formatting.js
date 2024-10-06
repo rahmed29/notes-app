@@ -170,8 +170,12 @@ function accents(focusEditor = true) {
   } else {
     editor.setSession(note.aceSessions[note.pgN]);
   }
-  if (history.state === null || (history.state.sancta && history.state.note !== note.name)) {
+  if (history.state === null) {
+    window.history.replaceState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
+  } else if (history.state.sancta && history.state.note !== note.name) {
     window.history.pushState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
+  } else if (history.state.sancta && history.state.note === note.name) {
+    window.history.replaceState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
   }
   updateAndSaveNotesLocally();
   createPageNumbers();
