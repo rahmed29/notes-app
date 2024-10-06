@@ -33,7 +33,7 @@ const unsavableNames = [
   "AI-Summary",
   "Your-Uploads",
   "Note-Map",
-  "Shared-Notebook",
+  "Public-Notebook",
   "Tag-Viewer",
 ];
 

@@ -326,10 +326,9 @@ async function appendUploads() {
 
 let searching = false;
 
-async function search() {
-  if (this.value) {
-    const text = this.value;
-    const results = await notes_api.get.fuzzy(text);
+async function search(value) {
+  if (value) {
+    const results = await notes_api.get.fuzzy(value);
     if (results.ok) {
       const json = await results.json();
       const tempChildren = json.data.map((e) => {

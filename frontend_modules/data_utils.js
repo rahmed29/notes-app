@@ -4,30 +4,36 @@ export {
   arraysAreEqual,
   charDifferCount,
   properLink,
-  swapWithNext,
-  swapWithPrev,
+  throttle,
 };
 
-function swapWithPrev(index, arr, bypass) {
-  if ((arr[index] && arr[index - 1]) || bypass) {
-    const temp = arr[index - 1];
-    arr[index - 1] = arr[index];
-    arr[index] = temp;
-    return true;
-  } else {
-    return false;
+function throttle(
+  {
+    delay = 300,
+    condition = false,
+    beforeTimeout = () => {},
+    callback = () => {},
+    afterTimeout = () => {},
+    fallbackCondition = false,
+    fallback = () => {},
+  } = {
+    delay: 300,
+    condition: false,
+    beforeTimeout: () => {},
+    callback: () => {},
+    afterTimeout: () => {},
+    fallbackCondition: false,
+    fallback: () => {},
   }
-}
-
-function swapWithNext(index, arr, bypass = false) {
-  if ((arr[index] && arr[index + 1]) || bypass) {
-    const temp = arr[index + 1];
-    arr[index + 1] = arr[index];
-    arr[index] = temp;
-    return true;
-  } else {
-    console.log(index);
-    return false;
+) {
+  if (condition) {
+    beforeTimeout();
+    setTimeout(() => {
+      callback();
+      afterTimeout();
+    }, delay);
+  } else if (fallbackCondition) {
+    fallback();
   }
 }
 

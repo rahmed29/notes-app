@@ -6,7 +6,6 @@ export {
   disableAutosave,
   toggleAutosave,
   saving,
-  doneSaving,
   autosavingEnabled,
   isAutoSaving,
   noteBeingAutoSaved,
@@ -37,12 +36,7 @@ function toggleAutosave() {
   }
 }
 
-function saving(name) {
-  isAutoSaving = true;
+function saving(cond, name) {
+  isAutoSaving = cond;
   noteBeingAutoSaved = name;
-}
-
-function doneSaving() {
-  isAutoSaving = false;
-  noteBeingAutoSaved = undefined;
 }

@@ -27,19 +27,16 @@ import Prism from "prismjs";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-c";
+import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-csharp";
 import "prismjs/components/prism-bash";
-import {
-  autosavingEnabled,
-  doneSaving,
-  isAutoSaving,
-  noteBeingAutoSaved,
-  saving,
-} from "./autosave";
+import { autosavingEnabled } from "./autosave";
 import removeMD from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
 import getAnyBookContent from "./get_book_content";
 import localforage from "localforage";
 import { arraysAreEqual, charDifferCount, properLink } from "./data_utils";
+import { setSizeDetails } from "./throttle";
 
 export {
   jumpWrapper,
@@ -128,11 +125,8 @@ function handlePageMovement({
   }
 }
 
-let largeNote = [false, 0];
-let rendering = false;
-
 // For rendering we've implemented a few optimizations:
-// - Debouncing the rendering function to prevent it from running too often
+// - Throttle the rendering function when the note is very large
 // - Memoization in the function that uses micromark
 function accents(focusEditor = true) {
   if (!note.aceSessions[note.pgN]) {
@@ -140,42 +134,29 @@ function accents(focusEditor = true) {
     editor.setSession(newSession);
     editor.session.setUseWrapMode(true);
     editor.session.setMode("ace/mode/markdown");
-    editor.session.on("change", (e) => {
-      if (largeNote[0] && !rendering) {
-        rendering = true;
-        console.log(
-          `${largeNote[1] / 50 / 1000} second throttle when rendering notes`
-        );
-        setTimeout(() => {
-          updateAndSaveNotesLocally();
-          rendering = false;
-        }, largeNote[1] / 50);
-      } else if (!largeNote[0]) {
-        updateAndSaveNotesLocally();
-      }
-      if (autosavingEnabled && !isAutoSaving) {
-        saving(note.name);
-        // timeout to prevent the server from being overloaded
-        setTimeout(() => {
-          // make sure the user didn't switch notes while the timeout was running
-          if (note.name === noteBeingAutoSaved && !reserved(note.name)) {
-            saveNoteBookToDb(note.name, true);
-          }
-          doneSaving();
-        }, 300);
-      }
-    });
     note.aceSessions[note.pgN] = newSession;
     editor.setSession(note.aceSessions[note.pgN]);
   } else {
     editor.setSession(note.aceSessions[note.pgN]);
   }
   if (history.state === null) {
-    window.history.replaceState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
+    window.history.replaceState(
+      { sancta: true, note: note.name, page: note.pgN },
+      null,
+      `/${note.name}?${note.pgN + 1}`
+    );
   } else if (history.state.sancta && history.state.note !== note.name) {
-    window.history.pushState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
+    window.history.pushState(
+      { sancta: true, note: note.name, page: note.pgN },
+      null,
+      `/${note.name}?${note.pgN + 1}`
+    );
   } else if (history.state.sancta && history.state.note === note.name) {
-    window.history.replaceState({ sancta: true, note: note.name, page: note.pgN }, null, `/${note.name}?${note.pgN + 1}`);
+    window.history.replaceState(
+      { sancta: true, note: note.name, page: note.pgN },
+      null,
+      `/${note.name}?${note.pgN + 1}`
+    );
   }
   updateAndSaveNotesLocally();
   createPageNumbers();
@@ -187,9 +168,9 @@ function accents(focusEditor = true) {
 async function updateAndSaveNotesLocally() {
   const md = editor.getValue();
   if (md.length > 4000) {
-    largeNote = [true, md.length];
+    setSizeDetails(true, md.length);
   } else {
-    largeNote = [false, 0];
+    setSizeDetails(false, 0);
   }
   note.content[note.pgN] = md;
   const noteInList = listInMemory.find((e) => e.name === note.name);

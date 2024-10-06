@@ -13,6 +13,7 @@ import { eid } from "../dom_utils";
 import { note } from "../data/note";
 import { toggleList, resizeList } from "../resize_list";
 import { changeSettings, getSetting } from "../important_stuff/settings";
+import { throttle } from "../data_utils";
 
 export default setupList;
 
@@ -31,17 +32,15 @@ function setupList() {
       {
         text: "Recent Notes",
         click: async () => {
-          const recents = getSetting("recents", []).map(
-            (e) => {
-              return {
-                text: e,
-                click: async () => {
-                  await switchNote(e);
-                  delContextMenu();
-                },
-              };
-            }
-          );
+          const recents = getSetting("recents", []).map((e) => {
+            return {
+              text: e,
+              click: async () => {
+                await switchNote(e);
+                delContextMenu();
+              },
+            };
+          });
           recents.push({ spacer: true });
           recents.push({
             text: "Clear List",
@@ -67,7 +66,13 @@ function setupList() {
     ]);
   });
   list.addEventListener("contextmenu", (e) => e.preventDefault());
-  searchBar.addEventListener("input", search);
+  searchBar.addEventListener("input", () => {
+    throttle({
+      delay: 100,
+      condition: true,
+      callback: () => search(searchBar.value),
+    });
+  });
   uploadFolder.addEventListener("click", function () {
     this.parentNode.classList.toggle("down");
   });

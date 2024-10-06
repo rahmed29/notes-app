@@ -26,6 +26,7 @@ function reserved(name) {
 }
 
 // notebook names that aren't allowed because they are being used for other stuff
+// If you edit something in here, make sure to update the excludedNames and unsaveableNames in server.js
 const reservedNames = [
   {
     data: {

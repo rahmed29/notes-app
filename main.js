@@ -52,8 +52,12 @@ import {
 } from "./frontend_modules/important_stuff/dom_refs.js";
 import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
 import {
+  autosavingEnabled,
   disableAutosave,
   enableAutosave,
+  isAutoSaving,
+  noteBeingAutoSaved,
+  saving,
 } from "./frontend_modules/autosave.js";
 import { netCheck } from "./frontend_modules/important_stuff/netcheck.js";
 import {
@@ -63,7 +67,13 @@ import {
 import { closePalette } from "./frontend_modules/palettes/cmd.js";
 import { closePopupWindow } from "./frontend_modules/popups/popup.js";
 import { getSetting } from "./frontend_modules/important_stuff/settings.js";
-import { properLink } from "./frontend_modules/data_utils.js";
+import { properLink, throttle } from "./frontend_modules/data_utils.js";
+import {
+  isRendering,
+  rendering,
+  sizeDetails,
+} from "./frontend_modules/throttle.js";
+import { reserved } from "./frontend_modules/data/reserved_notes.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -283,7 +293,27 @@ async function finish() {
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance
   netCheck();
   setupToolTips();
-  setupEditor();
+  setupEditor((e) => {
+    throttle({
+      delay: sizeDetails[1] / 50,
+      condition: sizeDetails[0] && !isRendering,
+      beforeTimeout: () => rendering(true),
+      callback: updateAndSaveNotesLocally,
+      afterTimeout: () => rendering(false),
+      fallbackCondition: !sizeDetails[0],
+      fallback: updateAndSaveNotesLocally,
+    });
+    throttle({
+      condition: autosavingEnabled && !isAutoSaving,
+      beforeTimeout: () => saving(true, note.name),
+      callback: () => {
+        if (note.name === noteBeingAutoSaved && !reserved(note.name)) {
+          saveNoteBookToDb(note.name, true);
+        }
+      },
+      afterTimeout: () => saving(false),
+    });
+  });
 
   // Here we get our list of books from the server and store it in memory
   await updateList();
@@ -333,13 +363,12 @@ async function finish() {
   // More event listeners, this time for the bottom right tools
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });
   stickyNotesTextArea.addEventListener("input", () => {
-    if (!savingStickyNotes) {
-      savingStickyNotes = true;
-      setTimeout(() => {
-        saveStickyNotes();
-        savingStickyNotes = false;
-      }, 300);
-    }
+    throttle({
+      condition: !savingStickyNotes,
+      beforeTimeout: () => (savingStickyNotes = true),
+      callback: saveStickyNotes,
+      afterTimeout: () => (savingStickyNotes = false),
+    });
   });
   stickyNotesTextArea.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
@@ -435,7 +464,7 @@ async function finish() {
   progBar.style.width = "420px";
   eid("loading").classList.add("loaded");
   progBar = null;
-  window.addEventListener('popstate', (e) => {
+  window.addEventListener("popstate", (e) => {
     if (e.state && e.state.sancta) {
       switchNote(e.state.note, { page: e.state.page });
     }
