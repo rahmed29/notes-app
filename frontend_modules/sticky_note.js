@@ -1,13 +1,9 @@
-import { note } from "./data/note.js";
-import { reserved } from "./data/reserved_notes.js";
 import {
   stickyNotes,
   mainContainer,
   stickyNotesTextArea,
   brDots,
 } from "./important_stuff/dom_refs.js";
-import { updateAndSaveNotesLocally } from "./dom_formatting.js";
-import { editor } from "./important_stuff/editor.js";
 import notes_api from "./important_stuff/api.js";
 
 export {
@@ -15,18 +11,7 @@ export {
   showStickyNotes,
   hideStickyNotes,
   initializeStickyNotes,
-  insertStickyNote,
 };
-
-function insertStickyNote() {
-  if (!reserved(note.name)) {
-    editor.insert(stickyNotesTextArea.value);
-    updateAndSaveNotesLocally();
-    editor.focus();
-  } else {
-    notyf.error("This notebook is read only");
-  }
-}
 
 // sticky note
 async function saveStickyNotes() {

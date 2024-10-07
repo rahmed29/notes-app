@@ -1,4 +1,13 @@
-export default removeMD;
+export { getTitle, removeMD };
+
+function getTitle(md) {
+  const split = md.split("\n").filter((e) => e !== "");
+  const response = removeMD(split[0]);
+  if (response.substring(0,3) === ("// ")) {
+    return response.substring(3);
+  }
+  return response || "";
+}
 
 // https://github.com/stiang/remove-markdown/blob/main/index.js
 function removeMD(md, options) {

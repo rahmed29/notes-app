@@ -14,7 +14,7 @@ import getAnyBookContent from "./get_book_content";
 import format from "./micromark_directives";
 import { switchTab, silentReset } from "./tabs";
 import { jumpToDesiredPage } from "./dom_formatting";
-import removeMD from "../shared_modules/removeMD";
+import { getTitle } from "../shared_modules/removeMD";
 import { listContextMenu } from "./modify_note_context_menu";
 import { note } from "./data/note";
 import {
@@ -334,7 +334,7 @@ async function search(value) {
       const tempChildren = json.data.map((e) => {
         return {
           name: e.item.name,
-          excerpt: e.item.content.map((e) => removeMD(e.split("\n")[0])),
+          excerpt: e.item.content.map((e) => getTitle(e)),
           children: [],
           parents: [],
         };

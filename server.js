@@ -7,7 +7,7 @@ import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
 import validNoteName from "./shared_modules/validNoteName.js";
-import removeMD from "./shared_modules/removeMD.js";
+import { getTitle } from "./shared_modules/removeMD.js";
 import Fuse from "fuse.js";
 import {
   astFromMarkdown,
@@ -25,7 +25,7 @@ const excludedNames = [
   "sticky__notes",
   "flash__cards",
   "user__config",
-  "templates",
+  "snippets",
 ];
 
 const unsavableNames = [
@@ -218,6 +218,7 @@ app.get("/api/", (req, res) => {
       "/api/get/fuzzy/:term",
       "/api/export/:name",
       "/api/get/tags/:tag",
+      "/api/get/snippets",
     ],
     patch: [
       "/api/nest/:child/:parent",
@@ -230,6 +231,19 @@ app.get("/api/", (req, res) => {
     delete: ["/api/delete/notebooks/:name", "/api/delete/images/:name"],
     post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
   });
+});
+
+app.get("/api/get/snippets", async (req, res) => {
+  try {
+    const snippets = await Item.findOne({ user: req.__user, name: "snippets" });
+    if (snippets) {
+      res.status(200).json({ data: snippets.content });
+    } else {
+      res.status(200).json({ data: [] });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/get/tags/:tag", async (req, res) => {
@@ -355,7 +369,7 @@ app.get("/api/export/:name", async (req, res) => {
       const pages = [];
 
       for (let i = 0; i < notebook.content.length; i++) {
-        let possibleName = removeMD(notebook.content[i].split("\n")[0]);
+        let possibleName = getTitle(notebook.content[i]);
         if (!possibleName || possibleName.length > 100) {
           possibleName = `Page ${i}`;
         }
@@ -629,7 +643,7 @@ app.get("/api/get/list/", async (req, res) => {
       data.push({
         name: notebook.name,
         excerpt: notebook.content.map((page) => {
-          return removeMD(page.split("\n")[0]);
+          return getTitle(page);
         }),
         children: notebook.children,
         parents: notebook.parents,

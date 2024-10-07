@@ -1,6 +1,4 @@
 import {
-  asyncContextMenu,
-  beginAsyncCM,
   confirmation_cm,
   contextMenu,
   delContextMenu,
@@ -93,13 +91,12 @@ export function listContextMenu(e, toolBar) {
       {
         attr: toolBar ? "" : this.getAttribute("data-bookname"),
         text: "Nest Notebook",
-        click: async function (e) {
-          beginAsyncCM();
+        populator: async function (e) {
           const noteName = toolBar
             ? note.name
             : this.getAttribute("data-props");
           const family = await getFamily(noteName);
-          const buttons = listInMemory.reduce((arr, e) => {
+          return listInMemory.reduce((arr, e) => {
             if (e.name !== noteName && !family.includes(e.name)) {
               arr.push({
                 text: e.name,
@@ -111,18 +108,16 @@ export function listContextMenu(e, toolBar) {
             }
             return arr;
           }, []);
-          asyncContextMenu(e, buttons, "resample");
         },
       },
       {
         attr: toolBar ? "" : this.getAttribute("data-bookname"),
         text: "Relinquish Notebook",
-        click: async function () {
-          beginAsyncCM();
+        populator: async function () {
           const noteName = toolBar
             ? note.name
             : this.getAttribute("data-props");
-          const buttons = (await getAnyBookContent(noteName, "parents")).map(
+          return (await getAnyBookContent(noteName, "parents")).map(
             (parent) => {
               return {
                 text: parent,
@@ -133,7 +128,6 @@ export function listContextMenu(e, toolBar) {
               };
             }
           );
-          asyncContextMenu(e, buttons, "resample");
         },
       },
       {

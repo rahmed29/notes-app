@@ -22,12 +22,16 @@
 //   post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
 
 class get {
+  async snippets() {
+    return await fetch("/api/get/snippets", {
+      cache: "no-store",
+    });
+  }
   async tags(tag) {
     return await fetch(`/api/get/tags/${tag}`, {
       cache: "no-store",
     });
   }
-
   async list() {
     return await fetch("/api/get/list", {
       cache: "no-store",

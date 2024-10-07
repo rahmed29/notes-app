@@ -7,7 +7,7 @@ import {
   saveNoteBookToDb,
 } from "../note_utils.js";
 import { note } from "../data/note.js";
-import removeMD from "../../shared_modules/removeMD.js";
+import { getTitle } from "../../shared_modules/removeMD.js";
 import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
 import { listInMemory } from "../data/list.js";
 import { toggleList } from "../resize_list.js";
@@ -16,7 +16,6 @@ import { jumpToDesiredPage } from "../dom_formatting.js";
 import { AISUmmary } from "../ai_utils.js";
 import { toggleWikiSearch } from "../wikipedia.js";
 import { editingWindow } from "../editing_window.js";
-import { insertStickyNote } from "../sticky_note.js";
 import { showBookDiffPopup } from "../popups/book_diff.js";
 import { flashcardMode, showFlashcards } from "../popups/flashcards.js";
 import { createPalette } from "./cmd.js";
@@ -35,6 +34,11 @@ import { getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
 import { searchTag } from "./tags_pal.js";
+import {
+  insertSnippet,
+  insertStickyNote,
+  insertTemplate,
+} from "../snippets.js";
 
 export { showPal };
 
@@ -90,7 +94,7 @@ const commands = [
     populater: () => {
       return note.content.map((e, i) => {
         return {
-          name: `${removeMD(e.split("\n")[0])}`,
+          name: getTitle(e),
           searchTerm: (i + 1).toString(),
           handler: () => jumpToDesiredPage(i),
         };
@@ -353,6 +357,17 @@ const commands = [
     handler: () => switchNote("Note-Map"),
   },
   {
+    name: "Edit User Settings",
+    searchTerm: "open user config open config edit config edit user config",
+    handler: () => switchNote("user__config"),
+  },
+  {
+    name: "Edit Snippets",
+    searchTerm:
+      "edit templates open snippets create templates create snippets make templates make snippets",
+    handler: () => switchNote("snippets"),
+  },
+  {
     name: "Practice Flashcards",
     searchTerm: "quizlet open flashcards",
     handler: () => showFlashcards(true, [note.name]),
@@ -361,6 +376,20 @@ const commands = [
     name: "Insert Scratchpad Content",
     searchTerm: "import sticky note import scratchpad insert sticky note",
     handler: insertStickyNote,
+  },
+  {
+    name: "Insert Snippet",
+    searchTerm: "insert template insert snippets",
+    populater: async () => {
+      const snippets = await notes_api.get.snippets();
+      const json = await snippets.json();
+      return json.data.map((e) => {
+        return {
+          name: getTitle(e),
+          handler: () => insertTemplate(e),
+        };
+      });
+    },
   },
   {
     name: "Toggle Vim Mode",

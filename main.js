@@ -49,6 +49,7 @@ import {
   searchBar,
   bottomLeftGeneralInfo,
   vaultDetails,
+  notesTextArea,
 } from "./frontend_modules/important_stuff/dom_refs.js";
 import { setupToolTips } from "./frontend_modules/important_stuff/tooltips.js";
 import {
@@ -293,7 +294,7 @@ async function finish() {
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance
   netCheck();
   setupToolTips();
-  setupEditor((e) => {
+  setupEditor((delta) => {
     throttle({
       delay: sizeDetails[1] / 50,
       condition: sizeDetails[0] && !isRendering,

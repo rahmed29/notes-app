@@ -5,7 +5,38 @@ export {
   charDifferCount,
   properLink,
   throttle,
+  fakeEvent,
+  nth,
+  delay,
 };
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function nth(num) {
+  num = parseInt(num);
+  switch (num) {
+    case 1:
+      return "1st";
+    case 2:
+      return "2nd";
+    case 3:
+      return "3rd";
+    default:
+      return `${num}th`;
+  }
+}
+
+function fakeEvent(ele) {
+  return {
+    preventDefault: () => {},
+    stopPropagation: () => {},
+    target: ele,
+    clientX: 0,
+    clientY: 0,
+  };
+}
 
 function throttle(
   {

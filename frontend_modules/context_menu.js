@@ -7,8 +7,6 @@ import { attemptRemoval } from "./dom_utils";
 
 export {
   contextMenu,
-  beginAsyncCM,
-  asyncContextMenu,
   abnormalContextMenu,
   delContextMenu,
   confirmation_cm,
@@ -76,6 +74,7 @@ function asyncContextMenu(e, buttons, position, noAnimation) {
 }
 
 function contextMenu(e, buttons, position, noAnimation) {
+  let focusedElement = document.activeElement;
   if (async_cm_incoming) {
     return;
   }
@@ -89,6 +88,7 @@ function contextMenu(e, buttons, position, noAnimation) {
   const menu = document.createElement("div");
   menu.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      focusedElement.focus();
       delContextMenu();
     }
   });
@@ -124,7 +124,19 @@ function contextMenu(e, buttons, position, noAnimation) {
       }
       item.classList.add("contextMenuItem");
       item.innerText = option.text;
-      item.addEventListener("click", option.click);
+      if (option.children) {
+        item.addEventListener("click", () =>
+          contextMenu(e, option.children, "resample")
+        );
+      } else if (option.populator) {
+        item.addEventListener("click", async (e) => {
+          beginAsyncCM();
+          const buttons = await option.populator();
+          asyncContextMenu(e, buttons, "resample");
+        });
+      } else {
+        item.addEventListener("click", option.click);
+      }
       if (option.appearance) {
         option.appearance.split(" ").forEach((cls) => item.classList.add(cls));
       } else {

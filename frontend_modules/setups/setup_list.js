@@ -31,7 +31,7 @@ function setupList() {
     contextMenu(e, [
       {
         text: "Recent Notes",
-        click: async () => {
+        populator: () => {
           const recents = getSetting("recents", []).map((e) => {
             return {
               text: e,
@@ -50,11 +50,25 @@ function setupList() {
             },
             appearance: "rios",
           });
-          contextMenu(e, recents, "resample");
+          return recents;
         },
       },
       {
         spacer: true,
+      },
+      {
+        text: "Note Map",
+        click: async () => {
+          await switchNote("Note-Map");
+          delContextMenu();
+        },
+      },
+      {
+        text: "Snippets",
+        click: async () => {
+          await switchNote("snippets");
+          delContextMenu();
+        },
       },
       {
         text: "Home",

@@ -11,7 +11,6 @@ import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { cycleViewPreferences, editingWindow };
 
-// 'Editing window'
 function cycleViewPreferences() {
   let viewPref = getSetting("viewPref");
   switch (viewPref) {

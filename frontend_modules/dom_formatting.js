@@ -31,7 +31,7 @@ import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-csharp";
 import "prismjs/components/prism-bash";
 import { autosavingEnabled } from "./autosave";
-import removeMD from "../shared_modules/removeMD";
+import { getTitle } from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
 import getAnyBookContent from "./get_book_content";
 import localforage from "localforage";
@@ -175,7 +175,7 @@ async function updateAndSaveNotesLocally() {
   note.content[note.pgN] = md;
   const noteInList = listInMemory.find((e) => e.name === note.name);
   if (noteInList) {
-    noteInList.excerpt = note.content.map((e) => removeMD(e.split("\n")[0]));
+    noteInList.excerpt = note.content.map((e) => getTitle(e));
   }
   if (!reserved(note.name) && !note.isEncrypted) {
     // not awaiting because not necessary

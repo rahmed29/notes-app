@@ -176,13 +176,6 @@ async function switchNote(
     }
   }
   // Fix page numbers
-  if (page === undefined && data.pgN !== undefined) {
-    page = data.pgN;
-  } else if (page !== undefined && (page >= data.content.length || page < 0)) {
-    page = data.content.length - 1;
-  } else if (page === undefined) {
-    page = 0;
-  }
   // Start building the note object
   setCurrNote({});
   note.name = noteName.replaceAll("/", "");
@@ -216,6 +209,13 @@ async function switchNote(
     content = localData.content;
   } else {
     content = data.content;
+  }
+  if (page === undefined && data.pgN !== undefined) {
+    page = data.pgN;
+  } else if (page !== undefined && (page >= content.length || page < 0)) {
+    page = data.content.length - 1;
+  } else if (page === undefined) {
+    page = 0;
   }
   // Set attrs
   note.content = content;
@@ -419,7 +419,6 @@ async function deleteNoteBookFromDb(noteName) {
 
     closeTab(noteName);
     filterFlashcards(noteName);
-    syncStatus();
     removeDropped(noteName);
     updateList();
     // defineCmd();

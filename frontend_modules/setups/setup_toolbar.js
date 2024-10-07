@@ -1,5 +1,9 @@
 import { brain, toolBar, areNotesSavedIcon } from "../important_stuff/dom_refs";
-import { confirmation_cm, contextMenu, delContextMenu } from "../context_menu";
+import {
+  confirmation_cm,
+  contextMenu,
+  delContextMenu,
+} from "../context_menu";
 import {
   deletePage,
   saveNoteBookToDb,
@@ -10,7 +14,6 @@ import { editingWindow } from "../editing_window";
 import { handlePageMovement } from "../dom_formatting";
 import { toggleWikiSearch } from "../wikipedia";
 import { AISUmmary, aiGenerating } from "../ai_utils";
-import { insertStickyNote } from "../sticky_note";
 import { flashcardMode } from "../popups/flashcards";
 import { showBookDiffPopup } from "../popups/book_diff";
 import { insertAndSaveImage } from "../images";
@@ -23,6 +26,9 @@ import { note } from "../data/note";
 import { updateList } from "../list_utils";
 import { publishBook, unpublishBook } from "../publishing";
 import { changeSettings } from "../important_stuff/settings";
+import notes_api from "../important_stuff/api";
+import { getTitle } from "../../shared_modules/removeMD";
+import { insertSnippet, insertStickyNote, insertTemplate } from "../snippets";
 // import { showTodo } from "../popups/todo";
 
 export default setupToolbar;
@@ -130,20 +136,17 @@ function setupToolbar() {
         { spacer: true },
         {
           text: "Change theme",
-          click: () => {
-            const buttons = themes.map((e) => {
-              return {
-                text: e.name
-                  .split("_")
-                  .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
-                  .join(" "),
-                click: () => {
-                  changeTheme(e.name);
-                },
-              };
-            });
-            contextMenu(e, buttons, "resample");
-          },
+          children: themes.map((e) => {
+            return {
+              text: e.name
+                .split("_")
+                .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
+                .join(" "),
+              click: () => {
+                changeTheme(e.name);
+              },
+            };
+          }),
         },
       ],
       [`${e.clientX - 160}px`, "75px"]
@@ -185,28 +188,22 @@ function setupToolbar() {
         },
         {
           text: "AI Summary",
-          click: () => {
-            contextMenu(
-              e,
-              [
-                {
-                  text: "ChatGPT",
-                  click: () => {
-                    delContextMenu();
-                    AISUmmary("chatgpt");
-                  },
-                },
-                {
-                  text: "Ollama",
-                  click: () => {
-                    delContextMenu();
-                    AISUmmary("ollama");
-                  },
-                },
-              ],
-              "resample"
-            );
-          },
+          children: [
+            {
+              text: "ChatGPT",
+              click: () => {
+                delContextMenu();
+                AISUmmary("chatgpt");
+              },
+            },
+            {
+              text: "Ollama",
+              click: () => {
+                delContextMenu();
+                AISUmmary("ollama");
+              },
+            },
+          ],
           appearance: aiGenerating || note.isEncrypted ? "unavailable" : "ios",
         },
         { spacer: true },
@@ -217,13 +214,22 @@ function setupToolbar() {
             delContextMenu();
           },
         },
-        // {
-        //   text: "Insert Calendar Event",
-        //   click: () => {
-        //     showTodo(true);
-        //     delContextMenu();
-        //   },
-        // },
+        {
+          text: "Insert Snippet",
+          populator: async (e) => {
+            const snippets = await notes_api.get.snippets();
+            const json = await snippets.json();
+            return json.data.map((e) => {
+              return {
+                text: getTitle(e),
+                click: () => {
+                  insertTemplate(e);
+                  delContextMenu();
+                },
+              };
+            });
+          },
+        },
       ],
       [`${e.clientX - 160}px`, "75px"]
     )

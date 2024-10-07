@@ -3,7 +3,7 @@ import { jumpToDesiredPage } from "../dom_formatting";
 import { createPalette } from "./cmd";
 import { previewContent } from "../important_stuff/dom_refs";
 import { editor } from "../important_stuff/editor";
-import removeMD from "../../shared_modules/removeMD";
+import { removeMD } from "../../shared_modules/removeMD";
 
 export { showSearch };
 
