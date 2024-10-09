@@ -13,7 +13,7 @@ import {
 import getAnyBookContent from "./get_book_content";
 import format from "./micromark_directives";
 import { switchTab, silentReset } from "./tabs";
-import { jumpToDesiredPage } from "./dom_formatting";
+import { formatNonText, jumpToDesiredPage } from "./dom_formatting";
 import { getTitle } from "../shared_modules/removeMD";
 import { listContextMenu } from "./modify_note_context_menu";
 import { note } from "./data/note";
@@ -386,5 +386,6 @@ async function showPagePreview(e, customText, allowHTML) {
     );
   }
   menu.appendChild(preview);
+  formatNonText(preview, false);
   abnormalContextMenu(menu);
 }

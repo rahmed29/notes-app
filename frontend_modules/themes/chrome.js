@@ -1,4 +1,4 @@
-export const chrome = {
+const chrome = {
   name: "chrome",
   theme_type: "light",
 
@@ -48,3 +48,5 @@ export const chrome = {
   tabColor: "black",
   hovers: "#ccc",
 };
+
+export default chrome;

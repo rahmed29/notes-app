@@ -919,6 +919,10 @@ table th {
   max-width: 100%;
 }
 
+.pagePreviewContainer p:first-of-type {
+  margin-top: 0;
+}
+
 #notesPreviewArea img:hover {
   border-color: var(--main-accent);
 }
@@ -989,10 +993,6 @@ hr {
   gap: 8px;
   padding: 0.3em;
   font-family: monospace;
-}
-
-#spacer {
-  color: var(--searchAndUpload);
 }
 
 .loader {

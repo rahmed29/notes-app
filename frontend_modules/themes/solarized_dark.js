@@ -1,4 +1,4 @@
-export const solarized_dark = {
+const solarized_dark = {
   name: "solarized_dark",
   theme_type: "dark",
 
@@ -48,3 +48,5 @@ export const solarized_dark = {
   tabColor: "white",
   hovers: "#586e75",
 };
+
+export default solarized_dark;

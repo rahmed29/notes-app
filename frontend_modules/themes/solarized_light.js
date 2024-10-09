@@ -1,4 +1,4 @@
-export const solarized_light = {
+const solarized_light = {
   name: "solarized_light",
   theme_type: "light",
 
@@ -48,3 +48,5 @@ export const solarized_light = {
   tabColor: "black",
   hovers: "#93a1a1",
 };
+
+export default solarized_light;

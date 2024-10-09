@@ -1,4 +1,4 @@
-export const katzenmilch = {
+const katzenmilch = {
   name: "katzenmilch",
   theme_type: "light",
 
@@ -48,3 +48,5 @@ export const katzenmilch = {
   tabColor: "#black",
   hovers: "#cccccc",
 };
+
+export default katzenmilch;

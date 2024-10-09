@@ -24,6 +24,8 @@ const ace_to_prism = {
   tomorrowNight80s: "cb",
   cloud_editor_dark: "one-dark",
   nord_dark: "nord",
+  tomorrow_night: "tomorrow",
+  xcode: "vs",
 };
 
 // theming

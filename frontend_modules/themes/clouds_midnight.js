@@ -1,4 +1,4 @@
-export const clouds_midnight = {
+const clouds_midnight = {
   name: "clouds_midnight",
   theme_type: "dark",
 
@@ -48,3 +48,5 @@ export const clouds_midnight = {
   tabColor: "#d1d1d1",
   hovers: "#3b393b",
 };
+
+export default clouds_midnight;

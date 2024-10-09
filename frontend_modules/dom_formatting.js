@@ -247,50 +247,45 @@ async function syncStatus() {
   });
 }
 
-function formatNonText(ele) {
-  if (ele.firstChild && ele.firstChild.tagName === "P" && ele.firstChild.innerText.substring(0,3) === "// ") {
+function formatNonText(ele, listeners = true) {
+  if (
+    ele.firstChild &&
+    ele.firstChild.tagName === "P" &&
+    ele.firstChild.innerText.substring(0, 3) === "// "
+  ) {
     ele.firstChild.classList.add("firstLineComment");
   }
-  for (const node of ele.getElementsByClassName("reference")) {
-    node.addEventListener("click", switchTab);
-    previewHandlers.push({
-      element: node,
-      type: "click",
-      listener: switchTab,
-    });
-    node.addEventListener("mouseover", referToolTip);
-    previewHandlers.push({
-      element: node,
-      type: "mouseover",
-      listener: referToolTip,
-    });
-    node.addEventListener("focus", referToolTip);
-    previewHandlers.push({
-      element: node,
-      type: "focus",
-      listener: referToolTip,
-    });
-  }
-  for (const node of ele.getElementsByClassName("sanctaTag")) {
-    node.addEventListener("click", switchTab);
-    previewHandlers.push({
-      element: node,
-      type: "click",
-      listener: switchTab,
-    });
-  }
-  for (const node of ele.getElementsByTagName("img")) {
-    node.addEventListener("contextmenu", removeImageToolTip);
-    previewHandlers.push({
-      element: node,
-      type: "contextmenu",
-      listener: removeImageToolTip,
-    });
-  }
-  for (const node of ele.getElementsByTagName("a")) {
-    node.setAttribute("target", "_blank");
-    node.setAttribute("rel", "noopener noreferrer");
-    if (properLink(node.href) === "[PDF]") {
+  Prism.highlightAllUnder(ele);
+  if (listeners) {
+    for (const node of ele.getElementsByClassName("reference")) {
+      node.addEventListener("click", switchTab);
+      previewHandlers.push({
+        element: node,
+        type: "click",
+        listener: switchTab,
+      });
+      node.addEventListener("mouseover", referToolTip);
+      previewHandlers.push({
+        element: node,
+        type: "mouseover",
+        listener: referToolTip,
+      });
+      node.addEventListener("focus", referToolTip);
+      previewHandlers.push({
+        element: node,
+        type: "focus",
+        listener: referToolTip,
+      });
+    }
+    for (const node of ele.getElementsByClassName("sanctaTag")) {
+      node.addEventListener("click", switchTab);
+      previewHandlers.push({
+        element: node,
+        type: "click",
+        listener: switchTab,
+      });
+    }
+    for (const node of ele.getElementsByTagName("img")) {
       node.addEventListener("contextmenu", removeImageToolTip);
       previewHandlers.push({
         element: node,
@@ -298,8 +293,19 @@ function formatNonText(ele) {
         listener: removeImageToolTip,
       });
     }
+    for (const node of ele.getElementsByTagName("a")) {
+      node.setAttribute("target", "_blank");
+      node.setAttribute("rel", "noopener noreferrer");
+      if (properLink(node.href) === "[PDF]") {
+        node.addEventListener("contextmenu", removeImageToolTip);
+        previewHandlers.push({
+          element: node,
+          type: "contextmenu",
+          listener: removeImageToolTip,
+        });
+      }
+    }
   }
-  Prism.highlightAllUnder(ele);
 }
 
 // page numbers on the left
