@@ -10,6 +10,8 @@ export {
   abnormalContextMenu,
   delContextMenu,
   confirmation_cm,
+  beginAsyncCM,
+  asyncContextMenu,
   scrollCM,
 };
 
@@ -131,7 +133,7 @@ function contextMenu(e, buttons, position, noAnimation) {
       } else if (option.populator) {
         item.addEventListener("click", async (e) => {
           beginAsyncCM();
-          const buttons = await option.populator();
+          const buttons = await option.populator(e);
           asyncContextMenu(e, buttons, "resample");
         });
       } else {

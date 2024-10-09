@@ -34,11 +34,7 @@ import { getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
 import { searchTag } from "./tags_pal.js";
-import {
-  insertSnippet,
-  insertStickyNote,
-  insertTemplate,
-} from "../snippets.js";
+import { insertStickyNote, insertTemplate } from "../snippets.js";
 
 export { showPal };
 
@@ -134,6 +130,14 @@ const commands = [
       "open public notebooks open shared notebooks view shared notebooks",
     populater: async () => {
       const publics = await notes_api.get.published();
+      if (!publics.ok) {
+        return [
+          {
+            name: "An error occurred",
+            info: publics.statusText,
+          },
+        ];
+      }
       const json = await publics.json();
       const children = json.data.map((e) => {
         return {
@@ -373,8 +377,8 @@ const commands = [
     handler: () => showFlashcards(true, [note.name]),
   },
   {
-    name: "Insert Scratchpad Content",
-    searchTerm: "import sticky note import scratchpad insert sticky note",
+    name: "Insert Scratch Pad Content",
+    searchTerm: "import sticky note content import scratch pad content import scratchpad content insert scratchpad content insert sticky note content",
     handler: insertStickyNote,
   },
   {
@@ -382,6 +386,14 @@ const commands = [
     searchTerm: "insert template insert snippets",
     populater: async () => {
       const snippets = await notes_api.get.snippets();
+      if (!snippets.ok) {
+        return [
+          {
+            name: "An error occurred",
+            info: snippets.statusText,
+          },
+        ];
+      }
       const json = await snippets.json();
       return json.data.map((e) => {
         return {

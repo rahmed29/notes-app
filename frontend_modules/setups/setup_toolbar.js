@@ -1,9 +1,5 @@
 import { brain, toolBar, areNotesSavedIcon } from "../important_stuff/dom_refs";
-import {
-  confirmation_cm,
-  contextMenu,
-  delContextMenu,
-} from "../context_menu";
+import { confirmation_cm, contextMenu, delContextMenu } from "../context_menu";
 import {
   deletePage,
   saveNoteBookToDb,
@@ -208,7 +204,7 @@ function setupToolbar() {
         },
         { spacer: true },
         {
-          text: "Insert Scratchpad",
+          text: "Insert Scratch Pad",
           click: () => {
             insertStickyNote();
             delContextMenu();
@@ -218,6 +214,9 @@ function setupToolbar() {
           text: "Insert Snippet",
           populator: async (e) => {
             const snippets = await notes_api.get.snippets();
+            if (!snippets.ok) {
+              return [{ text: "An error occurred", appearance: "unavailable" }];
+            }
             const json = await snippets.json();
             return json.data.map((e) => {
               return {

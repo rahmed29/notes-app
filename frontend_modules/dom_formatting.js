@@ -248,6 +248,9 @@ async function syncStatus() {
 }
 
 function formatNonText(ele) {
+  if (ele.firstChild && ele.firstChild.tagName === "P" && ele.firstChild.innerText.substring(0,3) === "// ") {
+    ele.firstChild.classList.add("firstLineComment");
+  }
   for (const node of ele.getElementsByClassName("reference")) {
     node.addEventListener("click", switchTab);
     previewHandlers.push({

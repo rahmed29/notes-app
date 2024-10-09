@@ -10,6 +10,9 @@ export { getFamily, nestNote, relinquishNote, createChild, copyBook };
 
 async function getFamily(bookName) {
   const response = await notes_api.get.family(bookName);
+  if (!response.ok) {
+    return [];
+  }
   const json = await response.json();
   return json.data;
 }
@@ -19,7 +22,13 @@ async function createChild(parent, child) {
     return;
   }
   const existingItem = await notes_api.get.notebooks(child);
-  if (existingItem.status === 404 && child && parent && !reserved(parent)) {
+  if (
+    existingItem.ok &&
+    existingItem.status === 404 &&
+    child &&
+    parent &&
+    !reserved(parent)
+  ) {
     const saveStatus = await notes_api.put.saveNotebooks(child, {
       content: [""],
     });
@@ -47,7 +56,7 @@ async function copyBook(newName, bookToCopy) {
     return;
   }
   const existingItem = await notes_api.get.notebooks(newName);
-  if (existingItem.status === 404 && newName && bookToCopy) {
+  if (existingItem.ok && existingItem.status === 404 && newName && bookToCopy) {
     if (library.get(bookToCopy) && library.get(bookToCopy).isEncrypted) {
       notyf.error("Encrypted notebooks can't be copied");
       return;

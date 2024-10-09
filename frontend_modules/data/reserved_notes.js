@@ -32,12 +32,12 @@ const reservedNames = [
     data: {
       name: "home",
       content: [
-        "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the __note map__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
+        "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
       ],
       beforeOpen: () => {
         // update the home page to show accurate information
         editReserved("home", [
-          `# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the __note map__, or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!\n\n__Recent Notes__\n\n${
+          `# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!\n\n__Recent Notes__\n\n${
             // get the recent notes from local storage and reduce them to a single markdown list
             getSetting("recents", []).reduce((str, e) => {
               str += `- :ref[${e}]\n`;

@@ -16,6 +16,10 @@ async function getTags(tag) {
   editTabText("Tag-Viewer", `Tag: #${tag || openTag}`, true);
   let content = `# 🏷️ Tag Viewer\n\n---\n\n:tag[${tag || openTag || ""}]\n\n`;
   const tags = await notes_api.get.tags(tag || openTag);
+  if (!tags.ok) {
+    content += "An error occurred when retrieving tags.";
+    return content;
+  }
   const json = await tags.json();
   const list = json.data.map((e) => `- :ref[${e.name}:${e.page}]`);
   content += list.join("\n");

@@ -15,6 +15,9 @@ function insertTemplate(snippet) {
   if (snippet[0] && snippet[0].substring(0, 3) === "// ") {
     snippet.shift();
   }
+  while (snippet[0] !== undefined && snippet[0] === "") {
+    snippet.shift();
+  }
   snippet = snippet.join("\n");
   let rowColumn = [0, 0];
   snippet = snippet

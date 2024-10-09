@@ -44,7 +44,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
   } else if (response.status === 404) {
     return null;
   } else {
-    notyf.error(`There was an error retrieving notebook: ${bookName}`);
+    notyf.error(`There was an error retrieving content for ${bookName}`);
     return null;
   }
 }

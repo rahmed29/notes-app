@@ -94,7 +94,7 @@ export function listContextMenu(e, toolBar) {
         populator: async function (e) {
           const noteName = toolBar
             ? note.name
-            : this.getAttribute("data-props");
+            : e.currentTarget.getAttribute("data-props");
           const family = await getFamily(noteName);
           return listInMemory.reduce((arr, e) => {
             if (e.name !== noteName && !family.includes(e.name)) {
@@ -113,10 +113,10 @@ export function listContextMenu(e, toolBar) {
       {
         attr: toolBar ? "" : this.getAttribute("data-bookname"),
         text: "Relinquish Notebook",
-        populator: async function () {
+        populator: async function (e) {
           const noteName = toolBar
             ? note.name
-            : this.getAttribute("data-props");
+            : e.currentTarget.getAttribute("data-props");
           return (await getAnyBookContent(noteName, "parents")).map(
             (parent) => {
               return {

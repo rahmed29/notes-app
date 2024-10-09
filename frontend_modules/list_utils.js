@@ -196,6 +196,11 @@ async function updateList(refetch = true) {
     createList(listInMemory);
   } else {
     const list = await notes_api.get.list();
+    if (!list.ok && !listInMemory) {
+      notyf.error("An error occurred when creating the list");
+      createList();
+      return;
+    }
     const json = await list.json();
     setListInMemory(json.data);
     createList();

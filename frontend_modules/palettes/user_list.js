@@ -6,6 +6,10 @@ export { showUserList };
 async function showUserList() {
   beginAsyncPal();
   const users = await notes_api.get.users();
+  if (!users.ok) {
+    notyf.error("Failed to get users");
+    return;
+  }
   const json = await users.json();
   const dat = json.data.map((e) => ({
     name: e.settings.nickname ? `${e.settings.nickname} (${e.email})` : e.email,

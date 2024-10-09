@@ -383,7 +383,7 @@ async function finish() {
 
   // Here we add the event listeners for the bottom right tools
   for (let i = 0, n = brDots.children.length; i < n; i++) {
-    const dotFunctions = ["Flashcards", "Scratchpad"];
+    const dotFunctions = ["Flashcards", "Scratch Pad"];
     tippy([brDots.children[i]], {
       animation: "shift-toward-subtle",
       arrow: false,
