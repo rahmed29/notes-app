@@ -358,7 +358,7 @@ async function showPagePreview(e, customText, allowHTML) {
   e.preventDefault();
   e.stopPropagation();
   const leftAmount =
-    e.currentTarget.id.slice(0, "whereTo".length) === "whereTo"
+    e.currentTarget.id.substring(0, "whereTo".length) === "whereTo"
       ? 30
       : parseInt(list.style.width) + 30;
   const page = e.currentTarget.getAttribute("data-page");

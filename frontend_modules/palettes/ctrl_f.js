@@ -22,10 +22,10 @@ function showSearch(shift = false) {
     const start = Math.max(0, index - cAmount);
     const end = Math.min(mainStr.length, index + subStr.length + cAmount);
 
-    const before = mainStr.slice(start, index);
-    const after = mainStr.slice(index + subStr.length, end);
+    const before = mainStr.substring(start, index);
+    const after = mainStr.substring(index + subStr.length, end);
 
-    const middle = mainStr.slice(index, index + subStr.length);
+    const middle = mainStr.substring(index, index + subStr.length);
 
     return `<span class = 'leftFade'>${before}</span><mark>${middle}</mark><span class = 'rightFade'>${after}</span>`;
   }

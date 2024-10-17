@@ -64,7 +64,7 @@
           .text("Your graph is empty!");
       } else {
         const [fill, outline, accent] = (
-          location.hash.slice(1) || "#141414-whitesmoke-lightcoral"
+          location.hash.substring(1) || "#141414-whitesmoke-lightcoral"
         ).split("-");
 
         const svg = d3

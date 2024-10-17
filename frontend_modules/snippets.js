@@ -14,7 +14,7 @@ function insertStickyNote() {
 
 async function insertTemplate(snippet) {
   snippet = snippet.split("\n");
-  if (snippet[0] && snippet[0].slice(0, 3) === "// ") {
+  if (snippet[0] && snippet[0].substring(0, 3) === "// ") {
     snippet.shift();
   }
   while (snippet[0] !== undefined && snippet[0] === "") {

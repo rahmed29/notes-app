@@ -139,7 +139,7 @@ function setupToolbar() {
             return {
               text: e.name
                 .split("_")
-                .map((e) => e.slice(0, 1).toUpperCase() + e.slice(1))
+                .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
                 .join(" "),
               click: () => changeTheme(e.name),
             };

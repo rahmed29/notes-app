@@ -636,7 +636,7 @@ app.get("/api/get/image-list/", (req, res) => {
 
 app.post("/api/save/images", upload.single("avatar"), async (req, res) => {
   try {
-    const fileName = req.file.path.slice(
+    const fileName = req.file.path.substring(
       req.file.path.indexOf("/uploads/") + 9
     );
     await god(req.__user, (json) => {

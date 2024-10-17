@@ -254,7 +254,7 @@ function formatNonText(ele, listeners = true) {
   if (
     ele.firstChild &&
     ele.firstChild.tagName === "P" &&
-    ele.firstChild.innerText.slice(0, 3) === "// "
+    ele.firstChild.innerText.substring(0, 3) === "// "
   ) {
     ele.firstChild.classList.add("firstLineComment");
   }
@@ -380,12 +380,12 @@ function removeImageToolTip(e) {
       },
     },
     imageList.includes(
-      (this.src || this.href).slice(
+      (this.src || this.href).substring(
         (this.src || this.href).indexOf("/uploads/") + 9
       )
     )
       ? {
-          props: (this.src || this.href).slice(
+          props: (this.src || this.href).substring(
             (this.src || this.href).indexOf("/uploads/") + 9
           ),
           text: "Delete File",
