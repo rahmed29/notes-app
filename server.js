@@ -48,11 +48,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const CHATGPT_MODEL = process.env.CHATGPT_MODEL;
 const OLLAMA_URI = process.env.OLLAMA_URI;
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL;
-
-// The super user is the user that will be used if there is no CF access token (not being accessed through CloudFlare tunnel)
-// This is so I can still access my notes from my LAN
-// There is not authentication when accessing from LAN
-
 const SUPER_USER = process.env.SUPER_USER;
 // const SUPER_USER = "tester@gmail.com";
 

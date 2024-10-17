@@ -8,3 +8,7 @@
     ```
     python3 build.py "Commit message"
     ```
+5. Set up [CloudFlare Zero Trust](https://developers.cloudflare.com/cloudflare-one/identity/one-time-pin/)
+
+If you ever want to rebuild the app, just run `build.py` again without doing all the other stuff.  
+If you want to update ace editor, you can delete the `ace-editor` directory in `./pubilc/assets` and run `build.py`
