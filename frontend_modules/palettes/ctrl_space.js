@@ -20,7 +20,7 @@ import { showBookDiffPopup } from "../popups/book_diff.js";
 import { flashcardMode, showFlashcards } from "../popups/flashcards.js";
 import { createPalette } from "./cmd.js";
 import { eid } from "../dom_utils.js";
-import { closeTab, savedWS } from "../tabs.js";
+import { closeTab, makeTabInDom, savedWS } from "../tabs.js";
 import { editor } from "../important_stuff/editor.js";
 import { showSearch } from "./ctrl_f.js";
 import { showNotifs } from "./notif_palette.js";
@@ -130,7 +130,7 @@ const commands = [
     handler: () => jumpToDesiredPage(note.pgN + 1),
   },
   {
-    name: "Open Recent Notebooks",
+    name: "Open Recent Notebook",
     searchTerm: "open notebooks switch notebooks open recents",
     populater: () => {
       return getSetting("recents", []).map((e) => {
@@ -139,6 +139,16 @@ const commands = [
           handler: () => switchNote(e),
         };
       });
+    },
+  },
+  {
+    name: "Open All Recent Notebooks",
+    searchTerm: "open notebooks switch notebooks open recents",
+    handler: async () => {
+      await switchNote(getSetting("recents", []).shift());
+      for (const tab of getSetting("recents", [])) {
+        makeTabInDom(tab);
+      }
     },
   },
   {
@@ -218,16 +228,12 @@ const commands = [
       "view parents go to parent notebook open parents open parent notebooks",
     populater: async () => {
       const parents = await getAnyBookContent(note.name, "parents");
-      if (parents) {
-        return parents.map((e) => {
-          return {
-            name: `${e}`,
-            handler: () => switchNote(e),
-          };
-        });
-      } else {
-        return [];
-      }
+      return parents.map((e) => {
+        return {
+          name: `${e}`,
+          handler: () => switchNote(e),
+        };
+      });
     },
   },
   {
@@ -236,16 +242,12 @@ const commands = [
       "view children go to child notebook open children open child notebooks",
     populater: async () => {
       const children = await getAnyBookContent(note.name, "children");
-      if (children) {
-        return children.map((e) => {
-          return {
-            name: `${e}`,
-            handler: () => switchNote(e),
-          };
-        });
-      } else {
-        return [];
-      }
+      return children.map((e) => {
+        return {
+          name: `${e}`,
+          handler: () => switchNote(e),
+        };
+      });
     },
   },
   {
@@ -353,10 +355,12 @@ const commands = [
     name: "Relinquish Notebook",
     searchTerm: "unnest",
     populater: async () => {
-      return (await getAnyBookContent(note.name, "parents")).map((parent) => ({
-        name: `${parent}`,
-        handler: () => relinquishNote(note.name, parent),
-      }));
+      return (await getAnyBookContent(note.name, "parents")).map(
+        (parent) => ({
+          name: `${parent}`,
+          handler: () => relinquishNote(note.name, parent),
+        })
+      );
     },
   },
   {

@@ -19,7 +19,7 @@ function encryptMsg(msg, key) {
 function decryptMsg(cipher, key) {
   const bytes = CryptoJS.AES.decrypt(cipher, key);
   const msg = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).msg;
-  return msg.substring(0, msg.lastIndexOf("===SHA256==="));
+  return msg.slice(0, msg.lastIndexOf("===SHA256==="));
 }
 
 function checkKey(cipher, key) {

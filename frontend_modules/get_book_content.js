@@ -5,15 +5,24 @@ import { listInMemory } from "./data/list";
 import { reserved, reservedNames } from "./data/reserved_notes";
 import notes_api from "./important_stuff/api";
 
+const defaultValues = {
+  parents: [],
+  children: [],
+  content: [""],
+  _data: null,
+};
+
 async function getAnyBookContent(bookName, desiredInfo) {
   // If it's reserved, we just take it from our array of reserved names
   if (reserved(bookName)) {
     if (desiredInfo === "_data") {
       return reservedNames.find((e) => e.data.name === bookName)["data"];
     }
-    return reservedNames.find((e) => e.data.name === bookName)["data"][
-      desiredInfo
-    ];
+    return (
+      reservedNames.find((e) => e.data.name === bookName)["data"][
+        desiredInfo
+      ] || defaultValues[desiredInfo]
+    );
   }
   // If there is a list in memory, we can take the parents and children from there
   if (
@@ -24,7 +33,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
     if (objectInList) {
       return objectInList[desiredInfo];
     } else {
-      return null;
+      return defaultValues[desiredInfo];
     }
     // If the book is in memory, we can take the data from there (if it's not parents or children)
   } else if (
@@ -48,9 +57,9 @@ async function getAnyBookContent(bookName, desiredInfo) {
     }
     return json["data"][desiredInfo];
   } else if (response.status === 404) {
-    return null;
+    return defaultValues[desiredInfo];
   } else {
     notyf.error(`There was an error retrieving content for ${bookName}`);
-    return null;
+    return defaultValues[desiredInfo];
   }
 }

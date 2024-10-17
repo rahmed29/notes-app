@@ -254,7 +254,7 @@ function formatNonText(ele, listeners = true) {
   if (
     ele.firstChild &&
     ele.firstChild.tagName === "P" &&
-    ele.firstChild.innerText.substring(0, 3) === "// "
+    ele.firstChild.innerText.slice(0, 3) === "// "
   ) {
     ele.firstChild.classList.add("firstLineComment");
   }
@@ -413,18 +413,11 @@ async function referToolTip() {
     placement: "bottom",
   })[0];
   try {
-    const page = this.getAttribute("data-page");
-    const content =
-      this.getAttribute("data-bookname") === note.name
-        ? format(note.content[page])
-        : format(
-            (
-              await getAnyBookContent(
-                this.getAttribute("data-bookname"),
-                "content"
-              )
-            )[parseInt(this.getAttribute("data-page"))]
-          );
+    const content = format(
+      (await getAnyBookContent(this.getAttribute("data-bookname"), "content"))[
+        parseInt(this.getAttribute("data-page"))
+      ]
+    );
     lastDynamicTippy.setContent(
       `<div class = 'pagePreviewContainer'>${content}</div>`
     );

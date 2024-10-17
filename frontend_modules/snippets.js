@@ -1,6 +1,7 @@
+import { getTitle } from "../shared_modules/removeMD";
 import { note } from "./data/note";
 import { reserved } from "./data/reserved_notes";
-import { delay, nth } from "./data_utils";
+import { nth } from "./data_utils";
 import getAnyBookContent from "./get_book_content";
 import { stickyNotesTextArea } from "./important_stuff/dom_refs";
 import { editor } from "./important_stuff/editor";
@@ -13,7 +14,7 @@ function insertStickyNote() {
 
 async function insertTemplate(snippet) {
   snippet = snippet.split("\n");
-  if (snippet[0] && snippet[0].substring(0, 3) === "// ") {
+  if (snippet[0] && snippet[0].slice(0, 3) === "// ") {
     snippet.shift();
   }
   while (snippet[0] !== undefined && snippet[0] === "") {
@@ -28,6 +29,12 @@ async function insertTemplate(snippet) {
     .replaceAll("{{today}}", new Date().toLocaleDateString())
     .replaceAll("{{pagenth}}", note.pgN + 1)
     .replaceAll("{{pgnth}}", nth(note.pgN + 1))
+    .replaceAll(
+      "{{pages}}",
+      note.content
+        .map((e, i) => `- :ref[${note.name}:${i + 1}|${getTitle(e)}]`)
+        .join("\n")
+    )
     .replaceAll(
       "{{children}}",
       (await getAnyBookContent(note.name, "children"))

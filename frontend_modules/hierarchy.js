@@ -61,7 +61,7 @@ async function copyBook(newName, bookToCopy) {
       notyf.error("Encrypted notebooks can't be copied");
       return;
     }
-    const content = (await getAnyBookContent(bookToCopy, "content")) || [""];
+    const content = (await getAnyBookContent(bookToCopy, "content"));
     const save = await notes_api.put.saveNotebooks(newName, { content });
     if (save.ok) {
       await localforage.setItem(newName, {

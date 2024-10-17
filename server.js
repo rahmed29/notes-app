@@ -714,6 +714,11 @@ app.patch("/api/nest/:child/:parent", async (req, res) => {
       error: "A unique child and parent are required to nest a notebook",
     });
   }
+  if (excludedNames.includes(child) || excludedNames.includes(parent)) {
+    return res.status(400).json({
+      error: "Special notebooks cannot be nested",
+    });
+  }
   try {
     const childBook = await Item.findOne({ user: req.__user, name: child });
     const parentBook = await Item.findOne({ user: req.__user, name: parent });

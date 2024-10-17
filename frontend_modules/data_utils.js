@@ -79,7 +79,7 @@ function throttle(
 }
 
 function properLink(link) {
-  return link.split(".").slice(-1)[0] === "pdf" ? "[PDF]" : "![]";
+  return link.split(".").pop() === "pdf" ? "[PDF]" : "![]";
 }
 
 function charDifferCount(a, b) {

@@ -11,7 +11,7 @@ function maintainAlerts() {
     attemptRemoval([eid("fcAlert")]);
     return;
   }
-  const topAlert = alerts.slice(-1)[0];
+  const topAlert = alerts[alerts.length-1];
   if (eid("fcAlert")) {
     eid("fcAlert").innerText = topAlert.text;
     eid("fcAlert").style.backgroundColor = topAlert.color;
