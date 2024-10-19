@@ -25,7 +25,6 @@ export {
   renameNote,
 };
 
-// debounce when switching notes
 let switching = false;
 
 // the main function driving the "game loop". Handles all the switching between notes.
@@ -168,7 +167,6 @@ async function switchNote(
       updateLtdArr(getSetting("recents", []), noteName)
     );
   }
-  // Fix page numbers
   // Start building the note object
   setCurrNote({});
   note.name = noteName.replaceAll("/", "");
@@ -203,6 +201,7 @@ async function switchNote(
   } else {
     content = data.content;
   }
+  // Fix page if needed
   if (page === undefined && data.pgN !== undefined) {
     page = data.pgN;
   } else if (page !== undefined && (page >= content.length || page < 0)) {
@@ -221,8 +220,6 @@ async function switchNote(
   note.pgN = page;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
-  // note.children = data.children || [];
-  // note.parents = data.parents || [];
   note.date = data.date;
   note.beforeOpen = data.beforeOpen || null;
   note.afterOpen = data.afterOpen || null;
@@ -254,7 +251,8 @@ async function switchNote(
 
 async function forceUpdateNotes(noteName = note.name) {
   // temp
-  if (noteName === note.name && note.isEncrypted) {
+  const inMem = library.get(noteName);
+  if (inMem && inMem.isEncrypted) {
     return;
   }
   await localforage.removeItem(noteName);
@@ -264,8 +262,6 @@ async function forceUpdateNotes(noteName = note.name) {
   });
   notyf.success(`Local data for ${noteName} has been deleted`);
 }
-
-// This breaks when you delete a page that isn't the last one
 
 function deletePage(pgN = note.pgN) {
   if (reserved(note.name)) {
@@ -390,7 +386,6 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
     }
     updateList(!wasSaved);
   }
-  // defineCmd();
 }
 
 async function deleteNoteBookFromDb(noteName) {
@@ -404,7 +399,6 @@ async function deleteNoteBookFromDb(noteName) {
     filterFlashcards(noteName);
     removeDropped(noteName);
     updateList();
-    // defineCmd();
     youDeleted(noteName);
   } else {
     notyf.error("An error occurred when deleting a notebook");
