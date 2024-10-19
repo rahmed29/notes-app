@@ -24,7 +24,8 @@ function confirmation_cm(ele, func) {
   ele.classList.add("rios");
   ele.addEventListener(
     "click",
-    () => {
+    (e) => {
+      e.stopImmediatePropagation();
       func();
       delContextMenu();
     },

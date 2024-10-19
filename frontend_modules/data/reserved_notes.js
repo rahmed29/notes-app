@@ -38,15 +38,15 @@ const reservedNames = [
         // update the home page to show accurate information
         editReserved(
           "home",
-          "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!\n" +
-            "## Recent Notes\n\n" +
+          "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!" +
+            "\n\n## Recent Notes\n\n" +
             (getSetting("recents", [])
               .map((e) => `- :ref[${e}]`)
-              .join("\n") || "- N/A\n") +
-            `\n## Recent Tags\n\n` +
-            getSetting("recents_tags", [])
+              .join("\n") || "- N/A") +
+            `\n\n## Recent Tags\n\n` +
+            (getSetting("recents_tags", [])
               .map((e) => `- :tag[${e}]`)
-              .join("\n") || "- N/A\n"
+              .join("\n") || "- N/A\n")
         );
       },
     },
