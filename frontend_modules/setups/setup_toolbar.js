@@ -134,7 +134,7 @@ function setupToolbar() {
         },
         { spacer: true },
         {
-          text: "Change theme",
+          text: "Change Theme",
           children: themes.map((e) => {
             return {
               text: e.name
