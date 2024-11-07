@@ -501,7 +501,7 @@ const commands = [
   },
   {
     name: "Change Theme",
-    searchTerm: "dark light color scheme",
+    searchTerm: "dark light color scheme set theme",
     children: themes.map((e) => {
       return {
         name: e.name

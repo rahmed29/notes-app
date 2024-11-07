@@ -32,7 +32,7 @@ const mono_industrial = {
 
   sideBar: "#2b3a33",
   sidebarAccents: "#3d4c42",
-  searchAndUpload: "#222c28",
+  searchAndUpload: "#3a6453",
   searchAndUploadColor: "#ffffff",
   listBackground: "#222c28",
   listColor: "#ffffff",

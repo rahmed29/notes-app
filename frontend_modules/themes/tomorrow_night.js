@@ -30,7 +30,7 @@ const tomorrow_night = {
 
   sideBar: "#282a2e",
   sidebarAccents: "#373b41",
-  searchAndUpload: "#1d1f21",
+  searchAndUpload: "#0f1213",
   searchAndUploadColor: "#c5c8c6",
   listBackground: "#1d1f21",
   listColor: "#c5c8c6",

@@ -102,6 +102,10 @@ function setupToolTips() {
       name: "#newPage",
       content: "New Page",
     },
+    {
+      name: "#vaultDetails",
+      content: "This notebook will be encrypted with your pass-word before being sent to the server. Unsaved changes will <b>NOT</b> be saved locally.",
+    }
   ];
 
   anonTooltips.forEach((obj) =>
