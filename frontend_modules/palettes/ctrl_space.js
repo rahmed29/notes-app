@@ -440,7 +440,7 @@ const commands = [
   },
   {
     name: "View Note Map",
-    searchTerm: "view graph view note graph view notemap note-map",
+    searchTerm: "view graph view note graph view notemap note-map open note map open notemap",
     handler: () => switchNote("Note-Map"),
   },
   {
