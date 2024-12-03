@@ -74,6 +74,7 @@ import {
   sizeDetails,
 } from "./frontend_modules/throttle.js";
 import { reserved } from "./frontend_modules/data/reserved_notes.js";
+import JSConfetti from "js-confetti";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -468,6 +469,32 @@ async function finish() {
       switchNote(e.state.note, { page: e.state.page });
     }
   });
+
+  const specialDates = [
+    {
+      date: "12-25",
+      confetti: ["🎄", "❄️", "☃️", "🌟", "🎅"],
+    },
+    {
+      date: "10-31",
+      confetti: ["👻", "🦇", "🎃", "🍂"],
+    },
+    {
+      date: "1-1",
+      confetti: ["🥳", "📅", "🥂", "🍾"],
+    },
+  ];
+
+  const holiday = specialDates.find((e) => {
+    return e.date === `${new Date().getMonth() + 1}-${new Date().getDate()}`;
+  });
+
+  if (holiday) {
+    new JSConfetti().addConfetti({
+      emojis: holiday.confetti,
+      confettiNumber: 123,
+    });
+  }
 }
 
 finish();
