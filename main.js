@@ -74,8 +74,6 @@ import {
   sizeDetails,
 } from "./frontend_modules/throttle.js";
 import { reserved } from "./frontend_modules/data/reserved_notes.js";
-import JSConfetti from "js-confetti";
-import specialDates from "./frontend_modules/holidays.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -470,25 +468,6 @@ async function finish() {
       switchNote(e.state.note, { page: e.state.page });
     }
   });
-
-  const holiday = specialDates.find((e) => {
-    if (e.name.toUpperCase() === "TODAY") {
-      return true;
-    }
-    if (typeof e.date === "function") {
-      return e.date();
-    }
-    return e.date === `${new Date().getMonth() + 1}-${new Date().getDate()}`;
-  });
-
-  if (holiday) {
-    const conf = new JSConfetti();
-    await conf.addConfetti({
-      emojis: holiday.confetti,
-      confettiNumber: 123,
-    });
-    conf.destroyCanvas();
-  }
 }
 
 finish();
