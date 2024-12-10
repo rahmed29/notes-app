@@ -46,6 +46,7 @@ export {
   updateAndSaveNotesLocally,
   syncStatus,
   formatNonText,
+  insertPage
 };
 
 // event listeners and stuff we need to destroy on repaints
@@ -56,6 +57,38 @@ const previewHandlers = [];
 
 function jumpWrapper() {
   jumpToDesiredPage(this.getAttribute("data-page"));
+}
+
+function insertPage(direction, currPage = note.pgN) {
+  const newPages = [];
+  const newAceSession = [];
+  if (direction === "->") {
+    for (let i = 0; i < note.content.length; i++) {
+      if (i === currPage + 1) {
+        newPages.push("");
+        newAceSession.push("");
+      }
+      newPages.push(note.content[i]);
+      newAceSession.push(note.aceSessions[i]);
+    }
+  } else if (direction === "<-") {
+    for (let i = 0; i < note.content.length; i++) {
+      if (i === currPage) {
+        newPages.push("");
+        newAceSession.push("");
+      }
+      newPages.push(note.content[i]);
+      newAceSession.push(note.aceSessions[i]);
+    }
+  }
+  note.content = newPages;
+  note.aceSessions = newAceSession;
+  accents();
+  if (direction === "->") {
+    jumpToDesiredPage(currPage + 1);
+  } else if (direction === "<-") {
+    jumpToDesiredPage(currPage);
+  }
 }
 
 function jumpToDesiredPage(desired) {

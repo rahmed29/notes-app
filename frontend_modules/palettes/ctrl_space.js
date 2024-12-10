@@ -12,7 +12,7 @@ import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
 import { listInMemory } from "../data/list.js";
 import { toggleList } from "../resize_list.js";
 import { changeTheme } from "../theming.js";
-import { jumpToDesiredPage } from "../dom_formatting.js";
+import { accents, insertPage, jumpToDesiredPage } from "../dom_formatting.js";
 import { AISUmmary } from "../ai_utils.js";
 import { toggleWikiSearch } from "../wikipedia.js";
 import { editingWindow } from "../editing_window.js";
@@ -83,6 +83,16 @@ const commands = [
     name: "New Page",
     searchTerm: "create page",
     handler: () => jumpToDesiredPage(note.content.length),
+  },
+  {
+    name: "Insert Page After Current Page",
+    searchTerm: "create page",
+    handler: () => insertPage("->"),
+  },
+  {
+    name: "Insert Page Before Current Page",
+    searchTerm: "create page",
+    handler: () => insertPage("<-"),
   },
   {
     name: "Go to Page",
@@ -355,12 +365,10 @@ const commands = [
     name: "Relinquish Notebook",
     searchTerm: "unnest",
     populater: async () => {
-      return (await getAnyBookContent(note.name, "parents")).map(
-        (parent) => ({
-          name: `${parent}`,
-          handler: () => relinquishNote(note.name, parent),
-        })
-      );
+      return (await getAnyBookContent(note.name, "parents")).map((parent) => ({
+        name: `${parent}`,
+        handler: () => relinquishNote(note.name, parent),
+      }));
     },
   },
   {
@@ -440,7 +448,8 @@ const commands = [
   },
   {
     name: "View Note Map",
-    searchTerm: "view graph view note graph view notemap note-map open note map open notemap",
+    searchTerm:
+      "view graph view note graph view notemap note-map open note map open notemap",
     handler: () => switchNote("Note-Map"),
   },
   {
