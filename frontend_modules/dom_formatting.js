@@ -46,7 +46,7 @@ export {
   updateAndSaveNotesLocally,
   syncStatus,
   formatNonText,
-  insertPage
+  insertPage,
 };
 
 // event listeners and stuff we need to destroy on repaints
@@ -59,7 +59,14 @@ function jumpWrapper() {
   jumpToDesiredPage(this.getAttribute("data-page"));
 }
 
-function insertPage(direction, currPage = note.pgN) {
+function insertPage(direction, currPage) {
+  if (reserved(note.name)) {
+    notyf.error("This notebook is read only");
+    return;
+  }
+  parseInt(currPage) === NaN
+    ? (currPage = note.pgN)
+    : (currPage = parseInt(currPage));
   const newPages = [];
   const newAceSession = [];
   if (direction === "->") {
