@@ -59,14 +59,11 @@ function jumpWrapper() {
   jumpToDesiredPage(this.getAttribute("data-page"));
 }
 
-function insertPage(direction, currPage) {
+function insertPage(direction, currPage = note.pgN) {
   if (reserved(note.name)) {
     notyf.error("This notebook is read only");
     return;
   }
-  parseInt(currPage) === NaN
-    ? (currPage = note.pgN)
-    : (currPage = parseInt(currPage));
   const newPages = [];
   const newAceSession = [];
   if (direction === "->") {

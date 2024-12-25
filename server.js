@@ -787,7 +787,7 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
     if (existingName) {
       return res
         .status(400)
-        .json({ error: "A book with that name already exists" });
+        .json({ error: "A notebook with that name already exists" });
     }
     const bookToRename = await Item.findOne({ user: req.__user, name });
     if (!bookToRename) {

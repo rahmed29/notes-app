@@ -46,8 +46,12 @@ async function createChild(parent, child) {
     } else {
       notyf.error("An error occurred when saving a notebook");
     }
+  } else if (existingItem.ok) {
+    notyf.error("A notebook with that name already exists");
+  } else if (reserved(parent)) {
+    notyf.error("That notebook name is reserved");
   } else {
-    notyf.error("Something went wrong");
+    notyf.error("An error occurred");
   }
 }
 

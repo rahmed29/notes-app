@@ -429,17 +429,16 @@ async function renameNote(name, newName) {
     let recentBooks = getSetting("recents", []);
     recentBooks = recentBooks.map((e) => (e === name ? newName : e));
     changeSettings("recents", recentBooks);
-    if (library.get(name)) {
-      if (!data.aceSessions) {
-        data.aceSessions = [];
-      }
-      if (!data.dbSave) {
-        data.dbSave = [...data.content];
-      }
-      if (data.saved === undefined) {
-        data.saved = true;
-      }
+    if (!data.aceSessions) {
+      data.aceSessions = [];
     }
+    if (!data.dbSave) {
+      data.dbSave = [...data.content];
+    }
+    if (data.saved === undefined) {
+      data.saved = true;
+    }
+
     renameFlashcards(name, newName);
     await closeTab(name, {
       refresh: true,
@@ -456,6 +455,7 @@ async function renameNote(name, newName) {
     });
     updateList();
   } else {
-    notyf.error("An error occurred when renaming a notebook");
+    const error = await response.json();
+    notyf.error(error.error || "An error occurred");
   }
 }
