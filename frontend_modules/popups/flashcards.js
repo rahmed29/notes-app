@@ -53,7 +53,7 @@ async function AIFlashcards() {
     "chatgpt"
   );
   if (response === 0) {
-    notyf.error("Flashcards could not be generated");
+    return notyf.error("Flashcards could not be generated");
   }
   const shadow = document.createElement("div");
   shadow.innerHTML = format(response, {

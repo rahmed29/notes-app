@@ -1,4 +1,9 @@
-import { brain, toolBar, areNotesSavedIcon, tabs } from "../important_stuff/dom_refs";
+import {
+  brain,
+  toolBar,
+  areNotesSavedIcon,
+  tabs,
+} from "../important_stuff/dom_refs";
 import { confirmation_cm, contextMenu, delContextMenu } from "../context_menu";
 import {
   deletePage,
@@ -273,31 +278,31 @@ function setupToolbar() {
             delContextMenu();
           },
         },
-        {
-          text: note.isEncrypted ? "Decrypt Notebook" : "Encrypt Notebook",
-          click: () => {
-            if (note.isEncrypted) {
-              decryptCurrentBook();
-            } else {
-              encryptCurrentBook();
-            }
-            delContextMenu();
-          },
-        },
-        note.isEncrypted
-          ? {
-              text: "Change Password",
-              click: () => {
-                const newPassword = prompt("Enter a new password") || undefined;
-                // user cancelled prompt or entered empty string
-                if (newPassword !== undefined) {
-                  note.password = newPassword;
-                  saveNoteBookToDb(note.name);
-                }
-                delContextMenu();
-              },
-            }
-          : null,
+        // {
+        //   text: note.isEncrypted ? "Decrypt Notebook" : "Encrypt Notebook",
+        //   click: () => {
+        //     if (note.isEncrypted) {
+        //       decryptCurrentBook();
+        //     } else {
+        //       encryptCurrentBook();
+        //     }
+        //     delContextMenu();
+        //   },
+        // },
+        // note.isEncrypted
+        //   ? {
+        //       text: "Change Password",
+        //       click: () => {
+        //         const newPassword = prompt("Enter a new password") || undefined;
+        //         // user cancelled prompt or entered empty string
+        //         if (newPassword !== undefined) {
+        //           note.password = newPassword;
+        //           saveNoteBookToDb(note.name);
+        //         }
+        //         delContextMenu();
+        //       },
+        //     }
+        //   : null,
       ],
       [`${e.clientX - 160}px`, "75px"]
     );

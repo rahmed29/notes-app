@@ -1,37 +1,21 @@
-import CryptoJS from "crypto-js";
-import { SHA256 } from "crypto-js";
-
 export { encryptMsg, checkKey, decryptMsg };
 
-function sha(msg) {
-  return SHA256(msg).toString();
-}
+//
+// Yeah idk what I was thinking. These were definitely not secure and should never have been used to store anything that truly needed to be encrypted.
+// For stuff that really needs to be secure, a secure note on bitwarden or something like that is great.
+// So I am going to remove the "encrypted notes" features but I'm lazy so I don't want to go and remove all occurences of it so I'll just make these dummy function I guess
+//
 
 function encryptMsg(msg, key) {
-  return CryptoJS.AES.encrypt(
-    JSON.stringify({ msg: `${msg}===SHA256===${sha(msg)}` }),
-    key
-  ).toString();
+  return "Encrypted notebooks are gone";
 }
 
 // Only call this after making sure the key is valid
 // Will only work properly with message that were encrypted with the encryptMsg function
 function decryptMsg(cipher, key) {
-  const bytes = CryptoJS.AES.decrypt(cipher, key);
-  const msg = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).msg;
-  return msg.substring(0, msg.lastIndexOf("===SHA256==="));
+  return "Encrypted notebooks are gone";
 }
 
 function checkKey(cipher, key) {
-  try {
-    const bytes = CryptoJS.AES.decrypt(cipher, key);
-    const msg = JSON.parse(bytes.toString(CryptoJS.enc.Utf8)).msg;
-    const msgNoSha = msg.substring(0, msg.lastIndexOf("===SHA256==="));
-    const sha = msg.substring(
-      msg.lastIndexOf("===SHA256===") + "===SHA256===".length
-    );
-    return SHA256(msgNoSha).toString() === sha;
-  } catch (err) {
-    return false;
-  }
+  return true;
 }

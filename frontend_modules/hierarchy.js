@@ -23,7 +23,7 @@ async function createChild(parent, child) {
   }
   const existingItem = await notes_api.get.notebooks(child);
   if (
-    existingItem.ok &&
+    // existingItem.ok &&
     existingItem.status === 404 &&
     child &&
     parent &&
@@ -56,12 +56,17 @@ async function copyBook(newName, bookToCopy) {
     return;
   }
   const existingItem = await notes_api.get.notebooks(newName);
-  if (existingItem.ok && existingItem.status === 404 && newName && bookToCopy) {
+  if (
+    // existingItem.ok &&
+    existingItem.status === 404 &&
+    newName &&
+    bookToCopy
+  ) {
     if (library.get(bookToCopy) && library.get(bookToCopy).isEncrypted) {
       notyf.error("Encrypted notebooks can't be copied");
       return;
     }
-    const content = (await getAnyBookContent(bookToCopy, "content"));
+    const content = await getAnyBookContent(bookToCopy, "content");
     const save = await notes_api.put.saveNotebooks(newName, { content });
     if (save.ok) {
       await localforage.setItem(newName, {
