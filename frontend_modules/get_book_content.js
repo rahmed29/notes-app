@@ -25,6 +25,7 @@ async function getAnyBookContent(bookName, desiredInfo) {
     );
   }
   // If there is a list in memory, we can take the parents and children from there
+  // this should always be the case
   if (
     listInMemory &&
     (desiredInfo === "parents" || desiredInfo === "children")

@@ -215,8 +215,7 @@ async function updateAndSaveNotesLocally() {
     noteInList.excerpt = note.content.map((e) => getTitle(e));
   }
   if (!reserved(note.name) && !note.isEncrypted) {
-    // not awaiting because not necessary
-    // good for performance
+    // no need to await
     localforage.setItem(note.name, {
       content: note.content,
       timestamp: Date.now(),

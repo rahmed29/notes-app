@@ -164,15 +164,11 @@ const commands = [
   {
     name: "Clear Recent Notebooks",
     searchTerm: "clear recents",
-    handler: () => {
-      changeSettings("recents", []);
-    },
+    handler: () => changeSettings("recents", []),
   },
   {
     name: "Clear Recent Tags",
-    handler: () => {
-      changeSettings("recents_tags", []);
-    },
+    handler: () => changeSettings("recents_tags", []),
   },
   {
     name: "View Public Notebooks",
