@@ -139,7 +139,8 @@ function handlePageMovement({
     } else if (
       note.pgN + amount >= note.content.length &&
       !shouldCreateNewPage &&
-      event
+      event &&
+      !reserved(note.name)
     ) {
       contextMenu(
         event,

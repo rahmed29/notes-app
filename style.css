@@ -637,9 +637,15 @@ a[href$=".pdf"]::before {
 .homeToolBar #icon1,
 .homeToolBar #icon3,
 .homeToolBar #icon4,
-.homeToolBar #icon6,
-.homeToolBar #icon7,
 .homeToolBar #areNotesSavedIcon {
+  pointer-events: none;
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.pageNavDisabled #icon6,
+.pageNavDisabled #icon7,
+.pageNavDisabled #areNotesSavedIcon {
   pointer-events: none;
   opacity: 0.35;
   filter: grayscale(1);

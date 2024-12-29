@@ -34,29 +34,23 @@ const reservedNames = [
       content: [
         "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!",
       ],
-      beforeOpen: () => {
-        // update the home page to show accurate information
-        editReserved(
-          "home",
-          "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!" +
-            "\n\n## Recent Notes\n\n" +
-            (getSetting("recents", [])
-              .map((e) => `- :ref[${e}]`)
-              .join("\n") || "- N/A") +
-            `\n\n## Recent Tags\n\n` +
-            (getSetting("recents_tags", [])
-              .map((e) => `- :tag[${e}]`)
-              .join("\n") || "- N/A\n")
-        );
+      reservedData: {
+        beforeOpen: () => {
+          // update the home page to show accurate information
+          editReserved(
+            "home",
+            "# 🏠 Welcome Home!\n\nUse the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command palette__ *(Ctrl + Space)* to open a new/existing notebook!" +
+              "\n\n## Recent Notes\n\n" +
+              (getSetting("recents", [])
+                .map((e) => `- :ref[${e}]`)
+                .join("\n") || "- N/A") +
+              `\n\n## Recent Tags\n\n` +
+              (getSetting("recents_tags", [])
+                .map((e) => `- :tag[${e}]`)
+                .join("\n") || "- N/A\n")
+          );
+        },
       },
-    },
-  },
-  {
-    data: {
-      name: "todo__list",
-      content: [
-        "# Sorry!\n\nThis notebook is reserved for storing your todo data. Sorry!",
-      ],
     },
   },
   {
@@ -89,16 +83,19 @@ const reservedNames = [
       content: [
         "# Sorry\n\nThis notebook name is reserved for previewing uploaded images.",
       ],
-      beforeOpen: () => {
-        // update the list of images in the image preview notebook
-        editReserved(
-          "Your-Uploads",
-          imageList.length
-            ? imageList.map((url) => {
-                return `${properLink(url)}(/uploads/${url})`;
-              })
-            : ["# Uploaded images and PDFs will appear in this notebook!"]
-        );
+      reservedData: {
+        reservedButPageNavAllowed: true,
+        beforeOpen: () => {
+          // update the list of images in the image preview notebook
+          editReserved(
+            "Your-Uploads",
+            imageList.length
+              ? imageList.map((url) => {
+                  return `${properLink(url)}(/uploads/${url})`;
+                })
+              : ["# Uploaded images and PDFs will appear in this notebook!"]
+          );
+        },
       },
     },
   },
@@ -112,7 +109,7 @@ const reservedNames = [
     data: {
       name: "__god",
       content: [
-        "# Sorry!\n\nThis notebook is reserved for storing important information!.",
+        "# Sorry!\n\nThis notebook is reserved for storing important information!",
       ],
     },
   },
@@ -120,10 +117,12 @@ const reservedNames = [
     data: {
       name: "Tag-Viewer",
       content: ["# 🏷️ Tag Viewer\n\n---\n\n"],
-      afterOpen: async (tag) => {
-        const content = await getTags(tag);
-        editReserved("Tag-Viewer", content);
-        accents(false);
+      reservedData: {
+        afterOpen: async (tag) => {
+          const content = await getTags(tag);
+          editReserved("Tag-Viewer", content);
+          accents(false);
+        },
       },
     },
   },
@@ -133,14 +132,17 @@ const reservedNames = [
       content: [
         "# Sorry!\n\nThis notebook is reserved for viewing public notebooks.",
       ],
-      afterOpen: () => {
-        if (currentlyOpenPublicBook) {
-          editTabText(
-            "Public-Notebook",
-            `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`,
-            true
-          );
-        }
+      reservedData: {
+        reservedButPageNavAllowed: true,
+        afterOpen: () => {
+          if (currentlyOpenPublicBook) {
+            editTabText(
+              "Public-Notebook",
+              `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`,
+              true
+            );
+          }
+        },
       },
     },
   },

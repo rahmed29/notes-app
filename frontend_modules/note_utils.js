@@ -115,11 +115,19 @@ async function switchNote(
     };
   }
   // Fix beforeOpens to be arrays
-  if (data.beforeOpen && !Array.isArray(data.beforeOpen)) {
-    data.beforeOpen = [data.beforeOpen];
+  if (
+    data.reservedData &&
+    data.reservedData.beforeOpen &&
+    !Array.isArray(data.reservedData.beforeOpen)
+  ) {
+    data.reservedData.beforeOpen = [data.reservedData.beforeOpen];
   }
-  if (data.afterOpen && !Array.isArray(data.afterOpen)) {
-    data.afterOpen = [data.afterOpen];
+  if (
+    data.reservedData &&
+    data.reservedData.afterOpen &&
+    !Array.isArray(data.reservedData.afterOpen)
+  ) {
+    data.reservedData.afterOpen = [data.reservedData.afterOpen];
   }
   // Decrypt notebook if encrypted
   try {
@@ -156,8 +164,8 @@ async function switchNote(
     return;
   }
   // Execute beforeOpens
-  if (data.beforeOpen) {
-    for (const func of data.beforeOpen) {
+  if (data.reservedData && data.reservedData.beforeOpen) {
+    for (const func of data.reservedData.beforeOpen) {
       func(...props);
     }
   }
@@ -221,16 +229,23 @@ async function switchNote(
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
   note.date = data.date;
-  note.beforeOpen = data.beforeOpen || null;
-  note.afterOpen = data.afterOpen || null;
+  note.reservedData = data.reservedData || null;
+  // note.beforeOpen = data.beforeOpen || null;
+  // note.afterOpen = data.afterOpen || null;
   note.isPublic = data.isPublic || false;
   // Setup stuff in DOM
   makeTabInDom(note.name, true);
   if (reserved(note.name)) {
     toolBar.classList.add("homeToolBar");
+    if (note.reservedData && note.reservedData.reservedButPageNavAllowed) {
+      toolBar.classList.remove("pageNavDisabled");
+    } else {
+      toolBar.classList.add("pageNavDisabled");
+    }
     note.readOnly = true;
     editor.setReadOnly(true);
   } else {
+    toolBar.classList.remove("pageNavDisabled");
     toolBar.classList.remove("homeToolBar");
     note.readOnly = false;
     editor.setReadOnly(false);
@@ -241,8 +256,8 @@ async function switchNote(
   // Keep this here because our afterOpens could call accents themselves and we want to make sure the UI is up to date
   accents(...props);
   // Execute afterOpens
-  if (data.afterOpen) {
-    for (const func of data.afterOpen) {
+  if (data.reservedData && data.reservedData.afterOpen) {
+    for (const func of data.reservedData.afterOpen) {
       func(...props);
     }
   }

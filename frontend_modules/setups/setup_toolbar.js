@@ -155,23 +155,19 @@ function setupToolbar() {
     )
   );
   eid("icon6").addEventListener("click", () => {
-    if (!note.readOnly) {
-      handlePageMovement({
-        direction: "<-",
-        amount: 1,
-        shouldCreateNewPage: true,
-      });
-    }
+    handlePageMovement({
+      direction: "<-",
+      amount: 1,
+      shouldCreateNewPage: true,
+    });
   });
   eid("icon7").addEventListener("click", (e) => {
-    if (!note.readOnly) {
-      handlePageMovement({
-        direction: "->",
-        amount: 1,
-        shouldCreateNewPage: false,
-        event: e,
-      });
-    }
+    handlePageMovement({
+      direction: "->",
+      amount: 1,
+      shouldCreateNewPage: false,
+      event: e,
+    });
   });
   brain.addEventListener("click", (e) =>
     contextMenu(
