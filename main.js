@@ -337,7 +337,7 @@ async function finish() {
   progBar.style.width = "320px";
 
   // Here we enable or disable autosave according to the value in local storage
-  if (getSetting("autosave", true) === true) {
+  if (getSetting("autosave", true)) {
     enableAutosave();
   } else {
     disableAutosave();

@@ -225,6 +225,11 @@ app.get("/api/", (req, res) => {
   });
 });
 
+// the "__god" notebook is intended to store various information about a user
+// However, right now it is only used for storing which images belong to the user
+// if there is NO callback function provided as the 2nd parameter, this function returns the content of the "__god" notebooks
+// If there IS a callback function passed in, then the parsed JSON stored in "__god" is passed into the callback function
+// That callback function is responsible for modifying that object in place
 async function god(user, callback) {
   const item = await Item.findOne({ user, name: "__god" });
   let json;
