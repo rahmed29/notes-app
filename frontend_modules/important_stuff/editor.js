@@ -28,7 +28,7 @@ function setupEditor(onchange) {
     },
   ];
 
-  let surrounders = ["*", "~", "_"];
+  const surrounders = ["*", "~", "_", "="];
 
   editor = ace.edit("editor");
   // editor.setTheme("ace/theme/chrome");
