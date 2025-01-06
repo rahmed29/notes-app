@@ -407,14 +407,16 @@ async function deleteNoteBookFromDb(noteName) {
   if (network.isOffline) {
     return;
   }
-  const noteDeleteStatus = await notes_api.del.notebooks(noteName);
-  if (noteDeleteStatus.ok) {
+  const noteDelete = await notes_api.del.notebooks(noteName);
+  if (noteDelete.ok) {
     notyf.success("Notebook has been deleted from the database");
     closeTab(noteName);
     filterFlashcards(noteName);
     removeDropped(noteName);
     updateList();
     youDeleted(noteName);
+  } else if (noteDelete.status === 404) {
+    notyf.error("This notebook is not saved to the database");
   } else {
     notyf.error("An error occurred when deleting a notebook");
   }
