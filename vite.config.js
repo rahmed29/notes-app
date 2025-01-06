@@ -11,13 +11,4 @@ export default {
       },
     },
   },
-  // build: {
-  //   rollupOptions: {
-  //     input: {
-  //       // Define the multiple HTML entry points
-  //       main: resolve(__dirname, 'index.html'),
-  //       canvas: resolve(__dirname, 'canvas.html'),
-  //     }
-  //   }
-  // }
 };

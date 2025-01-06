@@ -104,7 +104,7 @@ function allowSingleRedo(noteName, { content, aceSessions }) {
         icon: "?",
         handler: async () => {
           showBookDiffPopup(
-            (await getAnyBookContent(noteName, "content")),
+            await getAnyBookContent(noteName, "content"),
             content
           );
         },

@@ -453,6 +453,8 @@ app.get("/api/export/", async (req, res) => {
     });
 
     fs.mkdirSync(`${unzippedFolder}/uploads`, { recursive: true });
+
+    // Entire uploads folder is downloaded, including images that other users uploaded
     fs.cpSync("./public/uploads", `${unzippedFolder}/uploads`, {
       recursive: true,
     });
