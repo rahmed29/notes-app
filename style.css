@@ -2287,6 +2287,26 @@ canvas {
   margin: 0.5cm; /* Adjust margin to fit more content per page if necessary */
 }
 
+.mobile body {
+  touch-action: manipulation;
+}
+
+.mobile #toolBar, .mobile #tabs, .mobile #bottomRightTools, .mobile #bottomLeftGeneralInfo {
+  display: none !important;
+}
+
+.mobile #notesAreaContainer {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+}
+
+.mobile #notesPreviewArea {
+  padding-left: 5% !important;
+  padding-right: 10% !important;
+  padding-top: 3% !important;
+}
+
 @media print {
   #listOfBooks,
   #tabs,

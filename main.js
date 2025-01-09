@@ -319,7 +319,12 @@ async function finish() {
   progBar.style.width = "80px";
 
   // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
-  changeTheme(getSetting("theme", "chrome"));
+  if (navigator.userAgent.includes("iPhone")) {
+    document.body.classList.add("mobile");
+    changeTheme("solarized_dark");
+  } else {
+    changeTheme(getSetting("theme", "chrome"));
+  }
   createWorkspace();
 
   // Here, we get the flashcard data from the server and store it in memory
