@@ -1,7 +1,7 @@
 {
   "TODO": "This is for when I make a very minimal mobile version to use as a PWA",
-  "theme_color": "#fff",
-  "background_color": "#fff",
+  "theme_color": "#000",
+  "background_color": "#000",
   "icons": [
     {
       "purpose": "maskable",

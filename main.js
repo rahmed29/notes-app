@@ -96,7 +96,9 @@ document.body.innerHTML = `
     <!---->
 
     <!-- Fixed position floating action button for mobile -->
-    <div id = "mobileAction"></div>
+    <div id = "mobileAction">
+      <img src = "/assets/circle-scatter-haikei(1).png">
+    </div>
 
     <div id="mainContainer">
       <div id="leftMostSideBar">
@@ -325,6 +327,7 @@ async function finish() {
   progBar.style.width = "80px";
 
   // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
+  // also if we on mobile we do some stuff
   if (navigator.userAgent.includes("iPhone")) {
     document.body.classList.add("mobile");
     turnOffWiki();
@@ -348,9 +351,10 @@ async function finish() {
         });
       }
     });
+    changeTheme("terminal");
+  } else {
+    changeTheme(getSetting("theme", "chrome"));
   }
-
-  changeTheme(getSetting("theme", "chrome"));
   createWorkspace();
 
   // Here, we get the flashcard data from the server and store it in memory
@@ -390,9 +394,10 @@ async function finish() {
   setupToolbar();
   setupList();
 
-  document
-    .getElementById("mobileAction")
-    .addEventListener("click", () => switchNote("Note-Map"));
+  document.getElementById("mobileAction").addEventListener("click", async () => {
+    await switchNote("Note-Map");
+    notesPreviewArea.scrollTop = 0;
+  });
 
   // More event listeners, this time for the bottom right tools
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });

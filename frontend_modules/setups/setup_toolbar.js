@@ -141,6 +141,9 @@ function setupToolbar() {
         {
           text: "Change Theme",
           children: themes.map((e) => {
+            if (e.hidden) {
+              return null
+            }
             return {
               text: e.name
                 .split("_")
