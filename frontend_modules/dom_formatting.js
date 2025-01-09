@@ -122,12 +122,14 @@ function handlePageMovement({
   shouldCreateNewPage = false,
   event,
 } = {}) {
+  if (!note.content) {
+    return;
+  }
   if (direction === "<-" && note.pgN > 0) {
     note.pgN -= amount;
     accents();
   } else if (direction === "->") {
     if (
-      note.content &&
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
       !reserved(note.name)
@@ -140,7 +142,6 @@ function handlePageMovement({
       }
       // defineCmd();
     } else if (
-      note.content &&
       note.pgN + amount >= note.content.length &&
       !shouldCreateNewPage &&
       event &&
@@ -159,7 +160,7 @@ function handlePageMovement({
         ],
         [`${event.clientX - 160}px`, "75px"]
       );
-    } else if (note.content && !(note.pgN + amount >= note.content.length)) {
+    } else if (!(note.pgN + amount >= note.content.length)) {
       note.pgN += amount;
       accents();
     }
