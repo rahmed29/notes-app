@@ -158,14 +158,12 @@ function setupToolbar() {
     handlePageMovement({
       direction: "<-",
       amount: 1,
-      shouldCreateNewPage: true,
     });
   });
   eid("icon7").addEventListener("click", (e) => {
     handlePageMovement({
       direction: "->",
       amount: 1,
-      shouldCreateNewPage: false,
       event: e,
     });
   });

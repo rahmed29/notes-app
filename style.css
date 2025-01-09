@@ -2291,20 +2291,73 @@ canvas {
   touch-action: manipulation;
 }
 
-.mobile #toolBar, .mobile #tabs, .mobile #bottomRightTools, .mobile #bottomLeftGeneralInfo {
+#mobileAction {
+  display: none;
+}
+
+.mobile #toolBar,
+.mobile #tabs,
+.mobile #bottomRightTools,
+.mobile #leftMostSideBar,
+.mobile #listOfBooks,
+.mobile #border {
   display: none !important;
+}
+
+.mobile #bottomLeftGeneralInfo {
+  position: fixed;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0) !important;
+  backdrop-filter: none;
+}
+
+.mobile #bottomLeftGeneralInfo * {
+  display: none;
+}
+
+.mobile #generalInfoPageNumber {
+  position: fixed;
+  top: 1%;
+  right: 2%;
+  display: flex;
+}
+
+.mobile #mobileAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  width: 80px;
+  height: 80px;
+  background: #323242;
+  border-radius: 50%;
+  transition: .25s;
+  z-index: 100;
+}
+
+.mobileActionExpanded {
+  border-radius: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  height: 100vh !important;
+  width: 100vw !important;
 }
 
 .mobile #notesAreaContainer {
   width: 100vw;
   height: 100vh;
-  overflow-x: hidden;
 }
 
 .mobile #notesPreviewArea {
   padding-left: 5% !important;
-  padding-right: 10% !important;
-  padding-top: 3% !important;
+  padding-right: 5% !important;
+  padding-top: 1% !important;
+  border-radius: 0;
 }
 
 @media print {

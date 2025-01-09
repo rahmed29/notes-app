@@ -1,7 +1,7 @@
 {
   "TODO": "This is for when I make a very minimal mobile version to use as a PWA",
-  "theme_color": "#8936FF",
-  "background_color": "#2EC6FE",
+  "theme_color": "#fff",
+  "background_color": "#fff",
   "icons": [
     {
       "purpose": "maskable",
@@ -22,5 +22,5 @@
   "lang": "en-US",
   "name": "Notes",
   "short_name": "Notes",
-  "start_url": "/home"
+  "start_url": "/mobile_home"
 }

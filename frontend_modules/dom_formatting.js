@@ -103,7 +103,6 @@ function jumpToDesiredPage(desired) {
     handlePageMovement({
       direction: "<-",
       amount: note.pgN - desired,
-      shouldCreateNewPage: true,
     });
   } else if (desired > note.pgN) {
     handlePageMovement({
@@ -114,6 +113,9 @@ function jumpToDesiredPage(desired) {
   }
 }
 
+// This handles all page movement. It will not create a new pages by default but can if needed.
+// jumpToDesiredPage just uses this but allows the creation of a new page when the desired page is out of bounds
+// If you don't allow page creation but pass in the event from a button being clicked it adds a context menu on that button ask if a new page should be created,.
 function handlePageMovement({
   direction,
   amount,
@@ -125,6 +127,7 @@ function handlePageMovement({
     accents();
   } else if (direction === "->") {
     if (
+      note.content &&
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
       !reserved(note.name)
@@ -137,6 +140,7 @@ function handlePageMovement({
       }
       // defineCmd();
     } else if (
+      note.content &&
       note.pgN + amount >= note.content.length &&
       !shouldCreateNewPage &&
       event &&
@@ -155,7 +159,7 @@ function handlePageMovement({
         ],
         [`${event.clientX - 160}px`, "75px"]
       );
-    } else if (!(note.pgN + amount >= note.content.length)) {
+    } else if (note.content && !(note.pgN + amount >= note.content.length)) {
       note.pgN += amount;
       accents();
     }

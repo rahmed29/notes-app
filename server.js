@@ -36,6 +36,7 @@ const unsavableNames = [
   "Note-Map",
   "Public-Notebook",
   "Tag-Viewer",
+  "mobile_home",
   // This is used to store user settings that are not configurable through a notebook
   "__god",
 ];

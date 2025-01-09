@@ -10,7 +10,10 @@ import { changeTheme } from "./frontend_modules/theming.js";
 import { switchNote, saveNoteBookToDb } from "./frontend_modules/note_utils.js";
 import { note } from "./frontend_modules/data/note.js";
 import { updateList } from "./frontend_modules/list_utils.js";
-import { updateAndSaveNotesLocally } from "./frontend_modules/dom_formatting.js";
+import {
+  handlePageMovement,
+  updateAndSaveNotesLocally,
+} from "./frontend_modules/dom_formatting.js";
 import { createWorkspace } from "./frontend_modules/create_workspace.js";
 import { initializeFlashcards } from "./frontend_modules/data/flashcard_data.js";
 import {
@@ -20,7 +23,7 @@ import {
   initializeStickyNotes,
 } from "./frontend_modules/sticky_note.js";
 import { showFlashcards } from "./frontend_modules/popups/flashcards.js";
-import { wikiSearch } from "./frontend_modules/wikipedia.js";
+import { turnOffWiki, wikiSearch } from "./frontend_modules/wikipedia.js";
 import {
   cycleViewPreferences,
   editingWindow,
@@ -91,6 +94,9 @@ document.body.innerHTML = `
     <div id="wikipediaBrainAnimation"></div>
     <div id="vaultDetails">🔐</div>
     <!---->
+
+    <!-- Fixed position floating action button for mobile -->
+    <div id = "mobileAction"></div>
 
     <div id="mainContainer">
       <div id="leftMostSideBar">
@@ -321,10 +327,30 @@ async function finish() {
   // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
   if (navigator.userAgent.includes("iPhone")) {
     document.body.classList.add("mobile");
-    changeTheme("solarized_dark");
-  } else {
-    changeTheme(getSetting("theme", "chrome"));
+    turnOffWiki();
+    document.body.addEventListener("dblclick", function (event) {
+      // Get the width of the viewport
+      const screenWidth = window.innerWidth;
+
+      // Determine the position of the click relative to the screen
+      const clickX = event.clientX;
+
+      // Check if the click is on the left or right half of the screen
+      if (clickX < screenWidth / 2) {
+        handlePageMovement({
+          direction: "<-",
+          amount: 1,
+        });
+      } else {
+        handlePageMovement({
+          direction: "->",
+          amount: 1,
+        });
+      }
+    });
   }
+
+  changeTheme(getSetting("theme", "chrome"));
   createWorkspace();
 
   // Here, we get the flashcard data from the server and store it in memory
@@ -363,6 +389,10 @@ async function finish() {
   // more event listeners, there's a lot of them so they are in their own files "setup_toolbar" and "setup_list" respectively
   setupToolbar();
   setupList();
+
+  document
+    .getElementById("mobileAction")
+    .addEventListener("click", () => switchNote("Note-Map"));
 
   // More event listeners, this time for the bottom right tools
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });
