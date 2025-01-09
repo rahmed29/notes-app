@@ -57,7 +57,7 @@ const reservedNames = [
     data: {
       name: "mobile_home",
       content: [
-        "# 🏠 Welcome Home!\n\n### ⚠️ WIP\n\nThis is the **mobile version**. Notes are read only as of right now!\n\nTap the weird circular void in the **bottom-right** to access the :ref[Note-Map] at any times and move between notebooks!\n\n---\n\n![](https://i.redd.it/td64nto1hwb61.jpg)",
+        "# 🏠 Welcome Home!\n\n### ⚠️ WIP\n\nThis is the **mobile version**. Notes are read only as of right now!\n\nTap the weird, circular void in the **bottom-right** to access the :ref[Note-Map] at any time and move between notebooks!\n\n---\n\n![](/assets/wip.jpg)",
       ],
     },
   },

@@ -382,11 +382,11 @@ Use the __tree list__, the __toolbar__, the :ref[Note-Map], or the __command pal
 
 This is the **mobile version**. Notes are read only as of right now!
 
-Tap the weird circular void in the **bottom-right** to access the :ref[Note-Map] at any times and move between notebooks!
+Tap the weird, circular void in the **bottom-right** to access the :ref[Note-Map] at any time and move between notebooks!
 
 ---
 
-![](https://i.redd.it/td64nto1hwb61.jpg)`]}},{data:{name:"sticky__notes",content:[`# Sorry!
+![](/assets/wip.jpg)`]}},{data:{name:"sticky__notes",content:[`# Sorry!
 
 This notebook is reserved for storing your scratch pad content`]}},{data:{name:"flash__cards",content:[`# Sorry!
 
