@@ -23,7 +23,7 @@ import {
   initializeStickyNotes,
 } from "./frontend_modules/sticky_note.js";
 import { showFlashcards } from "./frontend_modules/popups/flashcards.js";
-import { turnOffWiki, wikiSearch } from "./frontend_modules/wikipedia.js";
+import { wikiSearch } from "./frontend_modules/wikipedia.js";
 import {
   cycleViewPreferences,
   editingWindow,
@@ -330,7 +330,6 @@ async function finish() {
   // also if we on mobile we do some stuff
   if (navigator.userAgent.includes("iPhone")) {
     document.body.classList.add("mobile");
-    turnOffWiki();
     document.body.addEventListener("dblclick", function (event) {
       // Get the width of the viewport
       const screenWidth = window.innerWidth;
@@ -382,7 +381,9 @@ async function finish() {
   editingWindow(getSetting("viewPref", "read"));
 
   // Some event listeners
-  notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
+  if (!navigator.userAgent.includes("iPhone")) {
+    notesPreviewArea.addEventListener("click", (e) => wikiSearch(e));
+  }
   bottomRightTools.addEventListener("contextmenu", (e) => e.preventDefault());
   document.getElementById("openCommandPal").addEventListener("click", () => {
     delContextMenu();

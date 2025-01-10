@@ -143,6 +143,7 @@ a[href$=".pdf"]::before {
   transform: 0.25s;
   height: 5px;
   width: 0px;
+  max-width: 90vw !important;
   background: var(--main-accent);
   border-radius: 12px;
 }
@@ -2352,15 +2353,15 @@ canvas {
   display: flex !important;
 }
 
-.mobile #notesAreaContainer {
-  width: 100vw;
+.mobile #notesAreaContainer, .mobile #workspace {
+  width: 100vw !important;
   height: 100vh;
 }
 
 .mobile #notesPreviewArea, .mobile #notesTextArea {
-  padding-left: 5% !important;
-  padding-right: 5% !important;
-  padding-top: 1% !important;
+  padding-left: 3% !important;
+  padding-right: calc(3% + 4px) !important;
+  padding-top: 0 !important;
   border-radius: 0;
 }
 
