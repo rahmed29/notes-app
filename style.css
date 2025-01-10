@@ -1004,6 +1004,7 @@ hr {
   color: var(--notes-color);
   backdrop-filter: blur(5px);
   user-select: none;
+  -webkit-user-select: none; /* Safari */   
   display: flex;
   align-items: end;
   gap: 8px;
@@ -2308,14 +2309,21 @@ canvas {
   height: 70px;
   background: #323242;
   border-radius: 50%;
-  transition: 0.25s;
-  z-index: 100;
+  z-index: 1;
 }
 
 #mobileAction img {
+  user-select: none;
+  pointer-events: none;
   margin-bottom: 5px;
   height: 50px;
   width: 50px;
+  transition: .3s;
+}
+
+#mobileAction:active img {
+  height: 40px;
+  width: 40px;
 }
 
 .mobile #mobileAction {
@@ -2359,8 +2367,8 @@ canvas {
 }
 
 .mobile #notesPreviewArea, .mobile #notesTextArea {
-  padding-left: 3% !important;
-  padding-right: calc(3% + 4px) !important;
+  padding-left: 4% !important;
+  padding-right: calc(4% + 4px) !important;
   padding-top: 0 !important;
   border-radius: 0;
 }

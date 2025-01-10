@@ -1,5 +1,5 @@
 // This is the theme for mobile version
-const oled = {
+const terminal = {
   name: "terminal",
   theme_type: "dark",
   hidden: true,
@@ -52,4 +52,4 @@ const oled = {
   tabColor: "black",
 };
 
-export default oled;
+export default terminal;

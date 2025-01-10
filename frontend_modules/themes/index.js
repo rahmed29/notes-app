@@ -14,7 +14,7 @@ import cloud_editor_dark from "./cloud_editor_dark.js";
 import pastel_on_dark from "./pastel_on_dark.js";
 import nord_dark from "./nord_dark.js";
 import tomorrowNight80s from "./tomorrow_night_eighties.js";
-import oled from "./oled.js";
+import terminal from "./terminal.js";
 // import monokai from "./scrapped/monokai.js";
 // import dracula from "./scrapped/dracula.js";
 // import github_dark from "./scrapped/github_dark.js";
@@ -35,5 +35,5 @@ export default [
   pastel_on_dark,
   nord_dark,
   tomorrowNight80s,
-  oled
+  terminal,
 ];
