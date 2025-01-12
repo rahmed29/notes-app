@@ -95,7 +95,7 @@ document.body.innerHTML = `
     <div id="vaultDetails">🔐</div>
     <!---->
 
-    <!-- Fixed position floating action button for mobile -->
+    <!-- Fixed position, Note-Map button for mobile interface -->
     <div id = "mobileAction">
       <img src = "/assets/circle-scatter-haikei(1).png">
     </div>
