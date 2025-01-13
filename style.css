@@ -9,7 +9,8 @@
 :root {
   font-family: "Inter", sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
-  --notes-background: white;
+  --notes-background: #121212;
+  --body: #121212;
 }
 
 body {
