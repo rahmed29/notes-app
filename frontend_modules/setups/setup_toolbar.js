@@ -29,7 +29,7 @@ import { publishBook, unpublishBook } from "../publishing";
 import { changeSettings } from "../important_stuff/settings";
 import notes_api from "../important_stuff/api";
 import { getTitle } from "../../shared_modules/removeMD";
-import { insertSnippet, insertStickyNote, insertTemplate } from "../snippets";
+import { insertStickyNote, insertTemplate } from "../snippets";
 // import { showTodo } from "../popups/todo";
 
 export default setupToolbar;

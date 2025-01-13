@@ -248,7 +248,7 @@ await onRestart();
 app.use(express.static("./public"));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(async (req, res, next) => {
+app.use((req, res, next) => {
   if (req.cookies && req.cookies.CF_Authorization) {
     req.__user = JSON.parse(
       atob(req.cookies.CF_Authorization.split(".")[1])

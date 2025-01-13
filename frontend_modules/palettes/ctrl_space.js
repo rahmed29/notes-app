@@ -12,7 +12,7 @@ import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
 import { listInMemory } from "../data/list.js";
 import { toggleList } from "../resize_list.js";
 import { changeTheme } from "../theming.js";
-import { accents, insertPage, jumpToDesiredPage } from "../dom_formatting.js";
+import { insertPage, jumpToDesiredPage } from "../dom_formatting.js";
 import { AISUmmary } from "../ai_utils.js";
 import { toggleWikiSearch } from "../wikipedia.js";
 import { editingWindow } from "../editing_window.js";
