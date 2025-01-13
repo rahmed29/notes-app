@@ -105,6 +105,43 @@ async function gpt(content, prompt) {
   return completion.choices[0].message.content;
 }
 
+// the "__god" notebook is intended to store various information about a user
+// However, right now it is only used for storing which images belong to the user
+// if there is NO callback function provided as the 2nd parameter, this function returns the content of the "__god" notebooks
+// If there IS a callback function passed in, then the parsed JSON stored in "__god" is passed into the callback function
+// That callback function is responsible for modifying that object in place
+async function god(user, callback) {
+  const item = await Item.findOne({ user, name: "__god" });
+  let json;
+  if (item) {
+    try {
+      json = JSON.parse(item.content[0]);
+    } catch (err) {
+      json = {};
+    }
+  } else {
+    json = {};
+  }
+  if (callback) {
+    callback(json);
+    if (item) {
+      item.content = [JSON.stringify(json)];
+      await item.save();
+    } else {
+      const newItem = new Item({
+        user: user,
+        name: "__god",
+        content: [JSON.stringify(json)],
+        isEncrypted: false,
+        date: Date.now(),
+      });
+      await newItem.save();
+    }
+  } else {
+    return json;
+  }
+}
+
 const app = express();
 
 const storage = multer.diskStorage({
@@ -178,6 +215,36 @@ const Item = mongoose.model("Item", {
   },
 });
 
+async function onRestart() {
+  const users = await Item.find().distinct("user");
+  fs.readdir("./public/uploads", async (err, files) => {
+    // we have the list of files from the drive
+    // loop through each user
+    for (const user of users) {
+      await god(user, (json) => {
+        let newJson = [];
+        // set up an empty array to become their new owned image list for that user
+        if (json.uploads) {
+          for (const image of json.uploads) {
+            // for each image in their current owned image list, check if our list of files includes it (it actually exists on the drive)
+            if (files.includes(image)) {
+              // if it does exist on the drive push it to the new json
+              // i know its not actually json its technically an object but this makes sense to me so I use this convention for the `god` function
+              newJson.push(image);
+            } else {
+              console.log(`Phantom image: ${image} owned by ${user}`);
+            }
+          }
+          // set the user's uploaded image list to the new one. If every image they had existed on the drive, nothing has changed
+          json.uploads = newJson;
+        }
+      });
+    }
+  });
+}
+
+await onRestart();
+
 app.use(express.static("./public"));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -225,69 +292,6 @@ app.get("/api/", (req, res) => {
     post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
   });
 });
-
-// the "__god" notebook is intended to store various information about a user
-// However, right now it is only used for storing which images belong to the user
-// if there is NO callback function provided as the 2nd parameter, this function returns the content of the "__god" notebooks
-// If there IS a callback function passed in, then the parsed JSON stored in "__god" is passed into the callback function
-// That callback function is responsible for modifying that object in place
-async function god(user, callback) {
-  const item = await Item.findOne({ user, name: "__god" });
-  let json;
-  if (item) {
-    try {
-      json = JSON.parse(item.content[0]);
-    } catch (err) {
-      json = {};
-    }
-  } else {
-    json = {};
-  }
-  if (callback) {
-    callback(json);
-    if (item) {
-      item.content = [JSON.stringify(json)];
-      await item.save();
-    } else {
-      const newItem = new Item({
-        user: user,
-        name: "__god",
-        content: [JSON.stringify(json)],
-        isEncrypted: false,
-        date: Date.now(),
-      });
-      await newItem.save();
-    }
-  } else {
-    return json;
-  }
-}
-
-async function onRestart() {
-  const users = await Item.find().distinct("user");
-  fs.readdir("./public/uploads", async (err, files) => {
-    // we have the list of files from the drive
-    // loop through each user
-    for (const user of users) {
-      await god(user, (json) => {
-        let newJson = [];
-        // set up an empty array to become their new owned image list for that user
-        if (json.uploads) {
-          for (const image of json.uploads) {
-            // for each image in their current owned image list, check if our list of files includes it (it actually exists on the drive)
-            if (files.includes(image)) {
-              // if it does exist on the drive push it to the new json
-              // i know its not actually json its technically an object but this makes sense to me so I use this convention for the `god` function
-              newJson.push(image);
-            }
-          }
-          // set the user's uploaded image list to the new one. If every image they had existed on the drive, nothing has changed
-          json = newJson;
-        }
-      });
-    }
-  });
-}
 
 app.get("/api/get/snippets", async (req, res) => {
   try {
