@@ -263,6 +263,32 @@ async function god(user, callback) {
   }
 }
 
+async function onRestart() {
+  const users = await Item.find().distinct("user");
+  fs.readdir("./public/uploads", async (err, files) => {
+    // we have the list of files from the drive
+    // loop through each user
+    for (const user of users) {
+      await god(user, (json) => {
+        let newJson = [];
+        // set up an empty array to become their new owned image list for that user
+        if (json.uploads) {
+          for (const image of json.uploads) {
+            // for each image in their current owned image list, check if our list of files includes it (it actually exists on the drive)
+            if (files.includes(image)) {
+              // if it does exist on the drive push it to the new json
+              // i know its not actually json its technically an object but this makes sense to me so I use this convention for the `god` function
+              newJson.push(image);
+            }
+          }
+          // set the user's uploaded image list to the new one. If every image they had existed on the drive, nothing has changed
+          json = newJson;
+        }
+      });
+    }
+  });
+}
+
 app.get("/api/get/snippets", async (req, res) => {
   try {
     const snippets = await Item.findOne({ user: req.__user, name: "snippets" });
@@ -606,7 +632,10 @@ app.put("/api/save/notebooks/:name", async (req, res) => {
 app.delete("/api/delete/images/:name", async (req, res) => {
   try {
     const ownedImages = await god(req.__user);
-    if (!ownedImages.uploads && ownedImages.uploads.includes(req.params.name)) {
+    if (
+      !ownedImages.uploads ||
+      !ownedImages.uploads.includes(req.params.name)
+    ) {
       return res.status(403).json({ error: "You don't own this image" });
     } else {
       fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
@@ -850,7 +879,6 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
 });
 
 app.get("/:name", (req, res) => {
-  console.log(req.__user);
   res.status(200).render("desktop.ejs");
 });
 
