@@ -6,7 +6,7 @@ import {
   border,
   searchBar,
 } from "../important_stuff/dom_refs";
-import { jumpToDesiredPage } from "../dom_formatting";
+import { accents, jumpToDesiredPage } from "../dom_formatting";
 import { showMorePages, search } from "../list_utils";
 import { contextMenu, delContextMenu } from "../context_menu";
 import { eid } from "../dom_utils";
@@ -46,6 +46,10 @@ function setupList() {
             text: "Clear List",
             click: async () => {
               changeSettings("recents", []);
+              if (note.name === "home") {
+                note.reservedData.beforeOpen[0]();
+                accents();
+              }
               delContextMenu();
             },
             appearance: "rios",
@@ -72,6 +76,10 @@ function setupList() {
             text: "Clear List",
             click: async () => {
               changeSettings("recents_tags", []);
+              if (note.name === "home") {
+                note.reservedData.beforeOpen[0]();
+                accents();
+              }
               delContextMenu();
             },
             appearance: "rios",

@@ -236,6 +236,7 @@ async function switchNote(
   // Setup stuff in DOM
   makeTabInDom(note.name, true);
   if (reserved(note.name)) {
+    document.getElementById("newPage").style.display = "none";
     toolBar.classList.add("homeToolBar");
     if (note.reservedData && note.reservedData.reservedButPageNavAllowed) {
       toolBar.classList.remove("pageNavDisabled");
@@ -245,6 +246,7 @@ async function switchNote(
     note.readOnly = true;
     editor.setReadOnly(true);
   } else {
+    document.getElementById("newPage").style.display = "inline";
     toolBar.classList.remove("pageNavDisabled");
     toolBar.classList.remove("homeToolBar");
     note.readOnly = false;

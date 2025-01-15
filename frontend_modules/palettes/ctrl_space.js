@@ -12,7 +12,7 @@ import { getFamily, nestNote, relinquishNote } from "../hierarchy.js";
 import { listInMemory } from "../data/list.js";
 import { toggleList } from "../resize_list.js";
 import { changeTheme } from "../theming.js";
-import { insertPage, jumpToDesiredPage } from "../dom_formatting.js";
+import { accents, insertPage, jumpToDesiredPage } from "../dom_formatting.js";
 import { AISUmmary } from "../ai_utils.js";
 import { toggleWikiSearch } from "../wikipedia.js";
 import { editingWindow } from "../editing_window.js";
@@ -164,11 +164,23 @@ const commands = [
   {
     name: "Clear Recent Notebooks",
     searchTerm: "clear recents",
-    handler: () => changeSettings("recents", []),
+    handler: () => {
+      changeSettings("recents", []);
+      if (note.name === "home") {
+        note.reservedData.beforeOpen[0]();
+        accents();
+      }
+    },
   },
   {
     name: "Clear Recent Tags",
-    handler: () => changeSettings("recents_tags", []),
+    handler: () => {
+      changeSettings("recents_tags", []);
+      if (note.name === "home") {
+        note.reservedData.beforeOpen[0]();
+        accents();
+      }
+    },
   },
   {
     name: "View Public Notebooks",
