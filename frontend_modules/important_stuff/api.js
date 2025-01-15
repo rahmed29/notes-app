@@ -2,7 +2,7 @@ function mimicError(err = new Error("Network Error")) {
   return {
     ok: false,
     status: -1,
-    statusText: err.message || "Internal Server Error",
+    statusText: err.message || "Network Error",
     json: async () => ({ error: err.message }),
     text: async () => err.message,
     blob: async () => new Blob([err.message], { type: "text/plain" }),

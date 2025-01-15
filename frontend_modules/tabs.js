@@ -211,7 +211,14 @@ function makeTabInDom(name, shouldOpen = false) {
 }
 
 // Used by the tabs themselves and other links that open notebooks
-function switchTab() {
+function switchTab(e) {
+  // Doing this cause on mobile we only use this function on references and references must be double clicked to be opened
+  // we want to stop the double click from bubbling up to the body because double clicking the body changes page
+  // I don't know for sure if we need this but whatever
+  // If you ever use switchTab somewhere else on mobile you might want to come up with a better solution
+  if (window.isOnMobile) {
+    e.stopPropagation();
+  }
   if (this.hasAttribute("data-page")) {
     switchNote(this.getAttribute("data-bookname"), {
       page: parseInt(this.getAttribute("data-page")),

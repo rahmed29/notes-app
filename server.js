@@ -635,24 +635,23 @@ app.put("/api/save/notebooks/:name", async (req, res) => {
 
 app.delete("/api/delete/images/:name", async (req, res) => {
   try {
-    const ownedImages = await god(req.__user);
-    if (
-      !ownedImages.uploads ||
-      !ownedImages.uploads.includes(req.params.name)
-    ) {
-      return res.status(403).json({ error: "You don't own this image" });
-    } else {
-      fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
-        if (err) {
-          res.status(500).json({ error: "Internal Server Error" });
-        } else {
-          res.status(204).json({ status: "Removed" });
-          await god(req.__user, (json) => {
-            json.uploads = json.uploads.filter((e) => e !== req.params.name);
-          });
-        }
-      });
-    }
+    await god(req.__user, (ownedImages) => {
+      if (
+        !ownedImages.uploads ||
+        !ownedImages.uploads.includes(req.params.name)
+      ) {
+        res.status(403).json({ error: "You don't own this image" });
+      } else {
+        fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
+          if (err) {
+            res.status(500).json({ error: "Internal Server Error" });
+          } else {
+            ownedImages.uploads = ownedImages.uploads.filter((e) => e !== req.params.name);
+            res.status(204).json({ status: "Removed" });
+          }
+        });
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -327,16 +327,15 @@ async function finish() {
   progBar.style.width = "80px";
 
   // Here we set the theme and create tabs for the workspace according to whatever is in local storage, keep in mind, these tabs do not mean the note is in memory, they are just tabs in the dom
-  // also if we on mobile we do some stuff
+  // also if we on mobile we do some stuff. Mobile means iphone cause yeah it really is just optimized for my phone
   if (navigator.userAgent.includes("iPhone")) {
+    window.isOnMobile = true;
     document.body.classList.add("mobile");
     document.body.addEventListener("dblclick", function (event) {
       // Get the width of the viewport
       const screenWidth = window.innerWidth;
-
       // Determine the position of the click relative to the screen
       const clickX = event.clientX;
-
       // Check if the click is on the left or right half of the screen
       if (clickX < screenWidth / 2) {
         handlePageMovement({
@@ -350,6 +349,7 @@ async function finish() {
         });
       }
     });
+    // Black theme for OLED display on iPhone
     changeTheme("terminal");
   } else {
     changeTheme(getSetting("theme", "chrome"));
@@ -395,10 +395,12 @@ async function finish() {
   setupToolbar();
   setupList();
 
-  document.getElementById("mobileAction").addEventListener("click", async () => {
-    await switchNote("Note-Map");
-    notesPreviewArea.scrollTop = 0;
-  });
+  document
+    .getElementById("mobileAction")
+    .addEventListener("click", async () => {
+      await switchNote("Note-Map");
+      notesPreviewArea.scrollTop = 0;
+    });
 
   // More event listeners, this time for the bottom right tools
   stickyNotes.addEventListener("click", showStickyNotes, { once: true });

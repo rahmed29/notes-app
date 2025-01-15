@@ -36,6 +36,8 @@ async function deleteImageFromDb(image) {
     // editor.focus();
     // editor.gotoLine(0, 0);
     updateList();
+  } else if (imageDelete.status === 403) {
+    notyf.error("You don't own this image");
   } else {
     notyf.error("An error occurred when deleting an image");
   }

@@ -927,6 +927,10 @@ table th {
   transition: 0.25s;
 }
 
+.mobile #notesPreviewArea img {
+  max-width: 100%;
+}
+
 .pagePreviewContainer img {
   max-width: 100%;
 }
