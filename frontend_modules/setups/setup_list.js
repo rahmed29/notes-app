@@ -32,15 +32,13 @@ function setupList() {
       {
         text: "Recent Notes",
         populator: () => {
-          const recents = getSetting("recents", []).map((e) => {
-            return {
-              text: e,
-              click: async () => {
-                await switchNote(e);
-                delContextMenu();
-              },
-            };
-          });
+          const recents = getSetting("recents", []).map((e) => ({
+            text: e,
+            click: async () => {
+              await switchNote(e);
+              delContextMenu();
+            },
+          }));
           recents.push({ spacer: true });
           recents.push({
             text: "Clear List",

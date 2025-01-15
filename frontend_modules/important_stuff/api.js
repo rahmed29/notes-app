@@ -19,9 +19,18 @@ class get {
       return mimicError();
     }
   }
-  async tags(tag) {
+  async tagged(tag) {
     try {
-      return await fetch(`/api/get/tags/${tag}`, {
+      return await fetch(`/api/get/tagged/${tag}`, {
+        cache: "no-store",
+      });
+    } catch (err) {
+      return mimicError(err);
+    }
+  }
+  async tags() {
+    try {
+      return await fetch(`/api/get/tags/`, {
         cache: "no-store",
       });
     } catch (err) {

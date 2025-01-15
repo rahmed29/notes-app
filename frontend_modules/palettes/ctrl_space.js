@@ -29,11 +29,9 @@ import { cmInput } from "./cm_input.js";
 import getAnyBookContent from "../get_book_content.js";
 import { editReserved } from "../data/reserved_notes.js";
 import { setCurrentPublicBook } from "../publishing.js";
-import { showUserList } from "./user_list.js";
 import { changeSettings, getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
-import { searchTag } from "./tags_pal.js";
 import { insertStickyNote, insertTemplate } from "../snippets.js";
 
 export { showPal };
@@ -77,7 +75,30 @@ const commands = [
   {
     name: "List Users",
     searchTerm: "user list show users find users",
-    handler: () => showUserList(),
+    populatorV: 0,
+    populator: async () => {
+      const users = await notes_api.get.users();
+      if (!users.ok) {
+        return [
+          {
+            name: tags.statusText,
+            info: tags.status,
+          },
+        ];
+      }
+      const json = await users.json();
+      return json.data.map((e) => ({
+        name: e.settings.nickname
+          ? `${e.settings.nickname} (${e.email})`
+          : e.email,
+        icon: e.settings.pfp
+          ? `<img src="${e.settings.pfp}" style="width: 2em; height: 2em; border-radius: 50%; object-fit: cover;">`
+          : "?",
+        handler: () => {
+          console.log("Nothing here yet");
+        },
+      }));
+    },
   },
   {
     name: "New Page",
@@ -97,16 +118,14 @@ const commands = [
   {
     name: "Go to Page",
     searchTerm: "switch pages jump to pages",
-    populater: () => {
-      return note.content.map((e, i) => {
-        return {
-          name: getTitle(e),
-          searchTerm: `${(i + 1).toString()} ${
-            i === note.content.length - 1 ? "last" : ""
-          }`,
-          handler: () => jumpToDesiredPage(i),
-        };
-      });
+    populator: () => {
+      return note.content.map((e, i) => ({
+        name: getTitle(e),
+        searchTerm: `${(i + 1).toString()} ${
+          i === note.content.length - 1 ? "last" : ""
+        }`,
+        handler: () => jumpToDesiredPage(i),
+      }));
     },
   },
   {
@@ -115,25 +134,41 @@ const commands = [
     handler: () => jumpToDesiredPage(note.pgN - 1),
   },
   {
-    name: "Find By Tag",
+    name: "Find by Tag",
     searchTerm: "tag search tags filter by tag",
-    handler: () => searchTag(),
-  },
-  {
-    name: "Find By Recent Tag",
-    searchTerm: "tag search recent tags filter by recent tag",
-    populater: () => {
-      return getSetting("recents_tags", []).map((e) => {
-        return {
-          name: `${e}`,
-          handler: () =>
-            switchNote("Tag-Viewer", {
-              props: e,
-            }),
-        };
-      });
+    populator: async () => {
+      const tags = await notes_api.get.tags();
+      if (!tags.ok) {
+        return [
+          {
+            name: tags.statusText,
+            info: tags.status,
+          },
+        ];
+      }
+      const arr = await tags.json();
+      return arr.data.map((e) => ({
+        name: `${e}`,
+        handler: () =>
+          switchNote("Tag-Viewer", {
+            props: e,
+          }),
+      }));
     },
   },
+  // {
+  //   name: "Find By Recent Tag",
+  //   searchTerm: "tag search recent tags filter by recent tag",
+  //   populator: () => {
+  //     return getSetting("recents_tags", []).map((e) => ({
+  //       name: `${e}`,
+  //       handler: () =>
+  //         switchNote("Tag-Viewer", {
+  //           props: e,
+  //         }),
+  //     }));
+  //   },
+  // },
   {
     name: "Next Page",
     searchTerm: "forward pages",
@@ -142,13 +177,11 @@ const commands = [
   {
     name: "Open Recent Notebook",
     searchTerm: "open notebooks switch notebooks open recents",
-    populater: () => {
-      return getSetting("recents", []).map((e) => {
-        return {
-          name: `${e}`,
-          handler: () => switchNote(e),
-        };
-      });
+    populator: () => {
+      return getSetting("recents", []).map((e) => ({
+        name: `${e}`,
+        handler: () => switchNote(e),
+      }));
     },
   },
   {
@@ -186,41 +219,39 @@ const commands = [
     name: "View Public Notebooks",
     searchTerm:
       "open public notebooks open shared notebooks view shared notebooks",
-    populater: async () => {
+    populator: async () => {
       const publics = await notes_api.get.published();
       if (!publics.ok) {
         return [
           {
-            name: "An error occurred",
-            info: publics.statusText,
+            name: tags.statusText,
+            info: tags.status,
           },
         ];
       }
       const json = await publics.json();
-      const children = json.data.map((e) => {
-        return {
-          name: `${e.name} (${e.user})`,
-          handler: async () => {
-            editReserved("Public-Notebook", e.content);
-            setCurrentPublicBook([e.name, e.user]);
-            await closeTab("Public-Notebook", {
-              refresh: true,
-              switchAsFallBack: true,
-            });
-          },
-          info:
-            Date.now() - e.date < 1000 * 60 * 60 * 24 * 2
-              ? "Updated Recently"
-              : "",
-        };
-      });
+      const children = json.data.map((e) => ({
+        name: `${e.name} (${e.user})`,
+        handler: async () => {
+          editReserved("Public-Notebook", e.content);
+          setCurrentPublicBook([e.name, e.user]);
+          await closeTab("Public-Notebook", {
+            refresh: true,
+            switchAsFallBack: true,
+          });
+        },
+        info:
+          Date.now() - e.date < 1000 * 60 * 60 * 24 * 2
+            ? "Updated Recently"
+            : "",
+      }));
       return children;
     },
   },
   {
     name: "Open Saved Notebook",
     searchTerm: "open notebooks switch notebooks view saved notebooks",
-    populater: async () => {
+    populator: async () => {
       return listInMemory.map((e) => ({
         name: `${e.name}`,
         handler: () => switchNote(e.name),
@@ -244,28 +275,24 @@ const commands = [
     name: "View Parent Notebooks",
     searchTerm:
       "view parents go to parent notebook open parents open parent notebooks",
-    populater: async () => {
+    populator: async () => {
       const parents = await getAnyBookContent(note.name, "parents");
-      return parents.map((e) => {
-        return {
-          name: `${e}`,
-          handler: () => switchNote(e),
-        };
-      });
+      return parents.map((e) => ({
+        name: `${e}`,
+        handler: () => switchNote(e),
+      }));
     },
   },
   {
     name: "View Child Notebooks",
     searchTerm:
       "view children go to child notebook open children open child notebooks",
-    populater: async () => {
+    populator: async () => {
       const children = await getAnyBookContent(note.name, "children");
-      return children.map((e) => {
-        return {
-          name: `${e}`,
-          handler: () => switchNote(e),
-        };
-      });
+      return children.map((e) => ({
+        name: `${e}`,
+        handler: () => switchNote(e),
+      }));
     },
   },
   {
@@ -285,15 +312,13 @@ const commands = [
   },
   {
     name: "Close Tab",
-    populater: () => {
+    populator: () => {
       return Array.from(savedWS)
         .reverse()
-        .map((e) => {
-          return {
-            name: `${e}`,
-            handler: () => closeTab(e),
-          };
-        });
+        .map((e) => ({
+          name: `${e}`,
+          handler: () => closeTab(e),
+        }));
     },
   },
   {
@@ -307,15 +332,13 @@ const commands = [
   {
     name: "Go to Tab",
     searchTerm: "switch tabs",
-    populater: () => {
+    populator: () => {
       return Array.from(savedWS)
         .reverse()
-        .map((e) => {
-          return {
-            name: `${e}`,
-            handler: () => switchNote(e),
-          };
-        });
+        .map((e) => ({
+          name: `${e}`,
+          handler: () => switchNote(e),
+        }));
     },
   },
   {
@@ -356,7 +379,7 @@ const commands = [
   {
     name: "Nest Notebook",
     searchTerm: "child",
-    populater: async () => {
+    populator: async () => {
       const family = await getFamily(note.name);
       return listInMemory.reduce((arr, e) => {
         if (e.name !== note.name && !family.includes(e.name)) {
@@ -372,7 +395,7 @@ const commands = [
   {
     name: "Relinquish Notebook",
     searchTerm: "unnest",
-    populater: async () => {
+    populator: async () => {
       return (await getAnyBookContent(note.name, "parents")).map((parent) => ({
         name: `${parent}`,
         handler: () => relinquishNote(note.name, parent),
@@ -485,23 +508,21 @@ const commands = [
   {
     name: "Insert Snippet",
     searchTerm: "insert template insert snippets",
-    populater: async () => {
+    populator: async () => {
       const snippets = await notes_api.get.snippets();
       if (!snippets.ok) {
         return [
           {
-            name: "An error occurred",
-            info: snippets.statusText,
+            name: tags.statusText,
+            info: tags.status,
           },
         ];
       }
       const json = await snippets.json();
-      return json.data.map((e) => {
-        return {
-          name: getTitle(e),
-          handler: () => insertTemplate(e),
-        };
-      });
+      return json.data.map((e) => ({
+        name: getTitle(e),
+        handler: () => insertTemplate(e),
+      }));
     },
   },
   {
@@ -519,16 +540,14 @@ const commands = [
   {
     name: "Change Theme",
     searchTerm: "dark light color scheme set theme",
-    children: themes.map((e) => {
-      return {
-        name: e.name
-          .split("_")
-          .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
-          .join(" "),
-        searchTerm: e.theme_type,
-        handler: () => changeTheme(e.name),
-      };
-    }),
+    children: themes.map((e) => ({
+      name: e.name
+        .split("_")
+        .map((e) => e.substring(0, 1).toUpperCase() + e.substring(1))
+        .join(" "),
+      searchTerm: e.theme_type,
+      handler: () => changeTheme(e.name),
+    })),
   },
   {
     name: "Switch View",

@@ -335,22 +335,20 @@ function showFlashcards(noAnimation, filter) {
     const setFromArr = new Set(flashcards.map((e) => e.subject));
     contextMenu(
       e,
-      Array.from(setFromArr).map((e) => {
-        return {
-          text: ` ${e}`,
-          click: () => {
-            if (filter.includes(e) && filter.length > 1) {
-              filter = filter.filter((f) => f !== e);
-            } else if (!filter.includes(e)) {
-              filter.push(e);
-            }
-            showFlashcards(true, filter);
-          },
-          appearance: filter.includes(e)
-            ? "selected radioItem ios"
-            : "radioItem ios",
-        };
-      }),
+      Array.from(setFromArr).map((e) => ({
+        text: ` ${e}`,
+        click: () => {
+          if (filter.includes(e) && filter.length > 1) {
+            filter = filter.filter((f) => f !== e);
+          } else if (!filter.includes(e)) {
+            filter.push(e);
+          }
+          showFlashcards(true, filter);
+        },
+        appearance: filter.includes(e)
+          ? "selected radioItem ios"
+          : "radioItem ios",
+      })),
       [
         `${e.target.getBoundingClientRect().left - 100}px`,
         `${e.target.getBoundingClientRect().top + 35}px`,

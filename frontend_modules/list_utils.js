@@ -336,14 +336,12 @@ async function search(value) {
     const results = await notes_api.get.fuzzy(value);
     if (results.ok) {
       const json = await results.json();
-      const tempChildren = json.data.map((e) => {
-        return {
-          name: e.item.name,
-          excerpt: e.item.content.map((e) => getTitle(e)),
-          children: [],
-          parents: [],
-        };
-      });
+      const tempChildren = json.data.map((e) => ({
+        name: e.item.name,
+        excerpt: e.item.content.map((e) => getTitle(e)),
+        children: [],
+        parents: [],
+      }));
       createList(tempChildren, true);
       searching = true;
     }

@@ -101,15 +101,13 @@ export function listContextMenu(e, toolBar) {
         populator: async function (props) {
           const noteName = toolBar ? note.name : props;
           return (await getAnyBookContent(noteName, "parents")).map(
-            (parent) => {
-              return {
-                text: parent,
-                click: () => {
-                  relinquishNote(noteName, parent);
-                  delContextMenu();
-                },
-              };
-            }
+            (parent) => ({
+              text: parent,
+              click: () => {
+                relinquishNote(noteName, parent);
+                delContextMenu();
+              },
+            })
           );
         },
       },

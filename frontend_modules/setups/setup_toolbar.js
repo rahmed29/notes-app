@@ -142,7 +142,7 @@ function setupToolbar() {
           text: "Change Theme",
           children: themes.map((e) => {
             if (e.hidden) {
-              return null
+              return null;
             }
             return {
               text: e.name
@@ -221,15 +221,13 @@ function setupToolbar() {
               return [{ text: "An error occurred", appearance: "unavailable" }];
             }
             const json = await snippets.json();
-            return json.data.map((e) => {
-              return {
-                text: getTitle(e),
-                click: () => {
-                  insertTemplate(e);
-                  delContextMenu();
-                },
-              };
-            });
+            return json.data.map((e) => ({
+              text: getTitle(e),
+              click: () => {
+                insertTemplate(e);
+                delContextMenu();
+              },
+            }));
           },
         },
       ],

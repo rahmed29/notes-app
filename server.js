@@ -277,7 +277,8 @@ app.get("/api/", (req, res) => {
       "/api/get/fdg",
       "/api/get/fuzzy/:term",
       "/api/export/?name=[*]&removeFirstLine=[true/*]&downloadAll=[true/*]",
-      "/api/get/tags/:tag",
+      "/api/get/tagged/:tag",
+      "/api/get/tags/",
       "/api/get/snippets",
     ],
     patch: [
@@ -306,7 +307,36 @@ app.get("/api/get/snippets", async (req, res) => {
   }
 });
 
-app.get("/api/get/tags/:tag", async (req, res) => {
+app.get("/api/get/tags", async (req, res) => {
+  try {
+    const books = await Item.find({ user: req.__user });
+    const response = new Set();
+    const regex = /:tag\[.+?\]/;
+    for (const book of books) {
+      if (book.isEncrypted || excludedNames.includes(book.name)) {
+        continue;
+      }
+      for (let i = 0; i < book.content.length; i++) {
+        if (regex.test(book.content[i])) {
+          const tags = queryAST(
+            astFromMarkdown(book.content[i]),
+            new MDASTERQueryInstruction()
+              .filterMulti(["type", "name"], ["textDirective", "tag"])
+              .finalize()
+          );
+          if (tags.matchingNodes.length > 0) {
+            response.add(tags.matchingNodes[0].children[0].value);
+          }
+        }
+      }
+    }
+    res.status(200).json({ data: Array.from(response) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/get/tagged/:tag", async (req, res) => {
   try {
     const tag = req.params.tag;
     const books = await Item.find({ user: req.__user });
@@ -646,7 +676,9 @@ app.delete("/api/delete/images/:name", async (req, res) => {
           if (err) {
             res.status(500).json({ error: "Internal Server Error" });
           } else {
-            ownedImages.uploads = ownedImages.uploads.filter((e) => e !== req.params.name);
+            ownedImages.uploads = ownedImages.uploads.filter(
+              (e) => e !== req.params.name
+            );
             res.status(204).json({ status: "Removed" });
           }
         });

@@ -81,20 +81,24 @@ async function render_p(version, arr, results) {
   }
   for (const cmd of arr) {
     const item = document.createElement("div");
-    // a populater populates the children when the item is clicked
-    if (cmd.populater) {
+    // a populator populates the children when the item is clicked
+    if (cmd.populator) {
       item.addEventListener("click", async () => {
         beginAsyncPal();
-        const children = await cmd.populater();
-        asyncPalette(
-          "Search...",
-          (results, text, render, filter) => {
-            render(version, filter(children, text), results);
-          },
-          (results) => {
-            render_p(version, children, results);
-          }
-        );
+        const children = await cmd.populator();
+        if (children) {
+          asyncPalette(
+            "Search...",
+            (results, text, render, filter) => {
+              render(cmd.populatorV ?? version, filter(children, text), results);
+            },
+            (results) => {
+              render_p(cmd.populatorV ?? version, children, results);
+            }
+          );
+        } else {
+          closePalette();
+        }
       });
     } else if (cmd.children) {
       item.addEventListener("click", () => {
