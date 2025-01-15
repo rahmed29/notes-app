@@ -303,12 +303,15 @@ function formatNonText(ele, listeners = true) {
   Prism.highlightAllUnder(ele);
   if (listeners) {
     for (const node of ele.getElementsByClassName("reference")) {
-        node.addEventListener(window.isOnMobile ? "dblclick" : "click", switchTab);
-        previewHandlers.push({
-          element: node,
-          type: window.isOnMobile ? "dblclick" : "click",
-          listener: switchTab,
-        });
+      node.addEventListener(
+        window.isOnMobile ? "dblclick" : "click",
+        switchTab
+      );
+      previewHandlers.push({
+        element: node,
+        type: window.isOnMobile ? "dblclick" : "click",
+        listener: switchTab,
+      });
       node.addEventListener("mouseover", referToolTip);
       previewHandlers.push({
         element: node,
@@ -421,13 +424,12 @@ function removeImageToolTip(e) {
         delContextMenu();
       },
     },
-    // imageList.includes(
-    //   (this.src || this.href).substring(
-    //     (this.src || this.href).indexOf("/uploads/") + 9
-    //   )
-    // )
-    //   ? 
-      {
+    imageList.includes(
+      (this.src || this.href).substring(
+        (this.src || this.href).indexOf("/uploads/") + 9
+      )
+    )
+      ? {
           props: (this.src || this.href).substring(
             (this.src || this.href).indexOf("/uploads/") + 9
           ),
@@ -435,7 +437,7 @@ function removeImageToolTip(e) {
           click: (props, ele) =>
             confirmation_cm(ele, () => deleteImageFromDb(props)),
         }
-      // : null,
+      : null,
   ]);
 }
 
