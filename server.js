@@ -31,7 +31,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const CHATGPT_MODEL = process.env.CHATGPT_MODEL;
 const OLLAMA_URI = process.env.OLLAMA_URI;
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL;
-const FB_URI = process.env.FILE_BROWSER_URI;
 const SUPER_USER = process.env.SUPER_USER;
 // const SUPER_USER = "tester@gmail.com";
 
@@ -1011,32 +1010,6 @@ app.get("/api/get/flashcards", async (req, res) => {
     } else {
       res.status(404).json({ error: "Flashcards not found" });
     }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get("/fb/:share", async (req, res) => {
-  try {
-    // Fetch the image from the external API
-    const response = await fetch(
-      `${FB_URI}/api/public/dl/${req.params.share}?inline=true`
-    );
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: response.statusText });
-    }
-
-    // Set appropriate headers for the image response
-    res.setHeader("Content-Type", response.headers.get("Content-Type"));
-    // res.setHeader('Content-Disposition', 'inline'); // If you want to display inline, remove for download
-
-    // Stream the data from the external API to the response
-    pipeline(response.body, res, (err) => {
-      if (err) {
-        res.status(500).json({ error: "Failed to proxy" });
-      }
-    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
