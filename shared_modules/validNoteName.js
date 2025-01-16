@@ -1,6 +1,6 @@
 export { validNoteName, excludedNames, unsavableNames };
 
-const validNoteName = /^(?!api$)(?!uploads$)(?!assets$)[a-zA-Z0-9-_~.]+$/;
+const validNoteName = /^(?!fb$)(?!api$)(?!uploads$)(?!assets$)[a-zA-Z0-9-_~.]+$/;
 
 // These are notebooks that shouldn't be included creating the list, or the FDG
 // Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
