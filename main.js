@@ -84,7 +84,7 @@ window.switchNoteWrapper = (name) => switchNote(name);
 // used a lot so just open to window
 window.DOMPurify = DOMPurify;
 
-document.body.innerHTML = `
+document.getElementById("root").innerHTML = `
 <!-- Not visible (for the most part) -->
     <div id="loading">
       <div id="progBarContainer">

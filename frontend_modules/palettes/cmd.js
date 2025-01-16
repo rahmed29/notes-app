@@ -90,7 +90,11 @@ async function render_p(version, arr, results) {
           asyncPalette(
             "Search...",
             (results, text, render, filter) => {
-              render(cmd.populatorV ?? version, filter(children, text), results);
+              render(
+                cmd.populatorV ?? version,
+                filter(children, text),
+                results
+              );
             },
             (results) => {
               render_p(cmd.populatorV ?? version, children, results);
@@ -115,7 +119,9 @@ async function render_p(version, arr, results) {
     } else {
       item.addEventListener("click", () => {
         closePalette();
-        cmd.handler();
+        if (cmd.handler) {
+          cmd.handler();
+        }
       });
     }
     item.classList.add("item");

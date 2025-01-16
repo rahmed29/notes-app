@@ -6,7 +6,11 @@ import fs from "fs";
 import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
-import validNoteName from "./shared_modules/validNoteName.js";
+import {
+  validNoteName,
+  excludedNames,
+  unsavableNames,
+} from "./shared_modules/validNoteName.js";
 import { getTitle } from "./shared_modules/removeMD.js";
 import Fuse from "fuse.js";
 import {
@@ -17,29 +21,6 @@ import {
 import cookieParser from "cookie-parser";
 import AdmZip from "adm-zip";
 import { parseReference } from "./shared_modules/parse_ref.js";
-
-// These are notebooks that shouldn't be included creating the list, or the FDG
-// Most of these are uneditable by the user on the frontend, but some can be edited, like the user settings.
-// The `user__config` provides a way for the user to edit their settings by just editing a notebook
-const excludedNames = [
-  "sticky__notes",
-  "flash__cards",
-  "user__config",
-  "snippets",
-  "__god",
-];
-
-const unsavableNames = [
-  "home",
-  "AI-Summary",
-  "Your-Uploads",
-  "Note-Map",
-  "Public-Notebook",
-  "Tag-Viewer",
-  "mobile_home",
-  // This is used to store user settings that are not configurable through a notebook
-  "__god",
-];
 
 // Environment variables
 const PORT_NUMBER = parseInt(process.env.PORT_NUMBER);
@@ -474,6 +455,12 @@ app.get("/api/export/", async (req, res) => {
       booksToZip.push({
         name: notebook.name,
         pages,
+      });
+    }
+
+    if (booksToZip.length === 0) {
+      return res.status(400).json({
+        error: "Request parameters result in 0 notebooks being exported",
       });
     }
 

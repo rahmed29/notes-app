@@ -27,12 +27,13 @@ import { showNotifs } from "./notif_palette.js";
 import { disableAutosave, enableAutosave } from "../autosave.js";
 import { cmInput } from "./cm_input.js";
 import getAnyBookContent from "../get_book_content.js";
-import { editReserved } from "../data/reserved_notes.js";
+import { editReserved, reserved } from "../data/reserved_notes.js";
 import { setCurrentPublicBook } from "../publishing.js";
 import { changeSettings, getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
 import { insertStickyNote, insertTemplate } from "../snippets.js";
+import { excludedNames, unsavableNames } from "../../shared_modules/validNoteName.js";
 
 export { showPal };
 
@@ -456,7 +457,16 @@ const commands = [
     name: "Download Current Notebook",
     info: ".zip",
     searchTerm: "export zip",
-    handler: () => window.open(`/api/export?name=${note.name}`),
+    handler: () => {
+      // check if it exists in excludedNames cause we don't want the user (me, literally THE user. The one user.) trying to download stuff like user settings
+      // There is no reason for them not to be able to other than the backend won't add those to the zip.
+      // I could make it so if you download all notebooks it doesn't add them to zip, but if you do a single it can do it idk
+      if (!excludedNames.includes(note.name) && !reserved(note.name)) {
+        window.open(`/api/export?name=${note.name}`)
+      } else {
+        notyf.error("This notebook cannot be downloaded");
+      }
+    },
   },
   {
     name: "Force Update Notebook",

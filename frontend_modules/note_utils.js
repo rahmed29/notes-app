@@ -3,7 +3,7 @@ import { accents, syncStatus, jumpToDesiredPage } from "./dom_formatting";
 import { savedWS, closeTab, makeTabInDom, silentReset } from "./tabs";
 import { decryptMsg, encryptMsg, checkKey } from "./encryption";
 import { filterFlashcards, renameFlashcards } from "./data/flashcard_data";
-import validNoteName from "../shared_modules/validNoteName";
+import { validNoteName } from "../shared_modules/validNoteName";
 import { allowSingleRedo, youDeleted } from "./palettes/notif_palette";
 import { editor } from "./important_stuff/editor";
 import { reserved } from "./data/reserved_notes";

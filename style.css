@@ -13,15 +13,25 @@
   --body: #121212;
 }
 
+#root {
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+}
+
 body {
   margin: 0px;
   overflow: hidden;
   background: var(--body);
 }
 
-.material-symbols-outlined {
-  font-size: 1.2em;
-  margin-right: 0.25em;
+#passedData {
+  display: none;
+  font-size: 0;
+  width: 0;
+  height: 0;
 }
 
 iframe {
