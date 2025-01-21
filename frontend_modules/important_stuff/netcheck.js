@@ -50,7 +50,7 @@ async function netCheck() {
   while (true) {
     await delay(2000);
     try {
-      await fetch("/assets/ping.gif", { cache: "no-store" });
+      await fetch("/assets/ping", { cache: "no-store" });
       count++;
       if (count > 5) {
         for (let poller of pollers) {
