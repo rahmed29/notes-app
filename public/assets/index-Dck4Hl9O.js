@@ -384,8 +384,6 @@ This is the **mobile version**. Notes are read only as of right now!
 
 Tap the button in the **bottom-right** corner to access the :ref[Note-Map] at any time and move between notebooks!
 
-:tag[🌟]
-
 ---
 
 ![](/assets/wip.jpg)`]}},{data:{name:"sticky__notes",content:[`# Sorry!

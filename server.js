@@ -460,6 +460,7 @@ app.get("/api/export/", async (req, res) => {
     }
 
     if (booksToZip.length === 0) {
+      fs.rmSync(unzippedFolder, { recursive: true, force: true });
       return res.status(400).json({
         error: "Request parameters result in 0 notebooks being exported",
       });
