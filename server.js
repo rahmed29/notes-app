@@ -1,8 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
-import path from "path";
-import fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 import multer from "multer";
 import "dotenv/config";
 import OpenAI from "openai";
@@ -21,7 +21,6 @@ import {
 import cookieParser from "cookie-parser";
 import AdmZip from "adm-zip";
 import { parseReference } from "./shared_modules/parse_ref.js";
-import { pipeline } from "stream";
 
 // Environment variables
 const PORT_NUMBER = parseInt(process.env.PORT_NUMBER);

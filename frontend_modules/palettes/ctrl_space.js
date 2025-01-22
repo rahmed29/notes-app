@@ -196,7 +196,7 @@ const commands = [
     },
   },
   {
-    name: "Clear Recent Notebooks",
+    name: "Clear Recent Notebook List",
     searchTerm: "clear recents",
     handler: () => {
       changeSettings("recents", []);
@@ -207,7 +207,7 @@ const commands = [
     },
   },
   {
-    name: "Clear Recent Tags",
+    name: "Clear Recent Tag List",
     handler: () => {
       changeSettings("recents_tags", []);
       if (note.name === "home") {
@@ -273,7 +273,7 @@ const commands = [
     handler: () => cmInput(note.name, "child"),
   },
   {
-    name: "View Parent Notebooks",
+    name: "View Current Notebook's Parents",
     searchTerm:
       "view parents go to parent notebook open parents open parent notebooks",
     populator: async () => {
@@ -285,7 +285,7 @@ const commands = [
     },
   },
   {
-    name: "View Child Notebooks",
+    name: "View Current Notebook's Children",
     searchTerm:
       "view children go to child notebook open children open child notebooks",
     populator: async () => {
@@ -297,12 +297,12 @@ const commands = [
     },
   },
   {
-    name: "Rename Notebook",
+    name: "Rename Current Notebook",
     searchTerm: "edit",
     handler: () => cmInput(note.name, "rename"),
   },
   {
-    name: "Open Notebook",
+    name: "Open a Notebook",
     searchTerm: "open notebooks",
     handler: () => cmInput(note.name, "open"),
   },
@@ -312,7 +312,7 @@ const commands = [
     handler: () => closeTab(note.name),
   },
   {
-    name: "Close Tab",
+    name: "Close a Tab",
     populator: () => {
       return Array.from(savedWS)
         .reverse()
@@ -369,7 +369,7 @@ const commands = [
     },
   },
   {
-    name: "Save Notebook",
+    name: "Save Current Notebook",
     handler: () => saveNoteBookToDb(note.name),
   },
   {
@@ -378,7 +378,7 @@ const commands = [
     handler: () => eid("getFile1").click(),
   },
   {
-    name: "Nest Notebook",
+    name: "Nest Current Notebook",
     searchTerm: "child",
     populator: async () => {
       const family = await getFamily(note.name);
@@ -394,7 +394,7 @@ const commands = [
     },
   },
   {
-    name: "Relinquish Notebook",
+    name: "Relinquish Current Notebook",
     searchTerm: "unnest",
     populator: async () => {
       return (await getAnyBookContent(note.name, "parents")).map((parent) => ({
@@ -438,7 +438,7 @@ const commands = [
     ],
   },
   {
-    name: "Delete Notebook",
+    name: "Delete Current Notebook",
     searchTerm: "trash remove",
     children: [
       {
