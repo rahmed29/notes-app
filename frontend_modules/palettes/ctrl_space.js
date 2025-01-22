@@ -33,7 +33,7 @@ import { changeSettings, getSetting } from "../important_stuff/settings.js";
 import localforage from "localforage";
 import notes_api from "../important_stuff/api.js";
 import { insertStickyNote, insertTemplate } from "../snippets.js";
-import { excludedNames, unsavableNames } from "../../shared_modules/validNoteName.js";
+import { excludedNames } from "../../shared_modules/validNoteName.js";
 
 export { showPal };
 
@@ -196,7 +196,7 @@ const commands = [
     },
   },
   {
-    name: "Clear Recent Notebook List",
+    name: "Clear Recent Notebooks List",
     searchTerm: "clear recents",
     handler: () => {
       changeSettings("recents", []);
@@ -207,7 +207,7 @@ const commands = [
     },
   },
   {
-    name: "Clear Recent Tag List",
+    name: "Clear Recent Tags List",
     handler: () => {
       changeSettings("recents_tags", []);
       if (note.name === "home") {
@@ -273,7 +273,7 @@ const commands = [
     handler: () => cmInput(note.name, "child"),
   },
   {
-    name: "View Current Notebook's Parents",
+    name: "View Parent Notebooks",
     searchTerm:
       "view parents go to parent notebook open parents open parent notebooks",
     populator: async () => {
@@ -285,7 +285,7 @@ const commands = [
     },
   },
   {
-    name: "View Current Notebook's Children",
+    name: "View Child Notebooks",
     searchTerm:
       "view children go to child notebook open children open child notebooks",
     populator: async () => {
@@ -297,12 +297,12 @@ const commands = [
     },
   },
   {
-    name: "Rename Current Notebook",
+    name: "Rename Notebook",
     searchTerm: "edit",
     handler: () => cmInput(note.name, "rename"),
   },
   {
-    name: "Open a Notebook",
+    name: "Open Notebook",
     searchTerm: "open notebooks",
     handler: () => cmInput(note.name, "open"),
   },
@@ -369,7 +369,7 @@ const commands = [
     },
   },
   {
-    name: "Save Current Notebook",
+    name: "Save Notebook",
     handler: () => saveNoteBookToDb(note.name),
   },
   {
@@ -378,7 +378,7 @@ const commands = [
     handler: () => eid("getFile1").click(),
   },
   {
-    name: "Nest Current Notebook",
+    name: "Nest Notebook",
     searchTerm: "child",
     populator: async () => {
       const family = await getFamily(note.name);
@@ -394,7 +394,7 @@ const commands = [
     },
   },
   {
-    name: "Relinquish Current Notebook",
+    name: "Relinquish Notebook",
     searchTerm: "unnest",
     populator: async () => {
       return (await getAnyBookContent(note.name, "parents")).map((parent) => ({
@@ -438,7 +438,7 @@ const commands = [
     ],
   },
   {
-    name: "Delete Current Notebook",
+    name: "Delete Notebook",
     searchTerm: "trash remove",
     children: [
       {
