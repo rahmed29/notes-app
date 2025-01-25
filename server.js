@@ -413,7 +413,12 @@ app.get("/api/export/", async (req, res) => {
     let unzippedFolder;
     if (all && all.toLowerCase() === "true") {
       notebooks = await Item.find({ user: req.__user });
-      unzippedFolder = `./export/${req.__user}`;
+      unzippedFolder = `./export/${req.__user.substring(
+        0,
+        req.__user.indexOf("@") === -1
+          ? req.__user.length
+          : req.__user.indexOf("@")
+      )}'s Notes`;
     } else {
       notebooks = await Item.find({ user: req.__user, name: name });
       unzippedFolder = `./export/${name}`;

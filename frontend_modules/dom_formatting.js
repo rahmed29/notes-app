@@ -23,13 +23,6 @@ import { currTheme } from "./theming";
 import tippy from "tippy.js";
 import { eid } from "./dom_utils";
 import { editor } from "./important_stuff/editor";
-import Prism from "prismjs";
-import "prismjs/components/prism-java";
-import "prismjs/components/prism-python";
-import "prismjs/components/prism-c";
-import "prismjs/components/prism-cpp";
-import "prismjs/components/prism-csharp";
-import "prismjs/components/prism-bash";
 import { autosavingEnabled } from "./autosave";
 import { getTitle } from "../shared_modules/removeMD";
 import { imageList, listInMemory } from "./data/list";
@@ -37,6 +30,15 @@ import getAnyBookContent from "./get_book_content";
 import localforage from "localforage";
 import { arraysAreEqual, charDifferCount, properLink } from "./data_utils";
 import { setSizeDetails } from "./throttle";
+import Prism from "prismjs"
+
+// Prism themes
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-csharp";
+import "prismjs/components/prism-bash";
 
 export {
   jumpWrapper,
