@@ -1103,7 +1103,6 @@ hr {
 }
 
 #stickyNotes,
-#openCalendar,
 #flashcardsPrac {
   box-shadow: var(--floating-bs);
   height: 3.5em;
@@ -1123,7 +1122,6 @@ hr {
 }
 
 #stickyNotesEmoji,
-#openCalendarEmoji,
 #flashcardsPracEmoji {
   display: flex;
   flex-direction: column;
@@ -1146,7 +1144,6 @@ hr {
 }
 
 #stickyNotes .emoji,
-#openCalendar .emoji,
 #flashcardsPracEmoji .emoji {
   transition: 0.25s;
   width: 2em;
