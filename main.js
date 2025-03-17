@@ -253,7 +253,7 @@ document.getElementById("root").innerHTML = `
         </div>
 
         <div id="stickyNotes" class="gone" data-text="">
-          <textarea id="stickyNotesTextArea" autocomplete="false"></textarea>
+          <textarea id="stickyNotesTextArea" autocomplete="off" spellcheck="false"></textarea>
           <button id="stickyNotesEmoji">
             <img
               draggable="false"

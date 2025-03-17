@@ -197,7 +197,7 @@ const commands = [
   },
   {
     name: "Clear Recent Notebooks List",
-    searchTerm: "clear recents",
+    searchTerm: "clear recents clear all",
     handler: () => {
       changeSettings("recents", []);
       if (note.name === "home") {
@@ -208,6 +208,7 @@ const commands = [
   },
   {
     name: "Clear Recent Tags List",
+    searchTerm: "clear recents clear all",
     handler: () => {
       changeSettings("recents_tags", []);
       if (note.name === "home") {
@@ -308,7 +309,7 @@ const commands = [
   },
   {
     name: "Close Current Tab",
-    searchTerm: "close tab",
+    searchTerm: "close tab close this tab",
     handler: () => closeTab(note.name),
   },
   {

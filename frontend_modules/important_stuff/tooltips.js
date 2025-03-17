@@ -92,7 +92,7 @@ function setupToolTips() {
     },
     {
       name: "#autoSaveSpinner",
-      content: "Auto Saving is On",
+      content: "Auto Saving is on",
     },
     {
       name: "#goHome",
