@@ -2,7 +2,7 @@
 
 1. Install `mongodb` and `npm`
 2. Run `npm i`
-3. Create environment variables, you can see what you need in server.js
+3. Create environment variables in a `.env` file. You can copy and edit `template.env`
 4. Run `build.py`. You can pass in a commit message like so if you want to push to GitHub
 
     ```
