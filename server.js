@@ -154,7 +154,9 @@ const mongoURI = `mongodb://localhost:${MONGODB_PORT}/${MONGODB_DB}`;
 mongoose
   .connect(mongoURI)
   .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .catch((err) => {
+     throw new Error("MongoDB connection error:", err);
+   });
 
 const Item = mongoose.model("Item", {
   user: {
@@ -719,7 +721,7 @@ app.post("/api/query/", async (req, res) => {
   }
   const name = req.body.name;
   const pageParam = parseInt(req.body.page);
-  const page = pageParam < 0 ? 0 : pageParam;
+  const page = (pageParam < 0 || isNaN(pageParam)) ? 0 : pageParam;
 
   const book = await Item.findOne({ user: req.__user, name });
   if (!book) {
