@@ -54,7 +54,7 @@ function showBookDiffPopup(content = note.content, dbSave = note.dbSave) {
     if (i === 0) {
       appendText(
         h2,
-        "Your notebook <span style = 'background: #33ff96; color: black;'>&nbsp;includes&nbsp;</span> or <span style = 'background: #ff5e5e; color: black;'>&nbsp;excludes&nbsp;</span>",
+        "Local notebook <span style = 'background: #33ff96; color: black;'>&nbsp;includes&nbsp;</span> or <span style = 'background: #ff5e5e; color: black;'>&nbsp;excludes&nbsp;</span>",
         0.6
       );
     }

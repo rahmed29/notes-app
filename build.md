@@ -15,3 +15,5 @@ There are also some prebuilt files ready to go which should be up to date.
 
 If you ever want to rebuild the app, just run `build.py` again without doing all the other stuff.  
 If you want to update ace editor, you can delete the `ace-editor` directory in `./pubilc/assets` and run `build.py`
+
+For development, run `npm run dev -- --host`

@@ -1368,6 +1368,7 @@ hr {
 
 .pageDiff h2 {
   font-size: 1.8em;
+  font-family: inherit;
 }
 
 #bookDiffContent a {
