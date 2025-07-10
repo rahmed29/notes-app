@@ -101,19 +101,15 @@ async function switchNote(
   switching = true;
   let data = undefined;
   // Get note from library if possible
-  if (state) {
-    data = state;
-  } else {
-    data = (await getAnyBookContent(noteName, "_data")) || {
-      name: noteName,
-      content: [""],
-      children: [],
-      parents: [],
-      saved: false,
-      isEncrypted: false,
-      isPublic: false,
-    };
-  }
+  data = (await getAnyBookContent(noteName, "_data")) || {
+    name: noteName,
+    content: [""],
+    children: [],
+    parents: [],
+    saved: false,
+    isEncrypted: false,
+    isPublic: false,
+  };
   // Fix beforeOpens to be arrays
   if (
     data.reservedData &&
@@ -220,6 +216,16 @@ async function switchNote(
   // Set attrs
   note.content = content;
   note.aceSessions = data.aceSessions || [];
+  // if a custom state was supplied (restoring notebook) use that instead.
+  if (state) {
+    for (const [key, value] of Object.entries(state)) {
+      note[key] = value;
+    }
+  }
+  // if (state && state.content && state.aceSessions) {
+  //   note.content = state.content;
+  //   note.aceSessions = state.aceSessions;
+  // }
   note.pgN = page;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
