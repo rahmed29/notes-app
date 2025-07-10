@@ -222,10 +222,6 @@ async function switchNote(
       note[key] = value;
     }
   }
-  // if (state && state.content && state.aceSessions) {
-  //   note.content = state.content;
-  //   note.aceSessions = state.aceSessions;
-  // }
   note.pgN = page;
   note.password = note.isEncrypted ? data.password : undefined;
   note.dbSave = data.dbSave || [...data.content];
