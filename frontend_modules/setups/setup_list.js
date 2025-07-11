@@ -20,11 +20,11 @@ export default setupList;
 function setupList() {
   // side bar and list
   eid("leftMostSideBar").addEventListener("contextmenu", (e) =>
-    e.preventDefault()
+    e.preventDefault(),
   );
   eid("sideBarRetractList").addEventListener("click", toggleList);
   eid("newPage").addEventListener("click", () =>
-    jumpToDesiredPage(note.content.length)
+    jumpToDesiredPage(note.content.length),
   );
   morePages.addEventListener("click", (e) => showMorePages(e));
   eid("goHome").addEventListener("click", (e) => {
@@ -135,7 +135,7 @@ function setupList() {
         mainContainer.style.userSelect = "inherit";
         document.removeEventListener("mousemove", resizeList);
       },
-      { once: true }
+      { once: true },
     );
   });
 }

@@ -155,8 +155,8 @@ mongoose
   .connect(mongoURI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => {
-     throw new Error("MongoDB connection error:", err);
-   });
+    throw new Error("MongoDB connection error:", err);
+  });
 
 const Item = mongoose.model("Item", {
   user: {
@@ -234,7 +234,7 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   if (req.cookies && req.cookies.CF_Authorization) {
     req.__user = JSON.parse(
-      atob(req.cookies.CF_Authorization.split(".")[1])
+      atob(req.cookies.CF_Authorization.split(".")[1]),
     ).email;
   } else {
     req.__user = SUPER_USER;
@@ -263,6 +263,7 @@ app.get("/api/", (req, res) => {
       "/api/get/tagged/:tag",
       "/api/get/tags/",
       "/api/get/snippets",
+      "/api/heartbeat",
     ],
     patch: [
       "/api/nest/:child/:parent",
@@ -275,6 +276,10 @@ app.get("/api/", (req, res) => {
     delete: ["/api/delete/notebooks/:name", "/api/delete/images/:name"],
     post: ["/api/save/images", "/api/chatgpt", "/api/ollama", "/api/query"],
   });
+});
+
+app.get("/api/heartbeat", async (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 app.get("/api/get/snippets", async (req, res) => {
@@ -305,7 +310,7 @@ app.get("/api/get/tags", async (req, res) => {
             astFromMarkdown(book.content[i]),
             new MDASTERQueryInstruction()
               .filterMulti(["type", "name"], ["textDirective", "tag"])
-              .finalize()
+              .finalize(),
           );
           if (tags.matchingNodes.length > 0) {
             response.add(tags.matchingNodes[0].children[0].value);
@@ -336,7 +341,7 @@ app.get("/api/get/tagged/:tag", async (req, res) => {
             new MDASTERQueryInstruction()
               .filterMulti(["type", "name"], ["textDirective", "tag"])
               .filterMulti(["type", "value"], ["text", tag])
-              .finalize()
+              .finalize(),
           );
           if (tags.matchingNodes.length > 0) {
             response.push({
@@ -361,7 +366,7 @@ app.get("/api/get/users", async (req, res) => {
 
     for (const user of users) {
       const configBook = books.filter(
-        (book) => book.name === "user__config" && book.user === user
+        (book) => book.name === "user__config" && book.user === user,
       );
       let userSettings = {};
       if (configBook.length > 0) {
@@ -370,9 +375,9 @@ app.get("/api/get/users", async (req, res) => {
           new MDASTERQueryInstruction()
             .filterMulti(
               ["type", "lang"],
-              [["code"], ["js", "javascript", "json"]]
+              [["code"], ["js", "javascript", "json"]],
             )
-            .finalize()
+            .finalize(),
         );
         if (codeBlock) {
           try {
@@ -392,7 +397,7 @@ app.get("/api/get/users", async (req, res) => {
       response.push({
         email: user,
         notebooks: books.filter(
-          (e) => e.user === user && !excludedNames.includes(e.name)
+          (e) => e.user === user && !excludedNames.includes(e.name),
         ).length,
         settings: userSettings,
       });
@@ -419,7 +424,7 @@ app.get("/api/export/", async (req, res) => {
         0,
         req.__user.indexOf("@") === -1
           ? req.__user.length
-          : req.__user.indexOf("@")
+          : req.__user.indexOf("@"),
       )}'s Notes`;
     } else {
       notebooks = await Item.find({ user: req.__user, name: name });
@@ -503,7 +508,7 @@ app.get("/api/export/", async (req, res) => {
             })
             .replace(tagReg, (m, s) => {
               return `#${s}`;
-            })
+            }),
         );
       });
     });
@@ -672,7 +677,7 @@ app.delete("/api/delete/images/:name", async (req, res) => {
             res.status(500).json({ error: "Internal Server Error" });
           } else {
             ownedImages.uploads = ownedImages.uploads.filter(
-              (e) => e !== req.params.name
+              (e) => e !== req.params.name,
             );
             res.status(204).json({ status: "Removed" });
           }
@@ -699,7 +704,7 @@ app.get("/api/get/image-list/", (req, res) => {
 app.post("/api/save/images", upload.single("avatar"), async (req, res) => {
   try {
     const fileName = req.file.path.substring(
-      req.file.path.indexOf("/uploads/") + 9
+      req.file.path.indexOf("/uploads/") + 9,
     );
     await god(req.__user, (json) => {
       if (!json.uploads) {
@@ -721,7 +726,7 @@ app.post("/api/query/", async (req, res) => {
   }
   const name = req.body.name;
   const pageParam = parseInt(req.body.page);
-  const page = (pageParam < 0 || isNaN(pageParam)) ? 0 : pageParam;
+  const page = pageParam < 0 || isNaN(pageParam) ? 0 : pageParam;
 
   const book = await Item.findOne({ user: req.__user, name });
   if (!book) {
@@ -869,7 +874,7 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
           name: parent,
         });
         parentBook.children = parentBook.children.map((e) =>
-          e === name ? newName : e
+          e === name ? newName : e,
         );
         await parentBook.save();
       }
@@ -877,7 +882,7 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
       for (const child of bookToRename.children) {
         const childBook = await Item.findOne({ user: req.__user, name: child });
         childBook.parents = childBook.parents.map((e) =>
-          e === name ? newName : e
+          e === name ? newName : e,
         );
         await childBook.save();
       }
@@ -895,7 +900,7 @@ app.patch("/api/rename/:name/:newName", async (req, res) => {
                 e.subject = newName;
               }
               return e;
-            })
+            }),
           ),
         ];
         await flashcards.save();
@@ -963,7 +968,7 @@ app.get("/api/get/fuzzy/:term/", async (req, res) => {
   const term = req.params.term;
   let books = await Item.find({ user: req.__user });
   books = books.filter(
-    (book) => !excludedNames.includes(book.name) && !book.isEncrypted
+    (book) => !excludedNames.includes(book.name) && !book.isEncrypted,
   );
   const fuse = new Fuse(books, {
     keys: ["name", "content"],

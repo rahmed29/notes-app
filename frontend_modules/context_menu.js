@@ -29,7 +29,7 @@ function confirmation_cm(ele, func) {
       func();
       delContextMenu();
     },
-    { once: true }
+    { once: true },
   );
 }
 
@@ -126,7 +126,7 @@ function contextMenu(e, buttons, position, noAnimation) {
       item.innerText = option.text;
       if (option.children) {
         item.addEventListener("click", () =>
-          contextMenu(e, option.children, "resample")
+          contextMenu(e, option.children, "resample"),
         );
       } else if (option.populator) {
         item.addEventListener("click", async (e) => {
@@ -134,7 +134,7 @@ function contextMenu(e, buttons, position, noAnimation) {
           const buttons = await option.populator(
             option.props,
             e.currentTarget,
-            e
+            e,
           );
           asyncContextMenu(e, buttons, "resample");
         });

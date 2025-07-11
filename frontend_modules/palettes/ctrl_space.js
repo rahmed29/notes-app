@@ -45,7 +45,7 @@ function showPal() {
     },
     (results, render) => {
       render(1, commands, results);
-    }
+    },
   );
 }
 
@@ -463,7 +463,7 @@ const commands = [
       // There is no reason for them not to be able to other than the backend won't add those to the zip.
       // I could make it so if you download all notebooks it doesn't add them to zip, but if you do a single it can do it idk
       if (!excludedNames.includes(note.name) && !reserved(note.name)) {
-        window.open(`/api/export?name=${note.name}`)
+        window.open(`/api/export?name=${note.name}`);
       } else {
         notyf.error("This notebook cannot be downloaded");
       }

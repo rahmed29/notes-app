@@ -11,7 +11,7 @@ export default format;
 function tag(d) {
   if (d.type !== "textDirective" || !d.label) return false;
   this.tag(
-    `<button class = "sanctaTag" data-bookname = "Tag-Viewer" data-props = "${d.label}">`
+    `<button class = "sanctaTag" data-bookname = "Tag-Viewer" data-props = "${d.label}">`,
   );
   this.raw(d.label);
   this.tag("</button>");
@@ -33,7 +33,7 @@ function ref(d) {
   this.tag(
     `<button class="reference" data-bookname="${name}" data-page="${
       page ? page - 1 : 0
-    }">`
+    }">`,
   );
 
   let raw;
@@ -54,7 +54,7 @@ function fdg(d) {
   }
 
   this.tag(
-    `<iframe class = 'directiveFrame' src = '/api/get/fdg#${currTheme.notesColor}-${currTheme.body}-${currTheme.mainAccent}'></iframe>`
+    `<iframe class = 'directiveFrame' src = '/api/get/fdg#${currTheme.notesColor}-${currTheme.body}-${currTheme.mainAccent}'></iframe>`,
   );
 }
 

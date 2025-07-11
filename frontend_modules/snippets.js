@@ -33,19 +33,19 @@ async function insertTemplate(snippet) {
       "{{pages}}",
       note.content
         .map((e, i) => `- :ref[${note.name}:${i + 1}|${getTitle(e)}]`)
-        .join("\n")
+        .join("\n"),
     )
     .replaceAll(
       "{{children}}",
       (await getAnyBookContent(note.name, "children"))
         .map((e) => `- :ref[${e}]`)
-        .join("\n")
+        .join("\n"),
     )
     .replaceAll(
       "{{parents}}",
       (await getAnyBookContent(note.name, "parents"))
         .map((e) => `- :ref[${e}]`)
-        .join("\n")
+        .join("\n"),
     );
   snippet = snippet
     .split("\n")

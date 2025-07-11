@@ -65,7 +65,7 @@ function renameDropped(oldName, newName) {
 
 function removeDropped(name) {
   const index = droppedFolders.findIndex(
-    (e) => e.name === name || e.parentName === name
+    (e) => e.name === name || e.parentName === name,
   );
   if (index !== -1) {
     droppedFolders.splice(index, 1);
@@ -75,7 +75,7 @@ function removeDropped(name) {
 
 function removeSpecificDropped(name, parentName) {
   const index = droppedFolders.findIndex(
-    (e) => e.name === name && e.parentName === parentName
+    (e) => e.name === name && e.parentName === parentName,
   );
   if (index !== -1) {
     droppedFolders.splice(index, 1);
@@ -102,7 +102,7 @@ async function showMorePages(e) {
     e,
     buttons,
     ["21px", `${topLeftPageNumber.scrollHeight + 5}px`],
-    true
+    true,
   );
 }
 
@@ -114,7 +114,7 @@ function dropWrapper(e) {
     const index = droppedFolders.findIndex(
       (e) =>
         e.name === this.parentNode.getAttribute("data-bookname") &&
-        e.parentName === this.getAttribute("data-parent")
+        e.parentName === this.getAttribute("data-parent"),
     );
     if (index !== -1) {
       droppedFolders.splice(index, 1);
@@ -127,7 +127,7 @@ function dropWrapper(e) {
       !droppedFolders.find(
         (e) =>
           e.name === this.parentNode.getAttribute("data-bookname") &&
-          e.parentName === this.getAttribute("data-parent")
+          e.parentName === this.getAttribute("data-parent"),
       )
     ) {
       droppedFolders.push({
@@ -166,7 +166,7 @@ async function createList(customChildren, fromSearchFunc = false) {
     gigaFolder.classList.add("emptyTree");
     setInnerHTML(
       gigaFolder,
-      "<span class = 'leaves'>🍃</span><span>No results</span>"
+      "<span class = 'leaves'>🍃</span><span>No results</span>",
     );
   }
   if (!customChildren) {
@@ -265,15 +265,15 @@ function nestedList(obj, allNotes, parentName = "$root") {
         nestedList(
           allNotes.find((obj) => obj.name === childName),
           allNotes,
-          obj.name
-        )
+          obj.name,
+        ),
       );
       ul.prepend(li);
     });
   }
   if (
     droppedFolders.find(
-      (e) => e.name === obj.name && e.parentName === parentName
+      (e) => e.name === obj.name && e.parentName === parentName,
     )
   ) {
     folderName.setAttribute("data-down", "");
@@ -288,8 +288,8 @@ function showImagePreview(e) {
   showPagePreview(
     e,
     `${properLink(this.getAttribute("data-href"))}(${this.getAttribute(
-      "data-href"
-    )})`
+      "data-href",
+    )})`,
   );
 }
 
@@ -378,9 +378,9 @@ async function showPagePreview(e, customText, allowHTML) {
       (
         await getAnyBookContent(
           e.currentTarget.getAttribute("data-bookname"),
-          "content"
+          "content",
         )
-      )[page]
+      )[page],
     );
   }
   menu.appendChild(preview);

@@ -71,7 +71,7 @@ export function listContextMenu(e, toolBar) {
             text: "Delete Notebook",
             click: (props, ele) =>
               confirmation_cm(ele, () =>
-                deleteNoteBookFromDb(toolBar ? note.name : props)
+                deleteNoteBookFromDb(toolBar ? note.name : props),
               ),
           },
       { spacer: true },
@@ -107,7 +107,7 @@ export function listContextMenu(e, toolBar) {
                 relinquishNote(noteName, parent);
                 delContextMenu();
               },
-            })
+            }),
           );
         },
       },
@@ -126,6 +126,6 @@ export function listContextMenu(e, toolBar) {
           }),
       },
     ],
-    toolBar ? [`${e.clientX - 160}px`, "75px"] : null
+    toolBar ? [`${e.clientX - 160}px`, "75px"] : null,
   );
 }

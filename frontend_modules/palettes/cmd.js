@@ -93,12 +93,12 @@ async function render_p(version, arr, results) {
               render(
                 cmd.populatorV ?? version,
                 filter(children, text),
-                results
+                results,
               );
             },
             (results) => {
               render_p(cmd.populatorV ?? version, children, results);
-            }
+            },
           );
         } else {
           closePalette();
@@ -113,7 +113,7 @@ async function render_p(version, arr, results) {
           },
           (results, render) => {
             render(version, cmd.children, results);
-          }
+          },
         );
       });
     } else {
@@ -134,7 +134,7 @@ async function render_p(version, arr, results) {
         appendText(
           span,
           `<mark style = 'padding: 3px; border-radius: 3px; background'>${cmd.info}</mark>`,
-          0.8
+          0.8,
         );
       }
     } else {

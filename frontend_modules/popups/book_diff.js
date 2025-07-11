@@ -24,7 +24,9 @@ function getDiff(dbSave, content) {
   }
 
   if (!dbSave && !content) {
-    fragment.appendChild(createSpan("<i><b>Empty Page</b></i>", "rgba(0,0,0,0)", "", true));
+    fragment.appendChild(
+      createSpan("<i><b>Empty Page</b></i>", "rgba(0,0,0,0)", "", true),
+    );
     return fragment;
   }
 
@@ -32,8 +34,8 @@ function getDiff(dbSave, content) {
     const [bgColor, textColor] = part.added
       ? ["#33ff96", "black"]
       : part.removed
-      ? ["#ff5e5e", "black"]
-      : ["rgba(0,0,0,0)", ""];
+        ? ["#ff5e5e", "black"]
+        : ["rgba(0,0,0,0)", ""];
     fragment.appendChild(createSpan(part.value, bgColor, textColor));
   });
   return fragment;
@@ -55,7 +57,7 @@ function showBookDiffPopup(content = note.content, dbSave = note.dbSave) {
       appendText(
         h2,
         "Local notebook <span style = 'background: #33ff96; color: black;'>&nbsp;includes&nbsp;</span> or <span style = 'background: #ff5e5e; color: black;'>&nbsp;excludes&nbsp;</span>",
-        0.6
+        0.6,
       );
     }
     h2.addEventListener("click", h2.scrollIntoView);
@@ -76,7 +78,7 @@ function showBookDiffPopup(content = note.content, dbSave = note.dbSave) {
     try {
       pageDiff.appendChild(getDiff(dbSave[i], content[i]));
     } catch (err) {
-      console.log(err)
+      console.log(err);
       const fragment = document.createDocumentFragment();
       const span = document.createElement("span");
       span.style.background = bgColor;

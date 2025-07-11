@@ -11,7 +11,7 @@ function maintainAlerts() {
     attemptRemoval([eid("fcAlert")]);
     return;
   }
-  const topAlert = alerts[alerts.length-1];
+  const topAlert = alerts[alerts.length - 1];
   if (eid("fcAlert")) {
     eid("fcAlert").innerText = topAlert.text;
     eid("fcAlert").style.backgroundColor = topAlert.color;
@@ -28,7 +28,7 @@ function maintainAlerts() {
 function editAlert(
   id,
   text,
-  color = currTheme ? currTheme.destructive : "red"
+  color = currTheme ? currTheme.destructive : "red",
 ) {
   const alert = alerts.find((alert) => alert.id === id);
   if (!alert) {
@@ -43,7 +43,7 @@ function editAlert(
 function alertUser(
   id,
   text,
-  color = currTheme ? currTheme.destructive : "red"
+  color = currTheme ? currTheme.destructive : "red",
 ) {
   if (alerts.find((alert) => alert.id === id)) {
     return;

@@ -3,7 +3,7 @@ export { getTitle, removeMD };
 function getTitle(md) {
   const split = md.split("\n").filter((e) => e !== "");
   const response = removeMD(split[0]);
-  if (response.substring(0,3) === ("// ")) {
+  if (response.substring(0, 3) === "// ") {
     return response.substring(3);
   }
   return response || "";
@@ -40,7 +40,7 @@ function removeMD(md, options) {
       if (options.listUnicodeChar)
         output = output.replace(
           /^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm,
-          options.listUnicodeChar + " $1"
+          options.listUnicodeChar + " $1",
         );
       else output = output.replace(/^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm, "$1");
     }
@@ -71,7 +71,7 @@ function removeMD(md, options) {
       // Adding the lookahead literal with the default regex for html. Eg./<(?!sup|sub)[^>]*>/ig
       htmlReplaceRegex = new RegExp(
         "<" + joinedHtmlTagsToSkip + "[^>]*>",
-        "ig"
+        "ig",
       );
     }
 
@@ -88,7 +88,7 @@ function removeMD(md, options) {
       // Remove inline links
       .replace(
         /\[([^\]]*?)\][\[\(].*?[\]\)]/g,
-        options.replaceLinksWithURL ? "$2" : "$1"
+        options.replaceLinksWithURL ? "$2" : "$1",
       )
       // Remove blockquotes
       .replace(/^(\n)?\s{0,3}>\s?/gm, "$1")
@@ -98,7 +98,7 @@ function removeMD(md, options) {
       // Remove atx-style headers
       .replace(
         /^(\n)?\s{0,}#{1,6}\s*( (.+))? +#+$|^(\n)?\s{0,}#{1,6}\s*( (.+))?$/gm,
-        "$1$3$4$6"
+        "$1$3$4$6",
       )
       // Remove * emphasis
       .replace(/([\*]+)(\S)(.*?\S)??\1/g, "$2$3")

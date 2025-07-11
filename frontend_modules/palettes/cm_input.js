@@ -39,11 +39,11 @@ function cmInput(noteName, choice) {
             },
           },
         ],
-        results
+        results,
       );
     },
     null,
-    false
+    false,
   );
   delContextMenu();
 }

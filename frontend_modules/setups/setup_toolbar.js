@@ -38,7 +38,7 @@ async function decryptCurrentBook() {
   if (
     note.isEncrypted &&
     confirm(
-      "This will immediately save your notebook in an unencrypted state. Proceed?"
+      "This will immediately save your notebook in an unencrypted state. Proceed?",
     )
   ) {
     note.isEncrypted = false;
@@ -101,7 +101,7 @@ function setupToolbar() {
           click: (props, ele) => confirmation_cm(ele, deletePage),
         },
       ],
-      [`${e.clientX - 160}px`, "75px"]
+      [`${e.clientX - 160}px`, "75px"],
     );
   });
   eid("getFile1").addEventListener("change", () => {
@@ -154,8 +154,8 @@ function setupToolbar() {
           }),
         },
       ],
-      [`${e.clientX - 160}px`, "75px"]
-    )
+      [`${e.clientX - 160}px`, "75px"],
+    ),
   );
   eid("icon6").addEventListener("click", () => {
     handlePageMovement({
@@ -231,11 +231,11 @@ function setupToolbar() {
           },
         },
       ],
-      [`${e.clientX - 160}px`, "75px"]
-    )
+      [`${e.clientX - 160}px`, "75px"],
+    ),
   );
   areNotesSavedIcon.addEventListener("animationend", () =>
-    areNotesSavedIcon.classList.remove("saved")
+    areNotesSavedIcon.classList.remove("saved"),
   );
   areNotesSavedIcon.addEventListener("click", (e) => {
     if (note.readOnly) {
@@ -299,7 +299,7 @@ function setupToolbar() {
         //     }
         //   : null,
       ],
-      [`${e.clientX - 160}px`, "75px"]
+      [`${e.clientX - 160}px`, "75px"],
     );
   });
   toolBar.addEventListener("contextmenu", (e) => e.preventDefault());

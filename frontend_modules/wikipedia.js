@@ -35,12 +35,12 @@ async function wikiSearch(event) {
         `https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}?redirect=true`,
         {
           cache: "default",
-        }
+        },
       );
       if (response.ok) {
         const result = await response.json();
         let summary = `<b>${selection.trim()}</b>:<br>${DOMPurify.sanitize(
-          result["extract_html"]
+          result["extract_html"],
         )}<a href = 'https://en.wikipedia.org/wiki/${wiki}' target = '_blank'>Learn More</a>`;
         wikipediaTippy.setContent(`<div id = 'brain'>${summary}</div>`);
         moneyAnimation(event, "🧠");

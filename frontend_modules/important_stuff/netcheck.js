@@ -15,7 +15,7 @@ function offline() {
     network.isOffline = true;
     alertUser(
       "network",
-      "Your device (or the server) is offline. Changes will be saved locally. Some features may not work."
+      "Your device (or the server) is offline. Changes will be saved locally. Some features may not work.",
     );
   }
 }

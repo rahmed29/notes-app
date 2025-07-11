@@ -104,8 +104,9 @@ function setupToolTips() {
     },
     {
       name: "#vaultDetails",
-      content: "This notebook will be encrypted with your pass-word before being sent to the server. Unsaved changes will <b>NOT</b> be saved locally.",
-    }
+      content:
+        "This notebook will be encrypted with your pass-word before being sent to the server. Unsaved changes will <b>NOT</b> be saved locally.",
+    },
   ];
 
   anonTooltips.forEach((obj) =>
@@ -115,6 +116,6 @@ function setupToolTips() {
       animation: "shift-toward-subtle",
       content: obj.content,
       placement: "bottom",
-    })
+    }),
   );
 }

@@ -28,7 +28,7 @@ const clouds_midnight = {
   buttonBorder: "#373737",
   popupHeader: "rgba(39, 41, 44, 0.7)",
   popupExit: "#ff4b4b",
-  
+
   // context menu
   contextMenu: "#27292c",
   contextMenuColor: "#d1d1d1",

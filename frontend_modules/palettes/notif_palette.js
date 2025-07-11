@@ -48,7 +48,7 @@ async function youDeleted(noteName) {
   appendNotif({
     name: `${noteName} - Book was deleted at ${new Date().toLocaleTimeString(
       [],
-      { hour: "2-digit", minute: "2-digit" }
+      { hour: "2-digit", minute: "2-digit" },
     )} but is still available in local storage`,
     icon: "💡",
     id,
@@ -105,7 +105,7 @@ function allowSingleRedo(noteName, { content, aceSessions }) {
         handler: async () => {
           showBookDiffPopup(
             await getAnyBookContent(noteName, "content"),
-            content
+            content,
           );
         },
       },
@@ -128,6 +128,6 @@ function showNotifs() {
     },
     (results, render) => {
       render(2, notifStack, results);
-    }
+    },
   );
 }

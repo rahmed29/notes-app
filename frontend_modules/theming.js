@@ -27,7 +27,7 @@ const ace_to_prism = {
   tomorrow_night: "tomorrow",
   xcode: "one-light",
   mono_industrial: "duotone-forest",
-  terminal: "atom-dark"
+  terminal: "atom-dark",
 };
 
 // theming

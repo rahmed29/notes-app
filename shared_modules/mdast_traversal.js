@@ -290,7 +290,7 @@ function queryAST(root, instructions) {
     ) {
       matchingNodes.children = matchingNodes.children.slice(
         instruction.start,
-        instruction.end
+        instruction.end,
       );
     }
 
@@ -308,7 +308,7 @@ function queryAST(root, instructions) {
         matchingNodes,
         instruction.attr,
         instruction.values,
-        []
+        [],
       );
     } else if (
       instruction.operation === "filter" &&
@@ -321,7 +321,7 @@ function queryAST(root, instructions) {
         instruction.attr,
         instruction.values,
         [],
-        true
+        true,
       );
     }
 
@@ -331,8 +331,8 @@ function queryAST(root, instructions) {
         matchingNodes.children.map((node) =>
           instruction.legend
             ? instruction.legend[node[instruction.attr]]
-            : node[instruction.attr]
-        )
+            : node[instruction.attr],
+        ),
       );
     }
 
@@ -410,7 +410,7 @@ function queryAST(root, instructions) {
           const parent = DFS(root, "_id", selectedNode.node.parentId);
           if (parent) {
             const index = parent.children.findIndex(
-              (child) => child._id === selectedNode.node._id
+              (child) => child._id === selectedNode.node._id,
             );
             if (index > 0) {
               const sibling = parent.children[index - 1];
@@ -421,7 +421,7 @@ function queryAST(root, instructions) {
           const parent = DFS(root, "_id", selectedNode.node.parentId);
           if (parent) {
             const index = parent.children.findIndex(
-              (child) => child._id === selectedNode.node._id
+              (child) => child._id === selectedNode.node._id,
             );
             if (index < parent.children.length - 1) {
               const sibling = parent.children[index + 1];

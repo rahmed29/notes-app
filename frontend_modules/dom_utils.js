@@ -29,7 +29,7 @@ var appendText = (ele, text, relativeFontSize = 0.75) =>
   setInnerHTML(
     ele,
     ele.innerHTML +
-      `<span style = 'font-size: ${relativeFontSize}em'>&nbsp;&nbsp;${text}</span`
+      `<span style = 'font-size: ${relativeFontSize}em'>&nbsp;&nbsp;${text}</span`,
   );
 
 var eid = (id) => document.getElementById(id);

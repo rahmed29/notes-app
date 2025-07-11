@@ -18,7 +18,7 @@ async function getTags(tag) {
   if (tag) {
     changeSettings(
       "recents_tags",
-      updateLtdArr(getSetting("recents_tags", []), tag)
+      updateLtdArr(getSetting("recents_tags", []), tag),
     );
   }
   editTabText("Tag-Viewer", `Tag: #${tag || openTag}`, true);

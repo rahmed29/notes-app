@@ -84,7 +84,7 @@ class Tab {
       props: undefined,
       saveState: false,
       state: null,
-    }
+    },
   ) {
     // these must stay up here so that we properly switch tabs after closing one
     savedWS.delete(this.name);
@@ -198,8 +198,8 @@ function makeTabInDom(name, shouldOpen = false) {
         placement: "bottom-end",
         content: name,
         arrow: false,
-      })[0]
-    )
+      })[0],
+    ),
   );
 
   if (shouldOpen) {

@@ -23,7 +23,7 @@ async function prompt_ai(content, prompt, aiChoice) {
   const response = await notes_api.post[aiChoice]({
     content,
     prompt,
-  })
+  });
   aiGenerating = false;
   stopLoading();
   if (response.ok) {
@@ -47,7 +47,7 @@ async function AISUmmary(aiChoice = "chatgpt") {
   const AI = await prompt_ai(
     note.content[note.pgN || 0],
     "Summarize the given content. Surround any tex expressions with dollar signs",
-    aiChoice
+    aiChoice,
   );
   if (AI !== 0) {
     editReserved("AI-Summary", [

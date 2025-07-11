@@ -50,7 +50,7 @@ async function AIFlashcards() {
     note.content[note.pgN || 0],
     // this works well enough idk
     "Create flashcards from this note. Use GitHub flavored markdown to create a table of 2 columns, one column being terms and the other being definitions. Do not use any HTML tags.",
-    "chatgpt"
+    "chatgpt",
   );
   if (response === 0) {
     return notyf.error("Flashcards could not be generated");
@@ -200,7 +200,7 @@ function flashcardMode() {
         flashcardMode();
       }
     },
-    { once: true }
+    { once: true },
   );
   const exit = document.createElement("button");
   exit.innerText = "❌ Exit";
@@ -220,7 +220,7 @@ function flashcardMode() {
     `You are in flashcard mode, click some text to add it to the focused side of the flashcard.${
       note.isEncrypted ? " Flashcards are NOT encrypted!" : ""
     }`,
-    currTheme.quizletPurpleAccents
+    currTheme.quizletPurpleAccents,
   );
 }
 
@@ -270,7 +270,7 @@ function showFlashcards(noAnimation, filter) {
       }
       return arr2d;
     },
-    [[], [], []]
+    [[], [], []],
   );
   let availableCards = organized.reduce((avail, arr) => {
     avail = avail.concat(arr);
@@ -287,7 +287,7 @@ function showFlashcards(noAnimation, filter) {
     () => {
       editCards(availableCards);
     },
-    { once: true }
+    { once: true },
   );
   extra.appendChild(editAll);
   const reset = document.createElement("button");
@@ -319,7 +319,7 @@ function showFlashcards(noAnimation, filter) {
     () => {
       study([availableCards.shift()], availableCards);
     },
-    { once: true }
+    { once: true },
   );
   extra.appendChild(reset);
   extra.appendChild(pracAll);
@@ -352,7 +352,7 @@ function showFlashcards(noAnimation, filter) {
       [
         `${e.target.getBoundingClientRect().left - 100}px`,
         `${e.target.getBoundingClientRect().top + 35}px`,
-      ]
+      ],
     );
   });
   extra.appendChild(decks);
@@ -386,11 +386,11 @@ function showFlashcards(noAnimation, filter) {
           study(
             e.splice(
               e.findIndex((obj) => obj.id === card.id),
-              1
+              1,
             ),
-            e
+            e,
           ),
-        { once: true }
+        { once: true },
       );
       cardFront.addEventListener("contextmenu", (e) => {
         contextMenu(e, [
@@ -566,7 +566,7 @@ function editCardsHelper(cardArr) {
         resolve(copy);
         editCardsRejection = null;
       },
-      { once: true }
+      { once: true },
     );
     buttonContainer.appendChild(check);
     const exit = document.createElement("button");
@@ -576,7 +576,7 @@ function editCardsHelper(cardArr) {
       () => {
         editCardsRejection(new Error("Unsaved"));
       },
-      { once: true }
+      { once: true },
     );
     buttonContainer.appendChild(exit);
 
@@ -637,7 +637,7 @@ function study(cardArr, allCards) {
   skip.classList.add("reset");
   skip.innerText = "⏩ Skip";
   skip.addEventListener("click", () =>
-    study([allCards.shift(), ...cardArr], allCards)
+    study([allCards.shift(), ...cardArr], allCards),
   );
   options.appendChild(skip);
 

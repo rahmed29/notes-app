@@ -47,7 +47,7 @@ const reservedNames = [
               `\n\n## Recent Tags\n\n` +
               (getSetting("recents_tags", [])
                 .map((e) => `- :tag[${e}]`)
-                .join("\n") || "- N/A\n")
+                .join("\n") || "- N/A\n"),
           );
         },
       },
@@ -101,7 +101,7 @@ const reservedNames = [
               ? imageList.map((url) => {
                   return `${properLink(url)}(/uploads/${url})`;
                 })
-              : ["# Uploaded images and PDFs will appear in this notebook!"]
+              : ["# Uploaded images and PDFs will appear in this notebook!"],
           );
         },
       },
@@ -147,7 +147,7 @@ const reservedNames = [
             editTabText(
               "Public-Notebook",
               `${currentlyOpenPublicBook[0]} (${currentlyOpenPublicBook[1]})`,
-              true
+              true,
             );
           }
         },

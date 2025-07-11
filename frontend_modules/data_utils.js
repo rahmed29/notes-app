@@ -65,7 +65,7 @@ function throttle(
     afterTimeout: () => {},
     fallbackCondition: false,
     fallback: () => {},
-  }
+  },
 ) {
   if (condition) {
     beforeTimeout();

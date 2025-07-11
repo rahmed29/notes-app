@@ -294,7 +294,7 @@ async function finish() {
     function () {
       this.remove();
     },
-    { once: true }
+    { once: true },
   );
 
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance

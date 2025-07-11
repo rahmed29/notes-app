@@ -1,4 +1,9 @@
-export { setGlobalPaletteClose, setGlobalPopupClose, globalPaletteClose, globalPopupClose };
+export {
+  setGlobalPaletteClose,
+  setGlobalPopupClose,
+  globalPaletteClose,
+  globalPopupClose,
+};
 
 // Palette and popup both depend on each other's functions (closePopupWindow and closePalette), because we don't want the palette and the popup open at the same time, so they should close each other.
 // Here we create a Mediator Module where we define placeholders for these functions.
@@ -8,9 +13,9 @@ let globalPaletteClose;
 let globalPopupClose;
 
 function setGlobalPaletteClose(close) {
-    globalPaletteClose = close;
+  globalPaletteClose = close;
 }
 
 function setGlobalPopupClose(close) {
-    globalPopupClose = close;
+  globalPopupClose = close;
 }

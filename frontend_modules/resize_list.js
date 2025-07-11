@@ -27,7 +27,7 @@ function showList() {
   tabs.style.padding = "5px 5px 5px 0";
   workspace.style.width = `calc(100% - 25px - ${getSetting(
     "listSize",
-    "300px"
+    "300px",
   )})`;
   list.setAttribute("data-shown", "");
   changeSettings("listShown", true);

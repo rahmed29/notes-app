@@ -50,7 +50,7 @@ function showSearch(shift = false) {
       render(2, commands, results);
     },
     null,
-    false
+    false,
   );
 }
 

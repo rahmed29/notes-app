@@ -1,4 +1,4 @@
-export { parseReference }
+export { parseReference };
 
 // :ref[book]
 // :ref[book:page]
