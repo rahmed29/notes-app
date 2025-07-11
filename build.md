@@ -8,7 +8,7 @@
     ```
     python3 build.py "Commit message"
     ```
-5. Set up [CloudFlare Zero Trust](https://developers.cloudflare.com/cloudflare-one/identity/one-time-pin/)
+5. Set up [Cloudflare Zero Trust](https://developers.cloudflare.com/cloudflare-one/identity/one-time-pin/)
 6. Start `server.js`
 
 There are also some prebuilt files ready to go which should be up to date.
