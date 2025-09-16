@@ -14,6 +14,9 @@ dist-ssr
 
 # I added
 /public/assets/ace-editor
+/public/assets/index-*.js
+/public/assets/index-*.css
+/views/desktop.ejs
 /micromark-extension-mark
 /public/assets/prism-all-themes
 /public/uploads/

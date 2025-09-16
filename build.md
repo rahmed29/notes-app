@@ -12,9 +12,8 @@
 5. Set up [Cloudflare Zero Trust](https://developers.cloudflare.com/cloudflare-one/identity/one-time-pin/)
 6. Start `server.js`
 
-There are also some prebuilt files ready to go which should be up to date, although you'll still need ace editor and some other dependencies, so you'll most likely still need to run `build.py`.
-
 If you ever want to rebuild the app, just run `build.py` again without doing all the other stuff.  
+
 If you want to update ace editor, you can delete the `ace-editor` directory in `./pubilc/assets` and run `build.py`
 
 For development, run `npm run dev -- --host`
