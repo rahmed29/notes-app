@@ -1,0 +1,41 @@
+{
+  "name": "notes-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.1.1"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "dompurify": "^3.1.6",
+    "dotenv": "^16.4.5",
+    "dropzone": "^6.0.0-beta.2",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "fuse.js": "^7.0.0",
+    "localforage": "^1.10.0",
+    "mdast-util-directive": "^3.0.0",
+    "mdast-util-from-markdown": "^2.0.1",
+    "mdast-util-gfm": "^3.0.0",
+    "mdast-util-math": "^3.0.0",
+    "micromark": "^4.0.0",
+    "micromark-extension-directive": "^3.0.1",
+    "micromark-extension-gfm": "^3.0.0",
+    "micromark-extension-math": "^3.1.0",
+    "mongoose": "^8.5.3",
+    "morphdom": "^2.7.4",
+    "multer": "^1.4.5-lts.1",
+    "notyf": "^3.10.0",
+    "npm": "^10.9.1",
+    "prismjs": "^1.29.0",
+    "tippy.js": "^6.3.7"
+  }
+}

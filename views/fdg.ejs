@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Force-Directed Graph</title>
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <!---->
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      svg {
+        width: 100vw;
+        height: 100vh;
+      }
+      .node circle {
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .node circle:active {
+        stroke-width: 10;
+      }
+      .node text {
+        font-family: "Inter", sans-serif;
+        font-feature-settings: "liga" 1, "calt" 1;
+        font-weight: 350;
+        cursor: pointer;
+      }
+      #passedData {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <span id="passedData"><%= nodeData %></span>
+    <script src="/assets/d3.v6.min.js"></script>
+    <script>
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      function callback(name) {
+        try {
+          window.parent.switchNoteWrapper(name);
+        } catch (err) {
+          console.log("No parent window found");
+        }
+      }
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      const data = JSON.parse(document.getElementById("passedData").innerText);
+      if (data.nodes.length === 0) {
+        const svg = d3.select("body").append("svg");
+        svg
+          .append("text")
+          .attr("x", width / 2)
+          .attr("y", height / 2)
+          .attr("text-anchor", "middle")
+          .attr("font-family", "Inter")
+          .text("Your graph is empty!");
+      } else {
+        const [fill, outline, accent] = (
+          location.hash.substring(1) || "#141414-whitesmoke-lightcoral"
+        ).split("-");
+
+        const svg = d3
+          .select("body")
+          .append("svg")
+          .call(
+            d3.zoom().on("zoom", (event) => {
+              g.attr("transform", event.transform);
+            })
+          );
+
+        const g = svg.append("g");
+
+        const link = g
+          .append("g")
+          .attr("class", "links")
+          .selectAll("line")
+          .data(data.links)
+          .enter()
+          .append("line")
+          .attr("class", "link")
+          .attr("stroke-width", 1)
+          .attr("stroke", fill)
+          .style("opacity", 0.5)
+          .style("transition", ".25s");
+
+        const node = g
+          .append("g")
+          .attr("class", "nodes")
+          .selectAll("g")
+          .data(data.nodes)
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .call(
+            d3
+              .drag()
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended)
+          )
+          .on("click", (e, d) => {
+            callback(d.id);
+          })
+          .on("mouseover", handleMouseOver)
+          .on("mouseout", handleMouseOut);
+
+        node
+          .append("circle")
+          .attr("r", (d) => d.score)
+          .attr("stroke", outline || "whitesmoke")
+          .attr("fill", fill)
+          .attr("stroke-width", 3);
+
+        node
+          .append("text")
+          .attr("dy", function (d) {
+            return -Math.sqrt(d.score) * 5 - 10;
+          }) // Position text
+          .attr("text-anchor", "middle")
+          .attr("fill", fill)
+          .text((d) => d.id);
+
+        // Event handlers for mouseover and mouseout
+        function handleMouseOver(event, d) {
+          // Highlight the links connected to the hovered node
+          node.attr("fill", accent);
+          link
+            .attr("stroke", (l) =>
+              l.source === d || l.target === d ? accent : fill
+            )
+            .attr("stroke-width", (l) =>
+              l.source === d || l.target === d ? 3 : 1.5
+            )
+            .style("opacity", (l) =>
+              l.source === d || l.target === d ? 1 : 0.5
+            );
+        }
+
+        function handleMouseOut(event, d) {
+          // Reset the link styles
+          link
+            .attr("stroke", fill)
+            .attr("stroke-width", 1.5)
+            .style("opacity", 0.5);
+        }
+
+        const simulation = d3
+          .forceSimulation(data.nodes)
+          .force(
+            "link",
+            d3
+              .forceLink(data.links)
+              .id((d) => d.id)
+              .distance(100)
+          )
+          .force("charge", d3.forceManyBody().strength(-300))
+          .force("center", d3.forceCenter(width / 2, height / 2));
+
+        simulation.on("tick", () => {
+          link
+            .attr("x1", (d) => d.source.x)
+            .attr("y1", (d) => d.source.y)
+            .attr("x2", (d) => d.target.x)
+            .attr("y2", (d) => d.target.y);
+
+          node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+        });
+
+        function dragstarted(event, d) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+      }
+    </script>
+  </body>
+</html>
