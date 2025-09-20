@@ -29,13 +29,15 @@ async function createChild(parent, child) {
     parent &&
     !reserved(parent)
   ) {
+    const timestamp = Date.now();
     const saveStatus = await notes_api.put.saveNotebooks(child, {
       content: [""],
+      timestamp,
     });
     if (saveStatus.ok) {
       await localforage.setItem(child, {
         content: [""],
-        timestamp: Date.now(),
+        timestamp,
       });
       await closeTab(child, {
         refresh: true,
@@ -71,11 +73,16 @@ async function copyBook(newName, bookToCopy) {
       return;
     }
     const content = await getAnyBookContent(bookToCopy, "content");
-    const save = await notes_api.put.saveNotebooks(newName, { content });
+    const timestamp = Date.now();
+    const save = await notes_api.put.saveNotebooks(
+      newName,
+      { content },
+      timestamp
+    );
     if (save.ok) {
       await localforage.setItem(newName, {
         content,
-        timestamp: Date.now(),
+        timestamp,
       });
       updateList();
       closeTab(newName, {
@@ -98,7 +105,7 @@ async function nestNote(child, parent) {
   if (child && parent && !reserved(child)) {
     const result = await notes_api.patch.nest(child, parent);
     if (result.ok) {
-      const childInMem = library.get(child);
+      // const childInMem = library.get(child);
       // if (childInMem) {
       //   childInMem["parents"].push(parent);
       // }

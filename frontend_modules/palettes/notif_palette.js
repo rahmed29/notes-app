@@ -20,7 +20,7 @@ function AINotif(choice, name, handler) {
   notyf.success(`AI ${choice} available in your notification palette`);
   const id = Date.now();
   appendNotif({
-    name: `${name} - AI ${choice} from ${new Date().toLocaleTimeString()} available`,
+    name: `${name} - AI ${choice} available`,
     icon: "✨",
     id,
     children: [
@@ -82,7 +82,7 @@ async function youDeleted(noteName) {
 function allowSingleRedo(noteName, { content, aceSessions }) {
   const id = Date.now();
   appendNotif({
-    name: `${noteName} - A state from ${new Date().toLocaleTimeString()} is available to recover`,
+    name: `${noteName} - A previous state is available to recover`,
     icon: "&#8617;",
     id,
     children: [

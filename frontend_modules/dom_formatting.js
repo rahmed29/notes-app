@@ -160,7 +160,7 @@ function handlePageMovement({
             },
           },
         ],
-        [`${event.clientX - 160}px`, "75px"]
+        [`${event.clientX - 160}px`, "75px"],
       );
     } else if (!(note.pgN + amount >= note.content.length)) {
       note.pgN += amount;
@@ -187,19 +187,19 @@ function accents(focusEditor = true) {
     window.history.replaceState(
       { sancta: true, note: note.name, page: note.pgN },
       null,
-      `/${note.name}?${note.pgN + 1}`
+      `/${note.name}?${note.pgN + 1}`,
     );
   } else if (history.state.sancta && history.state.note !== note.name) {
     window.history.pushState(
       { sancta: true, note: note.name, page: note.pgN },
       null,
-      `/${note.name}?${note.pgN + 1}`
+      `/${note.name}?${note.pgN + 1}`,
     );
   } else if (history.state.sancta && history.state.note === note.name) {
     window.history.replaceState(
       { sancta: true, note: note.name, page: note.pgN },
       null,
-      `/${note.name}?${note.pgN + 1}`
+      `/${note.name}?${note.pgN + 1}`,
     );
   }
   updateAndSaveNotesLocally();
@@ -272,7 +272,7 @@ async function syncStatus() {
         // content is synced
         editTabText(note.name, note.name);
         synced.setContent(
-          `Notes were saved at ${new Date(note.date).toLocaleString()}`
+          `Notes were saved at ${new Date(note.date).toLocaleString()}`,
         );
         areNotesSavedIcon.style.filter = "none";
       } else {
@@ -284,8 +284,8 @@ async function syncStatus() {
         synced.setContent(
           `Notes shown differ from saved notes by ${charDifferCount(
             note.content,
-            note.dbSave
-          )} chars`
+            note.dbSave,
+          )} chars`,
         );
         areNotesSavedIcon.style.filter = "grayscale(1)";
       }
@@ -307,7 +307,7 @@ function formatNonText(ele, listeners = true) {
     for (const node of ele.getElementsByClassName("reference")) {
       node.addEventListener(
         window.isOnMobile ? "dblclick" : "click",
-        switchTab
+        switchTab,
       );
       previewHandlers.push({
         element: node,
@@ -440,12 +440,12 @@ function removeImageToolTip(e) {
     },
     imageList.includes(
       (this.src || this.href).substring(
-        (this.src || this.href).indexOf("/uploads/") + 9
-      )
+        (this.src || this.href).indexOf("/uploads/") + 9,
+      ),
     )
       ? {
           props: (this.src || this.href).substring(
-            (this.src || this.href).indexOf("/uploads/") + 9
+            (this.src || this.href).indexOf("/uploads/") + 9,
           ),
           text: "Delete File",
           click: (props, ele) =>
@@ -475,10 +475,10 @@ async function referToolTip() {
     const content = format(
       (await getAnyBookContent(this.getAttribute("data-bookname"), "content"))[
         parseInt(this.getAttribute("data-page"))
-      ]
+      ],
     );
     lastDynamicTippy.setContent(
-      `<div class = 'pagePreviewContainer'>${content}</div>`
+      `<div class = 'pagePreviewContainer'>${content}</div>`,
     );
     lastDynamicTippy.show();
   } catch (err) {

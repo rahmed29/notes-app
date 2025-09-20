@@ -44,7 +44,7 @@ function showPal() {
     },
     (results, render) => {
       render(1, commands, results);
-    },
+    }
   );
 }
 
@@ -274,7 +274,7 @@ const commands = [
   },
   {
     name: "Create child notebook",
-    searchTerm: "make child notebooks nest notebook create child notebook",
+    searchTerm: "make child notebooks",
     handler: () => cmInput(note.name, "child"),
   },
   {
@@ -386,11 +386,12 @@ const commands = [
   {
     name: "Insert saved file",
     searchTerm: "upload image upload file insert image insert pdf insert file",
+    populatorV: 0,
     populator: async () => {
-      const family = await getFamily(note.name);
       return imageList.map((e) => {
         return {
           name: e,
+          icon: `<img src="/uploads/${e}" style="width: 2em; height: 2em; border-radius: 50%; object-fit: cover;">`,
           handler: () => insertTemplate(`![{{^}}](/uploads/${e})`),
         };
       });
