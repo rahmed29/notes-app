@@ -77,6 +77,7 @@ import {
   sizeDetails,
 } from "./frontend_modules/throttle.js";
 import { reserved } from "./frontend_modules/data/reserved_notes.js";
+import { insertTemplate } from "./frontend_modules/snippets.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -486,7 +487,7 @@ async function finish() {
     error: () => notyf.error("An error occurred when saving an image"),
     success: (file, response) => {
       file.previewElement.remove();
-      editor.insert(`${properLink(response.image)}(${response.image})`);
+      insertTemplate(`${properLink(response.image)}(${response.image})`);
       updateAndSaveNotesLocally();
       // saveNoteBookToDb(note.name);
       updateList();

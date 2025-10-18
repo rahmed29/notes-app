@@ -88,7 +88,7 @@ async function showMorePages(e) {
     if (i >= 9) {
       const appearance = i === note.pgN ? "currPage" : "random";
       arr.push({
-        text: `Page ${i}`,
+        text: `Page ${i + 1}`,
         click: (_, __, e) => {
           jumpToDesiredPage(i);
           showMorePages(e);
