@@ -333,6 +333,10 @@ function showFlashcards(noAnimation, filter) {
       ? `🎴 ${filter[0]} (+${filter.length - 1})`
       : `🎴 ${filter[0]}`;
   decks.addEventListener("click", (e) => {
+    if (flashcards.length === 0) {
+      notyf.error("You haven't made any flashcards yet");
+    }
+
     const setFromArr = new Set(flashcards.map((e) => e.subject));
     contextMenu(
       e,

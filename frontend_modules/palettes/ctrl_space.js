@@ -44,7 +44,7 @@ function showPal() {
     },
     (results, render) => {
       render(1, commands, results);
-    }
+    },
   );
 }
 
@@ -308,7 +308,8 @@ const commands = [
   },
   {
     name: "Open a notebook",
-    searchTerm: "open notebooks go to notebook new notebook create notebook make notebook",
+    searchTerm:
+      "open notebooks go to notebook new notebook create notebook make notebook",
     handler: () => cmInput(note.name, "open"),
   },
   {
@@ -379,19 +380,23 @@ const commands = [
   },
   {
     name: "Upload and insert file",
-    searchTerm:
-      "insert and upload image insert and upload file insert image insert pdf",
+    searchTerm: "insert and upload image insert and upload file insert image",
     handler: () => eid("getFile1").click(),
   },
   {
     name: "Insert saved file",
-    searchTerm: "upload image upload file insert image insert pdf insert file",
+    searchTerm:
+      "insert image insert insert file insert uploaded file insert uploaded image insert saved image",
     populatorV: 0,
     populator: async () => {
       return imageList.map((e) => {
         return {
           name: e,
-          icon: `<img src="/uploads/${e}" style="width: 2em; height: 2em; border-radius: 50%; object-fit: cover;">`,
+          icon: "png,jpg,gif,jpeg,webp".includes(
+            e.substring(e.indexOf(".") + 1).toLowerCase(),
+          )
+            ? `<img src="/uploads/${e}" style="width: 2em; height: 2em; border-radius: 50%; object-fit: cover;">`
+            : "📄",
           handler: () => insertTemplate(`![{{^}}](/uploads/${e})`),
         };
       });
@@ -501,7 +506,8 @@ const commands = [
   },
   {
     name: "Edit user settings",
-    searchTerm: "open user config open config edit config edit user config",
+    searchTerm:
+      "open user config open config edit config edit user config open user settings open settings",
     handler: () => switchNote("user__config"),
   },
   {

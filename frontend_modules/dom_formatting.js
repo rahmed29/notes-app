@@ -95,6 +95,9 @@ function insertPage(direction, currPage = note.pgN) {
   } else if (direction === "<-") {
     jumpToDesiredPage(currPage);
   }
+  if (autosavingEnabled) {
+    saveNoteBookToDb(note.name, true);
+  }
 }
 
 function jumpToDesiredPage(desired) {

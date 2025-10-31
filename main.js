@@ -96,7 +96,7 @@ document.getElementById("root").innerHTML = `
     <div id="vaultDetails">🔐</div>
     <!---->
 
-    <!-- Fixed position, Note-Map button for mobile interface -->
+    <!-- Fixed position, Note Map button for mobile interface -->
     <div id = "mobileAction">
       <img src = "/assets/circle-scatter-haikei(1).png">
     </div>
@@ -295,7 +295,7 @@ async function finish() {
     function () {
       this.remove();
     },
-    { once: true },
+    { once: true }
   );
 
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance
@@ -473,6 +473,10 @@ async function finish() {
         case ".":
           e.preventDefault();
           editor.focus();
+          break;
+        case "h":
+          e.preventDefault();
+          switchNote("home");
           break;
       }
     }

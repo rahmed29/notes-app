@@ -2,6 +2,7 @@ import { wikipediaTippy } from "./important_stuff/tooltips";
 import { wikipediaBrainAnimation } from "./important_stuff/dom_refs";
 import { brain } from "./important_stuff/dom_refs";
 import { note } from "./data/note";
+import { changeSettings, getSetting } from "./important_stuff/settings";
 
 export { toggleWikiSearch, wikiSearch, turnOffWiki, moneyAnimation };
 
@@ -13,11 +14,14 @@ function turnOffWiki() {
 
 // Wikipedia
 function toggleWikiSearch() {
-  brain.classList.toggle("grayscale");
   if (brain.hasAttribute("data-disabled")) {
+    brain.classList.remove("grayscale");
     brain.removeAttribute("data-disabled");
+    changeSettings("wikiEnabled", true);
   } else {
+    brain.classList.add("grayscale");
     brain.setAttribute("data-disabled", "");
+    changeSettings("wikiEnabled", false);
   }
 }
 
@@ -25,7 +29,7 @@ async function wikiSearch(event) {
   let selection = window.getSelection().toString();
   if (
     !(selection.includes("\n") || !selection.length) &&
-    !brain.hasAttribute("data-disabled") &&
+    getSetting("wikiEnabled", true) &&
     !note.isEncrypted
   ) {
     let wiki = selection.trim().replace(/ /g, "_").toLowerCase();

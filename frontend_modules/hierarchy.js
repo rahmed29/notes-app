@@ -77,7 +77,7 @@ async function copyBook(newName, bookToCopy) {
     const save = await notes_api.put.saveNotebooks(
       newName,
       { content },
-      timestamp
+      timestamp,
     );
     if (save.ok) {
       await localforage.setItem(newName, {

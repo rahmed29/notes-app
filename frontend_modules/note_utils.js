@@ -36,7 +36,7 @@ async function switchNote(
     refresher: false,
     props: "",
     state: null,
-  }
+  },
 ) {
   // if we're already switching, return
   if (switching) {
@@ -138,7 +138,7 @@ async function switchNote(
       }
       if (checkKey(data.content[0], data.password)) {
         data.content = data.content.map((cipher) =>
-          decryptMsg(cipher, data.password)
+          decryptMsg(cipher, data.password),
         );
         document.body.classList.add("isEncrypted");
       } else {
@@ -168,7 +168,7 @@ async function switchNote(
   if (!reserved(noteName)) {
     changeSettings(
       "recents",
-      updateLtdArr(getSetting("recents", []), noteName)
+      updateLtdArr(getSetting("recents", []), noteName),
     );
   }
   // Start building the note object
@@ -361,7 +361,7 @@ async function saveNoteBookToDb(noteName, autoSave = false) {
       content: !desiredNote.isEncrypted
         ? desiredNote.content
         : desiredNote.content.map((page) =>
-            encryptMsg(page, desiredNote.password)
+            encryptMsg(page, desiredNote.password),
           ),
       isEncrypted: desiredNote.isEncrypted,
       timestamp,

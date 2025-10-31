@@ -13,14 +13,14 @@ dist-ssr
 *.local
 
 # I added
-/public/assets/ace-editor
-/public/assets/index-*.js
-/public/assets/index-*.css
-/views/desktop.ejs
-/micromark-extension-mark
-/public/assets/prism-all-themes
-/public/uploads/
-/export/
+micromark-extension-mark
+public/assets/ace-editor
+public/assets/prism-all-themes
+public/assets/index-*.js
+public/assets/index-*.css
+public/uploads/
+views/desktop.ejs
+export/
 .env
 
 # Editor directories and files

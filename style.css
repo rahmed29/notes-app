@@ -945,6 +945,13 @@ table th {
   font-style: italic;
   max-width: 80%;
   height: auto;
+  border: 2px solid var(--notes-background);
+  transition: 0.5s;
+  cursor: pointer;
+}
+
+#notesPreviewArea img:hover {
+  border-color: var(--main-accent);
 }
 
 .mobile #notesPreviewArea img {

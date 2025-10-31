@@ -26,7 +26,7 @@ import { listContextMenu } from "../modify_note_context_menu";
 import { note } from "../data/note";
 import { updateList } from "../list_utils";
 import { publishBook, unpublishBook } from "../publishing";
-import { changeSettings } from "../important_stuff/settings";
+import { changeSettings, getSetting } from "../important_stuff/settings";
 import notes_api from "../important_stuff/api";
 import { getTitle } from "../../shared_modules/removeMD";
 import { insertStickyNote, insertTemplate } from "../snippets";
@@ -214,6 +214,10 @@ function setupToolbar() {
       [`${e.clientX - 160}px`, "75px"],
     ),
   );
+  if (!getSetting("wikiEnabled", true)) {
+    brain.classList.add("grayscale");
+    brain.setAttribute("data-disabled", "");
+  }
   areNotesSavedIcon.addEventListener("animationend", () =>
     areNotesSavedIcon.classList.remove("saved"),
   );
