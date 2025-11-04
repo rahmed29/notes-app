@@ -51,24 +51,20 @@ function setupEditor(onchange) {
       name: e,
       bindKey: { win: e, mac: e },
       exec: function (editor) {
-        var selectedText = editor.getSelectedText();
-        var selectionRange = editor.getSelectionRange();
+        let selectedText = editor.getSelectedText();
+        let selectionRange = editor.getSelectionRange();
 
         if (selectedText) {
-          // Surround the selected text with asterisks
           editor.insert(e + selectedText + e);
 
-          // Calculate the new range (including the inserted asterisks)
-          var newStart = selectionRange.start;
-          var newEnd = editor.getSelectionRange().end;
+          let newStart = selectionRange.start;
+          let newEnd = editor.getSelectionRange().end;
 
-          // Set the selection to include both the asterisks and the selected text
           editor.getSelection().setRange({
             start: newStart,
             end: newEnd,
           });
         } else {
-          // Insert a single asterisk if no text is selected
           editor.insert(e);
         }
       },
