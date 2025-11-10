@@ -12,8 +12,6 @@ let aiGenerating = false;
 
 // Don't use AI.
 
-window.prompt = prompt_ai;
-
 async function prompt_ai(content, prompt, aiChoice) {
   notyf.error(duai);
   return null;
