@@ -1,6 +1,5 @@
 import { getTitle } from "../shared_modules/removeMD";
 import { note } from "./data/note";
-import { reserved } from "./data/reserved_notes";
 import { nth } from "./data_utils";
 import getAnyBookContent from "./get_book_content";
 import { stickyNotesTextArea } from "./important_stuff/dom_refs";
@@ -63,8 +62,8 @@ async function insertTemplate(snippet, setValue) {
   insertSnippet(snippet, rowColumn, setValue);
 }
 
-async function insertSnippet(snippet, rowColumn, setValue) {
-  if (!reserved(note.name)) {
+async function insertSnippet(snippet, rowColumn) {
+  if (!note.readOnly) {
     const { row, column } = editor.getCursorPosition();
     editor.insert(snippet);
     editor.focus();

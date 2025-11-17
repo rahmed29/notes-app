@@ -295,7 +295,7 @@ async function finish() {
     function () {
       this.remove();
     },
-    { once: true }
+    { once: true },
   );
 
   // Here, we begin the network check, create the tool tips, and set up the ace editor instance
@@ -315,7 +315,7 @@ async function finish() {
       condition: autosavingEnabled && !isAutoSaving,
       beforeTimeout: () => saving(true, note.name),
       callback: () => {
-        if (note.name === noteBeingAutoSaved && !reserved(note.name)) {
+        if (note.name === noteBeingAutoSaved && !note.readOnly) {
           saveNoteBookToDb(note.name, true);
         }
       },
@@ -487,12 +487,14 @@ async function finish() {
     url: "/api/save/images",
     paramName: "avatar",
     clickable: false,
-    acceptedFiles: "image/jpeg,image/png,image/gif,image/webp,application/pdf",
+    acceptedFiles: "image/jpeg,image/png,image/gif,image/webp",
     error: () => notyf.error("An error occurred when saving an image"),
     success: (file, response) => {
       file.previewElement.remove();
-      insertTemplate(`${properLink(response.image)}(${response.image})`);
-      updateAndSaveNotesLocally();
+      if (!note.readOnly) {
+        insertTemplate(`${properLink(response.image)}(${response.image})`);
+        updateAndSaveNotesLocally();
+      }
       // saveNoteBookToDb(note.name);
       updateList();
     },

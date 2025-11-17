@@ -99,7 +99,7 @@ const reservedNames = [
               ? imageList.map((url) => {
                   return `${properLink(url)}(/uploads/${url})`;
                 })
-              : ["# Uploaded images and PDFs will appear in this notebook!"],
+              : ["# Uploaded images will appear in this notebook!"],
           );
         },
       },

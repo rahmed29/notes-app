@@ -115,8 +115,9 @@ const upload = multer({
       file.mimetype == "image/png" ||
       file.mimetype == "image/jpeg" ||
       file.mimetype == "image/webp" ||
-      file.mimetype == "image/gif" ||
-      file.mimetype == "application/pdf"
+      file.mimetype == "image/gif"
+      // If you allow pdf, make sure to update the dropzone on the frontend
+      // file.mimetype == "application/pdf"
     ) {
       cb(null, true);
     }
@@ -185,10 +186,15 @@ async function onRestart() {
             // for each image in their current owned image list, check if our list of files includes it (it actually exists on the drive)
             if (files.includes(image)) {
               // if it does exist on the drive push it to the new json
-              // i know its not actually json its technically an object but this makes sense to me so I use this convention for the `god` function
+              // I know its not actually json its technically an object but this makes sense to me so I use this convention for the `god` function
               newJson.push(image);
+              files = files.map((e) => {
+                if (e != image) {
+                  return e;
+                }
+              });
             } else {
-              console.log(`Phantom image: ${image} owned by ${user}`);
+              console.log(`Fixed phantom image: ${image} owned by ${user}`);
             }
           }
           // set the user's uploaded image list to the new one. If every image they had existed on the drive, nothing has changed
@@ -196,6 +202,19 @@ async function onRestart() {
         }
       });
     }
+
+    // Make the super user of any orphaned files
+    // this way you can manually add files
+    await god(SUPER_USER, (json) => {
+      for (const orphan of files) {
+        if (orphan != undefined) {
+          console.log(
+            `Orphaned image ${orphan} is now owned owned by ${SUPER_USER}`,
+          );
+          json.uploads.push(orphan);
+        }
+      }
+    });
   });
 }
 
@@ -651,17 +670,15 @@ app.delete("/api/delete/images/:name", async (req, res) => {
         res.status(403).json({ error: "You don't own this image" });
       } else {
         fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
-          if (err) {
-            res.status(500).json({ error: "Internal Server Error" });
-          } else {
+          if (!err) {
             ownedImages.uploads = ownedImages.uploads.filter(
               (e) => e !== req.params.name,
             );
-            res.status(204).json({ status: "Removed" });
           }
         });
       }
     });
+    res.status(204).json({ status: "Removed" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

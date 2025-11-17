@@ -278,7 +278,7 @@ async function forceUpdateNotes(noteName = note.name) {
 }
 
 function deletePage(pgN = note.pgN) {
-  if (reserved(note.name)) {
+  if (note.readOnly) {
     return;
   }
   if (note.content.length > 1) {

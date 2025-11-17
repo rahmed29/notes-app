@@ -1,6 +1,5 @@
 import { saveNoteBookToDb } from "./note_utils";
 import { note } from "./data/note";
-import { reserved } from "./data/reserved_notes";
 import { synced, generalInfoPageNumber } from "./important_stuff/tooltips";
 import {
   topLeftPageNumber,
@@ -62,7 +61,7 @@ function jumpWrapper() {
 }
 
 function insertPage(direction, currPage = note.pgN) {
-  if (reserved(note.name)) {
+  if (note.readOnly) {
     notyf.error("This notebook is read only");
     return;
   }
@@ -137,7 +136,7 @@ function handlePageMovement({
     if (
       note.pgN + amount >= note.content.length &&
       shouldCreateNewPage &&
-      !reserved(note.name)
+      !note.readOnly
     ) {
       note.content.push("");
       note.pgN += amount;
@@ -150,7 +149,7 @@ function handlePageMovement({
       note.pgN + amount >= note.content.length &&
       !shouldCreateNewPage &&
       event &&
-      !reserved(note.name)
+      !note.readOnly
     ) {
       contextMenu(
         event,
@@ -224,7 +223,7 @@ async function updateAndSaveNotesLocally() {
   if (noteInList) {
     noteInList.excerpt = note.content.map((e) => getTitle(e));
   }
-  if (!reserved(note.name) && !note.isEncrypted) {
+  if (!note.readOnly && !note.isEncrypted) {
     // no need to await
     localforage.setItem(note.name, {
       content: note.content,
@@ -259,7 +258,7 @@ async function updateAndSaveNotesLocally() {
 
 async function syncStatus() {
   return new Promise((resolve) => {
-    if (reserved(note.name)) {
+    if (note.readOnly) {
       // note name reserved
       editTabText(note.name, note.name);
       areNotesSavedIcon.style.filter = "grayscale(1)";
