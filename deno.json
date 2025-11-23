@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "default": {
+      "read": ["./", "/.dockerenv"],
+      "write": ["./public/"],
+      "net": ["localhost:27017", "0.0.0.0:5555"],
+      "sys": ["osRelease"],
+      "env": true
+    }
+  }
+}

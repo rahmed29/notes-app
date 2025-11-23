@@ -14,7 +14,7 @@ import {
 import { editingWindow } from "../editing_window";
 import { handlePageMovement } from "../dom_formatting";
 import { toggleWikiSearch } from "../wikipedia";
-import { AISUmmary, aiGenerating } from "../ai_utils";
+// import { AISUmmary, aiGenerating } from "../ai_utils";
 import { flashcardMode } from "../popups/flashcards";
 import { showBookDiffPopup } from "../popups/book_diff";
 import { insertAndSaveImage } from "../images";
