@@ -1,8 +1,8 @@
 {
   "permissions": {
     "default": {
-      "read": ["./", "/.dockerenv"],
-      "write": ["./public/"],
+      "read": ["./public", "./views", "./.env", "/.dockerenv"],
+      "write": ["./public/uploads"],
       "net": ["localhost:27017", "0.0.0.0:5555"],
       "sys": ["osRelease"],
       "env": true

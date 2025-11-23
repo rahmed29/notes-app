@@ -669,6 +669,7 @@ app.delete("/api/delete/images/:name", async (req, res) => {
       ) {
         res.status(403).json({ error: "You don't own this image" });
       } else {
+        // I don't think this works. However the phantom image cleanup fixes it on restart
         fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
           if (!err) {
             ownedImages.uploads = ownedImages.uploads.filter(
