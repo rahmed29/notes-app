@@ -21,6 +21,7 @@ import cookieParser from "cookie-parser";
 import AdmZip from "adm-zip";
 import { parseReference } from "./shared_modules/parse_ref.js";
 import duai from "./shared_modules/duai.js";
+const __dirname = import.meta.dirname;
 
 // Environment variables
 const PORT_NUMBER = parseInt(process.env.PORT_NUMBER);
@@ -100,7 +101,7 @@ const app = express();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public/uploads/");
+    cb(null, `${__dirname}/public/uploads/`);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -172,9 +173,11 @@ const Item = mongoose.model("Item", {
   },
 });
 
+console.log(__dirname);
+
 async function onRestart() {
   const users = await Item.find().distinct("user");
-  fs.readdir("./public/uploads", async (err, files) => {
+  fs.readdir(`${__dirname}/public/uploads`, async (err, files) => {
     // we have the list of files from the drive
     // loop through each user
     for (const user of users) {
@@ -220,7 +223,7 @@ async function onRestart() {
 
 await onRestart();
 
-app.use(express.static("./public"));
+app.use(express.static(`${__dirname}/public`));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use((req, res, next) => {
@@ -412,7 +415,7 @@ app.get("/api/export/", async (req, res) => {
     let unzippedFolder;
     if (all && all.toLowerCase() === "true") {
       notebooks = await Item.find({ user: req.__user });
-      unzippedFolder = `./export/${req.__user.substring(
+      unzippedFolder = `${__dirname}/export/${req.__user.substring(
         0,
         req.__user.indexOf("@") === -1
           ? req.__user.length
@@ -420,7 +423,7 @@ app.get("/api/export/", async (req, res) => {
       )}'s Notes`;
     } else {
       notebooks = await Item.find({ user: req.__user, name: name });
-      unzippedFolder = `./export/${name}`;
+      unzippedFolder = `${__dirname}/export/${name}`;
     }
 
     const booksToZip = [];
@@ -508,7 +511,7 @@ app.get("/api/export/", async (req, res) => {
     fs.mkdirSync(`${unzippedFolder}/uploads`, { recursive: true });
 
     // Entire uploads folder is downloaded, including images that other users uploaded
-    fs.cpSync("./public/uploads", `${unzippedFolder}/uploads`, {
+    fs.cpSync(`${__dirname}/public/uploads`, `${unzippedFolder}/uploads`, {
       recursive: true,
     });
     const zippedFolder = `${unzippedFolder}.zip`;
@@ -669,14 +672,10 @@ app.delete("/api/delete/images/:name", async (req, res) => {
       ) {
         res.status(403).json({ error: "You don't own this image" });
       } else {
-        // I don't think this works. However the phantom image cleanup fixes it on restart
-        fs.unlink(`./public/uploads/${req.params.name}`, async (err) => {
-          if (!err) {
-            ownedImages.uploads = ownedImages.uploads.filter(
-              (e) => e !== req.params.name,
-            );
-          }
-        });
+        fs.unlinkSync(`${__dirname}/public/uploads/${req.params.name}`);
+        ownedImages.uploads = ownedImages.uploads.filter(
+          (e) => e !== req.params.name,
+        );
       }
     });
     res.status(204).json({ status: "Removed" });
@@ -686,7 +685,7 @@ app.delete("/api/delete/images/:name", async (req, res) => {
 });
 
 app.get("/api/get/image-list/", (req, res) => {
-  fs.readdir("./public/uploads", async (err, files) => {
+  fs.readdir(`${__dirname}/public/uploads`, async (err, files) => {
     const ownedImage = await god(req.__user);
     if (ownedImage.uploads) {
       files = files.filter((file) => ownedImage.uploads.includes(file));
@@ -749,7 +748,7 @@ app.post("/api/query/", async (req, res) => {
 });
 
 app.get("/api/get/list/", async (req, res) => {
-  let data = [];
+  const data = [];
   const result = await Item.find({ user: req.__user });
   for (let i = result.length - 1; i >= 0; i--) {
     const notebook = result[i];
