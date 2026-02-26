@@ -152,7 +152,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node(s) in the filtered list with it's parent (if it has one)
+  // Replaces the selected node(s) in the filtered list with its parent (if it has one)
   ascend() {
     this.#query.push({
       operation: "operate",
@@ -161,7 +161,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node(s) in the filtered list with it's first child (if it has one)
+  // Replaces the selected node(s) in the filtered list with its first child (if it has one)
   descend() {
     this.#query.push({
       operation: "operate",
@@ -170,7 +170,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replaces the selected node(s) in the filtered list with it's previous sibling (if it has one)
+  // Replaces the selected node(s) in the filtered list with its previous sibling (if it has one)
   previousSibling() {
     this.#query.push({
       operation: "operate",
@@ -179,7 +179,7 @@ class MDASTERQueryInstruction {
     return this;
   }
 
-  // Replace the selected node(s) in the filtered list with it's next sibling (if it has one)
+  // Replace the selected node(s) in the filtered list with its next sibling (if it has one)
   nextSibling() {
     this.#query.push({
       operation: "operate",
