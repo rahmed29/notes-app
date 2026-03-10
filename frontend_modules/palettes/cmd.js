@@ -24,6 +24,7 @@ function handleKeys(e) {
     e.preventDefault();
     finderNode.click();
   } else if (e.key === "Escape") {
+    e.preventDefault();
     closePalette();
   } else if (
     (e.key === "ArrowUp" || (e.key === "Tab" && e.shiftKey)) &&

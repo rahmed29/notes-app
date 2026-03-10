@@ -41,10 +41,16 @@ function setupEditor(onchange) {
     editor.commands.addCommand(cmd);
   });
   editor.commands.bindKey("F1", null);
-  editor.commands.bindKey("ctrl+,", null);
-  editor.commands.bindKey("ctrl+/", null);
   editor.commands.bindKey("ctrl+l", null);
+  editor.commands.bindKey("cmd+l", null);
   editor.commands.bindKey("ctrl+e", null);
+  editor.commands.bindKey("cmd+e", null);
+  editor.commands.bindKey("ctrl+g", null);
+  editor.commands.bindKey("cmd+g", null);
+  editor.commands.bindKey("ctrl+,", null);
+  editor.commands.bindKey("cmd+,", null);
+  editor.commands.bindKey("ctrl+.", null);
+  editor.commands.bindKey("cmd+.", null);
   editor.setOption("showPrintMargin", false);
   surrounders.forEach((e) => {
     editor.commands.addCommand({

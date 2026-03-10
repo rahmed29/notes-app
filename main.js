@@ -78,6 +78,7 @@ import {
 } from "./frontend_modules/throttle.js";
 import { reserved } from "./frontend_modules/data/reserved_notes.js";
 import { insertTemplate } from "./frontend_modules/snippets.js";
+import { toggleList } from "./frontend_modules/resize_list.js";
 
 // used by note-map
 window.switchNoteWrapper = (name) => switchNote(name);
@@ -444,8 +445,12 @@ async function finish() {
 
   // key bindings
   document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.metaKey) {
       switch (e.key.toLowerCase()) {
+        case "l":
+          e.preventDefault();
+          toggleList();
+          break;
         case "s":
           e.preventDefault();
           saveNoteBookToDb(note.name);
@@ -454,29 +459,21 @@ async function finish() {
           e.preventDefault();
           cycleViewPreferences();
           break;
-        case " ":
+        case "o":
           e.preventDefault();
           showPal();
           break;
-        case "f":
-          showSearch(e.shiftKey);
+        case "g":
+          showSearch(true);
           e.preventDefault();
           break;
         case ",":
-          e.preventDefault();
-          showNotifs();
-          break;
-        case "/":
           e.preventDefault();
           searchBar.focus();
           break;
         case ".":
           e.preventDefault();
           editor.focus();
-          break;
-        case "h":
-          e.preventDefault();
-          switchNote("home");
           break;
       }
     }

@@ -309,7 +309,7 @@ const commands = [
   {
     name: "Open a notebook",
     searchTerm:
-      "open notebooks go to notebook new notebook create notebook make notebook",
+      "open notebooks go to notebook create new notebook create notebook make notebook",
     handler: () => cmInput(note.name, "open"),
   },
   {

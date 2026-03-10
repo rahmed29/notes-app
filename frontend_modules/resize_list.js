@@ -4,6 +4,7 @@ import { changeSettings, getSetting } from "./important_stuff/settings";
 export { resizeList, toggleList, showList, hideList };
 
 function resizeList(e) {
+  e.preventDefault();
   border.classList.add("currPage");
   document.body.style.cursor = "w-resize";
   if (e.clientX <= 600 && e.clientX >= 200) {
